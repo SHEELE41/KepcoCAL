@@ -30,7 +30,7 @@ class ProjectListViewAdapter (val context: Context, val itemDataList : ArrayList
         val itemData = itemDataList[position]
 
         tvProjectName.text = itemData.projectName
-        tvDate.text = itemData.dateToString
+        tvDate.text = itemData.modifiedDate
 
         return view
     }

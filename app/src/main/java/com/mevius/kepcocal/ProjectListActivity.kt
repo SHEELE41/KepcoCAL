@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.AutoCompleteTextView
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_project_list.*
@@ -34,23 +33,17 @@ import kotlinx.android.synthetic.main.activity_project_list.*
 
 class ProjectListActivity : AppCompatActivity() {
     private val READ_REQUEST_CODE: Int = 42     // Request Code for SAF
-    val TAG : String = "ProjectListActivity"    // Log TAG String
-
+    private val TAG : String = "ProjectListActivity"    // Log TAG String
     private val projectFileManager = ProjectFileManager()   // ProjectFile(xls)Manager for save, copy, list
+    private var itemDataList = arrayListOf<ProjectListViewItemData>()
 
-    private var itemDataList = arrayListOf<ProjectListViewItemData>(
-        ProjectListViewItemData("삼척지사 절연유 점검", "2020.09.30"),
-        ProjectListViewItemData("삼척지사 절연유 점검1", "2020.09.30"),
-        ProjectListViewItemData("삼척지사 절연유 점검2", "2020.09.30"),
-        ProjectListViewItemData("삼척지사 절연유 점검3", "2020.09.30"),
-        ProjectListViewItemData("삼척지사 절연유 점검4", "2020.09.30"),
-        ProjectListViewItemData("삼척지사 절연유 점검5", "2020.09.30"),
-        ProjectListViewItemData("삼척지사 절연유 점검6", "2020.01.30"),
-        ProjectListViewItemData("삼척지사 절연유 점검7", "2020.09.30"),
-        ProjectListViewItemData("삼척지사 절연유 점검8", "2020.09.30"),
-        ProjectListViewItemData("삼척지사 절연유 점검9", "2020.09.30"),
-        ProjectListViewItemData("삼척지사 절연유 점검09", "2020.09.30")
-    )
+    private fun sync() {
+        if(projectFileManager.syncList(itemDataList) == 0) {
+            iv_isEmpty.visibility = View.VISIBLE
+        } else {
+            iv_isEmpty.visibility = View.INVISIBLE
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,23 +51,14 @@ class ProjectListActivity : AppCompatActivity() {
 
         supportActionBar?.title = "프로젝트 리스트"    // Set AppBar Title
 
-        // 나중에 객체화 하자. 파일 리스팅
-
-        // 우선 디렉토리 읽고 디렉토리 자체가 없으면 리스트 아무것도 없음(이미지뷰)
-
-//        File(path).walk().filter { it.isFile }.toList()
+        sync()
 
         // 디렉토리는 있으나 엑셀 파일이 아무것도 없어도 리스트 아무것도 없음
         // 파일이 있으면 각각의 파일명, 수정 날짜를 읽어 어레이 리스트에 추가
         // 파일 새로 추가와 동시에 이름 바꾸기(프로젝트명과 동일하게)
-        //
 
         val listViewAdapter = ProjectListViewAdapter(this, itemDataList)    // new ListViewAdapter
         lv_project_list.adapter = listViewAdapter   // Set Apapter to Listview in xml
-        itemDataList.removeAt(1)
-        itemDataList.add(1, ProjectListViewItemData("삼척지사 절연유 점검 123", "2020.09.30"))
-//        Toast.makeText(this,ListDataArray[1].toString(), Toast.LENGTH_SHORT).show()
-//        Adapter.notifyDataSetChanged()
 
         // ListView Item onClickEvent (Start ProjectDetailActivity)
         lv_project_list.setOnItemClickListener () { parent, view, position, id ->
@@ -87,10 +71,19 @@ class ProjectListActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+//        lv_project_list.setOnItemLongClickListener() { parent, view, position, id ->
+//            val element = listViewAdapter.getItem(position)
+//            val intent = Intent(this, ProjectDetailActivity::class.java)
+//            return true
+//        }
 
-        // Floating Action Button OnClickEvent (Add Project)
+        /*
+         * [Floating Action Button onClickListener ]
+         * 프로젝트(엑셀 파일) 추가를 위한 버튼
+         * 누르면 SAF 를 통해 엑셀 파일을 선택할 수 있음
+         * 파일을 선택하면 onActivityResult 액티비티로 넘어감.
+         */
         fab_project_list.setOnClickListener(){
-
 
             // Type of Target File
             val mimeTypes = arrayOf(
@@ -118,12 +111,6 @@ class ProjectListActivity : AppCompatActivity() {
 
             startActivityForResult(intent, READ_REQUEST_CODE)   // Start Activity with RequestCode for onActivityResult
         }
-
-//        lv_project_list.setOnItemLongClickListener() { parent, view, position, id ->
-//            val element = listViewAdapter.getItem(position)
-//            val intent = Intent(this, ProjectDetailActivity::class.java)
-//            return true
-//        }
     }
 
     /*
@@ -139,7 +126,7 @@ class ProjectListActivity : AppCompatActivity() {
 
         if (requestCode == READ_REQUEST_CODE && resultCode == Activity.RESULT_OK) {     // When Result is successful
 
-            var projectNameInput : String = "example"
+            var projectNameInput : String = "filename"
 
             val builder: AlertDialog.Builder = AlertDialog.Builder(this)
             builder.setTitle("Project Name")
@@ -158,6 +145,16 @@ class ProjectListActivity : AppCompatActivity() {
 
                 data?.data?.also { uri ->
                     projectFileManager.saveFileAs(uri, projectNameInput)      // Copy File Which is selected by SAF to Internal App Storage
+                    sync()
+
+                    /*
+                    // Other way to renew List
+                    // 새로 추가될 때 입력받은 프로젝트명 + 오늘 날짜로 리스트 추가
+                    itemDataList.add(ProjectListViewItemData(
+                        "$projectNameInput.xlsx", SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(
+                        Date()
+                    )))
+                    */
                 }
             }
 
@@ -167,5 +164,10 @@ class ProjectListActivity : AppCompatActivity() {
 
             builder.show()      // Show Dialog
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        sync()
     }
 }
