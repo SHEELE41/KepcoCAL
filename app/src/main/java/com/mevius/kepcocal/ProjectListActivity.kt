@@ -2,6 +2,7 @@ package com.mevius.kepcocal
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -35,8 +36,14 @@ class ProjectListActivity : AppCompatActivity() {
     private val READ_REQUEST_CODE: Int = 42     // Request Code for SAF
     private val TAG : String = "ProjectListActivity"    // Log TAG String
     private val projectFileManager = ProjectFileManager()   // ProjectFile(xls)Manager for save, copy, list
-    private var itemDataList = arrayListOf<ProjectListViewItemData>()
+    private var itemDataList = arrayListOf<ProjectListViewItemData>()   // ArrayList<Project> For ListView
+    private val listViewAdapter = ProjectListViewAdapter(this, itemDataList)    // new ListViewAdapter
 
+    /*
+    * syncList => return itemDataList.size (int)
+    * 데이터 리스트 동기화
+    * 동시에 리스트 사이즈가 0이면, 즉 파일이 하나도 없으면 하나도 없다는 안내 이미지 띄우기
+    */
     private fun sync() {
         if(projectFileManager.syncList(itemDataList) == 0) {
             iv_isEmpty.visibility = View.VISIBLE
@@ -51,16 +58,15 @@ class ProjectListActivity : AppCompatActivity() {
 
         supportActionBar?.title = "프로젝트 리스트"    // Set AppBar Title
 
-        sync()
+        sync()      // Synchronize List
 
-        // 디렉토리는 있으나 엑셀 파일이 아무것도 없어도 리스트 아무것도 없음
-        // 파일이 있으면 각각의 파일명, 수정 날짜를 읽어 어레이 리스트에 추가
-        // 파일 새로 추가와 동시에 이름 바꾸기(프로젝트명과 동일하게)
-
-        val listViewAdapter = ProjectListViewAdapter(this, itemDataList)    // new ListViewAdapter
         lv_project_list.adapter = listViewAdapter   // Set Apapter to Listview in xml
 
-        // ListView Item onClickEvent (Start ProjectDetailActivity)
+        /*
+         * [ListView Project Item onClickListener ]
+         * 아이템 클릭시 프로젝트 상세 액티비티로 넘어가기 위한 코드
+         * 아이템을 선택하면 해당 프로젝트의 ProjectDetailActivity 로 넘어감.
+         */
         lv_project_list.setOnItemClickListener () { parent, view, position, id ->
             Log.d(
                 "디렉토리 테스트",
@@ -71,11 +77,28 @@ class ProjectListActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-//        lv_project_list.setOnItemLongClickListener() { parent, view, position, id ->
-//            val element = listViewAdapter.getItem(position)
-//            val intent = Intent(this, ProjectDetailActivity::class.java)
-//            return true
-//        }
+        /*
+         * [ListView Project Item onLongClickListener ]
+         * 프로젝트(엑셀 파일) 삭제를 위한 코드
+         * 길게 눌러서 프로젝트 삭제 확인 다이얼로그 띄움
+         * 파일을 선택하면 onActivityResult 액티비티로 넘어감.
+         */
+        lv_project_list.setOnItemLongClickListener() { parent, view, position, id ->
+            val builder: AlertDialog.Builder = AlertDialog.Builder(this,  android.R.style.Theme_DeviceDefault_Light_Dialog_NoActionBar_MinWidth)
+            builder.setTitle("프로젝트 삭제") //제목
+            builder.setMessage("정말로 삭제하시겠어요?")
+            builder.setPositiveButton("확인") { dialog, which ->
+                projectFileManager.removeFile(itemDataList[position].projectName)
+                sync()
+                listViewAdapter.notifyDataSetChanged()
+                dialog.dismiss()
+            }
+            builder.setNegativeButton(
+                android.R.string.cancel
+            ) { dialog, which -> dialog.cancel() }
+            builder.show()
+            true
+        }
 
         /*
          * [Floating Action Button onClickListener ]
@@ -146,6 +169,7 @@ class ProjectListActivity : AppCompatActivity() {
                 data?.data?.also { uri ->
                     projectFileManager.saveFileAs(uri, projectNameInput)      // Copy File Which is selected by SAF to Internal App Storage
                     sync()
+                    dialog.dismiss()
 
                     /*
                     // Other way to renew List
@@ -166,8 +190,14 @@ class ProjectListActivity : AppCompatActivity() {
         }
     }
 
+    /*
+     * [onResume]
+     * 파일탐색기를 이용하여 파일을 직접 지웠을 때와 같이 액티비티가 다시 시작되는 경우...
+     * 역시 동기화 해주어야 함.
+     */
     override fun onResume() {
         super.onResume()
         sync()
+        listViewAdapter.notifyDataSetChanged()
     }
 }
