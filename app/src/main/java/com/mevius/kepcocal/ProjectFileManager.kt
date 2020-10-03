@@ -67,8 +67,7 @@ class ProjectFileManager {
 
     // 엑셀파일 여부 확인
     fun isExcelFile(fileName : String) : Boolean {
-        val extension = fileName.substringAfterLast(".")
-        return when(extension){
+        return when(fileName.substringAfterLast(".")){
             "xls", "xlsx" -> true
             else -> false
         }
@@ -90,7 +89,7 @@ class ProjectFileManager {
     }
 
     // SAF 에서 선택한 파일의 파일명 구하기.
-    fun getFileName(uri: Uri): String? {
+    private fun getFileName(uri: Uri): String? {
         var result: String? = null
         if (uri.scheme == "content") {
             val cursor: Cursor? = globalApplicationContext.contentResolver?.query(uri, null, null, null, null)

@@ -1,0 +1,156 @@
+package com.mevius.kepcocal
+
+import android.util.Log
+import org.apache.poi.hssf.usermodel.HSSFCell
+import org.apache.poi.hssf.usermodel.HSSFRow
+import org.apache.poi.hssf.usermodel.HSSFWorkbook
+import org.apache.poi.poifs.filesystem.POIFSFileSystem
+import org.apache.poi.ss.usermodel.Cell
+import org.apache.poi.ss.usermodel.Row
+import org.apache.poi.xssf.usermodel.XSSFCell
+import org.apache.poi.xssf.usermodel.XSSFRow
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import java.io.FileInputStream
+import com.mevius.kepcocal.MachineData as MachineData
+
+class ExcelParser {
+    private val globalApplicationContext = GlobalApplication.instance.applicationContext()
+    private val mOutputDir = globalApplicationContext.getExternalFilesDir(null)     // /Android/data/com.mevius.kepcocal/files
+
+    /**
+     * [excelToList]
+     * 엑셀 데이터를 ArrayList 형태로 읽어들이는 함수.
+     */
+    fun excelToList(fileName : String, machineList : ArrayList<MachineData>){
+        /*
+        * Case 1.
+        * When extension is "xls" -> HSSF(poi)
+        */
+        if (fileName.substringAfterLast(".") == "xls") {     // When extension is "xls" -> HSSF
+            try {
+                /*
+                * 엑셀 파일 제어 가능한 객체로 불러오기
+                */
+                // FileInputStream
+                val mInputStream = FileInputStream("$mOutputDir/$fileName")
+
+                // POISFileSystem 객체 (xsl)
+                val mFileSystem = POIFSFileSystem(mInputStream)
+
+                // WorkBook(엑셀 파일)
+                val mWorkBook = HSSFWorkbook(mFileSystem)
+
+                // WorkBook 에서 시트 가져오기 (첫 번째 시트)
+                val mSheet = mWorkBook.getSheetAt(0)
+
+                /*
+                * 엑셀 파일 데이터 읽기
+                */
+                val rowIter = mSheet.rowIterator()  // 다음 행 비었는지 확인할 Iterator
+                var rowNum = 0  // 반복문 안에서 사용할 행 번호
+
+                while (rowIter.hasNext()) {   // 행 반복문
+                    val currentRow = rowIter.next() as HSSFRow // xls file type
+                    val machineData = MachineData("")   // 행 한번 순회할때마다 machineData 객체 생성하여 정보 채우고 리스트에 add
+                    var cellNum = 0 // 행 바뀔 때마다 cellNum 초기화
+                    while (cellNum < 11) {     // 열 반복문, MachineData 클래스의 필드 개수가 11개이므로 11
+                        val currentCell = currentRow.getCell(cellNum, Row.RETURN_BLANK_AS_NULL) as HSSFCell   // xls file type
+                        when (cellNum) {
+                            0 -> machineData.index = cellTypeCasting(currentCell)
+                            1 -> machineData.branch = cellTypeCasting(currentCell)
+                            2 -> machineData.computerizedNumber = cellTypeCasting(currentCell)
+                            3 -> machineData.lineName = cellTypeCasting(currentCell)
+                            4 -> machineData.lineNumber = cellTypeCasting(currentCell)
+                            5 -> machineData.company = cellTypeCasting(currentCell)
+                            6 -> machineData.manufacturingYear = cellTypeCasting(currentCell)
+                            7 -> machineData.manufacturingDate = cellTypeCasting(currentCell)
+                            8 -> machineData.manufacturingNumber = cellTypeCasting(currentCell)
+                            9 -> machineData.address1 = cellTypeCasting(currentCell)
+                            10 -> machineData.address2 = cellTypeCasting(currentCell)
+                            else -> break
+                        }
+                        cellNum++
+                    }
+                    Log.d("엑셀 테스트", "${machineData.index.toString()} " +
+                            "${machineData.branch.toString()} " +
+                            "${machineData.computerizedNumber.toString()} " +
+                            "${machineData.lineName.toString()} " +
+                            "${machineData.lineNumber.toString()} " +
+                            "${machineData.manufacturingNumber.toString()} "
+                    )
+                    machineList.add(machineData)
+                    rowNum++
+                }
+            } catch (e: Exception) {
+                Log.d("엑셀파서에러로그", "에러 발생함.")
+            }
+        }
+
+        /*
+        * Case 2.
+        * When extension is "xlsx" -> XSSF(ooxml)
+        */
+        else if(fileName.substringAfterLast(".") == "xlsx"){
+            try {
+                /*
+                * 엑셀 파일 제어 가능한 객체로 불러오기
+                */
+                // FileInputStream
+                val mInputStream = FileInputStream("$mOutputDir/$fileName")
+
+                // WorkBook(엑셀 파일)
+                val mWorkBook = XSSFWorkbook(mInputStream)
+
+                // WorkBook 에서 시트 가져오기 (첫 번째 시트)
+                val mSheet = mWorkBook.getSheetAt(0)
+
+                /*
+                * 엑셀 파일 데이터 읽기
+                */
+                val rowIter = mSheet.rowIterator()  // 다음 행 비었는지 확인할 Iterator
+                var rowNum = 0  // 반복문 안에서 사용할 행 번호
+
+                while (rowIter.hasNext()) {   // 행 반복문
+                    val currentRow = rowIter.next() as XSSFRow // xlsx file type
+                    val machineData = MachineData("")
+                    var cellNum = 0 // 행 바뀔 때마다 cellNum 초기화
+                    while (cellNum < 11) {     // 열 반복문, MachineData 클래스의 필드 개수가 11개이므로 11
+                        val currentCell = currentRow.getCell(cellNum, Row.RETURN_BLANK_AS_NULL) as XSSFCell   // xlsx file type
+                        when (cellNum) {
+                            0 -> machineData.index = cellTypeCasting(currentCell)
+                            1 -> machineData.branch = cellTypeCasting(currentCell)
+                            2 -> machineData.computerizedNumber = cellTypeCasting(currentCell)
+                            3 -> machineData.lineName = cellTypeCasting(currentCell)
+                            4 -> machineData.lineNumber = cellTypeCasting(currentCell)
+                            5 -> machineData.company = cellTypeCasting(currentCell)
+                            6 -> machineData.manufacturingYear = cellTypeCasting(currentCell)
+                            7 -> machineData.manufacturingDate = cellTypeCasting(currentCell)
+                            8 -> machineData.manufacturingNumber = cellTypeCasting(currentCell)
+                            9 -> machineData.address1 = cellTypeCasting(currentCell)
+                            10 -> machineData.address2 = cellTypeCasting(currentCell)
+                            else -> break
+                        }
+                        cellNum++
+                        Log.d("엑셀 테스트", currentCell.toString())
+                    }
+                    machineList.add(machineData)
+                    rowNum++
+                }
+            } catch (e: Exception) {
+                Log.d("엑셀파서에러로그","에러 발생함.")
+            }
+        }
+    }
+
+    /**
+     * [cellTypeCasting]
+     * 간단한 타입캐스팅 함수.
+     * poi 특성상 정수데이터도 double로 읽어들이는 불편함때문에 제작.
+     */
+    fun cellTypeCasting (cell : Cell) : String{
+        return when (cell.cellType){
+            XSSFCell.CELL_TYPE_NUMERIC -> cell.numericCellValue.toInt().toString()
+            else -> cell.toString()
+        }
+    }
+}

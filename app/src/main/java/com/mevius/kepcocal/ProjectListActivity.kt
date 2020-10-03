@@ -68,12 +68,8 @@ class ProjectListActivity : AppCompatActivity() {
          * 아이템을 선택하면 해당 프로젝트의 ProjectDetailActivity 로 넘어감.
          */
         lv_project_list.setOnItemClickListener () { parent, view, position, id ->
-            Log.d(
-                "디렉토리 테스트",
-                "Setaie;fwjg;aowhgewvndosizjoiefmjaiweojfli;zdsjicfnwefovnzj;iofdjwiefmc;owiejcz;ielwojfwjf;zo"
-            )
-            val element = listViewAdapter.getItem(position)
             val intent = Intent(this, ProjectDetailActivity::class.java)
+            intent.putExtra("fileName", itemDataList[position].projectName)
             startActivity(intent)
         }
 
