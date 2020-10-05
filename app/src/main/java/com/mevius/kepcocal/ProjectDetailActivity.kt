@@ -1,12 +1,16 @@
 package com.mevius.kepcocal
 
-import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_project_detail.*
+import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapView  // ** Caution! import package
+import okhttp3.MediaType
+import okhttp3.Request
+import okhttp3.RequestBody
 
 class ProjectDetailActivity : AppCompatActivity() {
     private val machineList = arrayListOf<MachineData>()    // 기기 리스트
@@ -34,13 +38,39 @@ class ProjectDetailActivity : AppCompatActivity() {
         val excelParser = ExcelParser()     // Excel Parser 선언
         excelParser.excelToList(fileName!!, machineList)    // machineList 에 정상적으로 정보 이동 완료
 
+        val arrayListJSON = ArrayListJSON()
+        val jString = arrayListJSON.arrayListToJSON(machineList)
+        Log.d("JSON STRING 출력해본다 ㅋㅋㅋㅋㅋ", jString)
 
 
+        /**
+         * 임시로 OKHttp 써볼까?
+         * */
+
+        val url = "https://dsctest.oasisfores.com/handle_post"
+        val body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jString)
+        val request = Request.Builder()
+            .url(url)
+            .post(body)
+            .build()
 
         val mapView = MapView(this)
 
         val mapViewContainer = mapViewProjectDetail as ViewGroup
 
         mapViewContainer.addView(mapView)
+
+//        val markers = arrayOf<MapPOIItem>()
+//
+//        for ((index, machineData) in machineList.withIndex()){
+//            markers[index].itemName = machineData.computerizedNumber
+//            markers[index].tag = 0
+//            markers[index].mapPoint
+//            markers[index].markerType = MapPOIItem.MarkerType.BluePin       // 기본
+//            markers[index].selectedMarkerType = MapPOIItem.MarkerType.RedPin       // 마커 클릭했을 때
+//        }
+//
+//        mapView.addPOIItems(markers)
+
     }
 }

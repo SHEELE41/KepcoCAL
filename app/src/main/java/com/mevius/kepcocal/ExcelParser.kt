@@ -54,7 +54,7 @@ class ExcelParser {
                     val machineData = MachineData("")   // 행 한번 순회할때마다 machineData 객체 생성하여 정보 채우고 리스트에 add
                     var cellNum = 0 // 행 바뀔 때마다 cellNum 초기화
                     while (cellNum < 11) {     // 열 반복문, MachineData 클래스의 필드 개수가 11개이므로 11
-                        val currentCell = currentRow.getCell(cellNum, Row.RETURN_BLANK_AS_NULL) as HSSFCell   // xls file type
+                        val currentCell = currentRow.getCell(cellNum, Row.CREATE_NULL_AS_BLANK) as HSSFCell   // xls file type, CREATE_NULL_AS_BLANK : Cell이 빈칸일 경우 "" 스트링 객체 생성
                         when (cellNum) {
                             0 -> machineData.index = cellTypeCasting(currentCell)
                             1 -> machineData.branch = cellTypeCasting(currentCell)
@@ -115,7 +115,7 @@ class ExcelParser {
                     val machineData = MachineData("")
                     var cellNum = 0 // 행 바뀔 때마다 cellNum 초기화
                     while (cellNum < 11) {     // 열 반복문, MachineData 클래스의 필드 개수가 11개이므로 11
-                        val currentCell = currentRow.getCell(cellNum, Row.RETURN_BLANK_AS_NULL) as XSSFCell   // xlsx file type
+                        val currentCell = currentRow.getCell(cellNum, Row.CREATE_NULL_AS_BLANK) as XSSFCell   // xlsx file type, CREATE_NULL_AS_BLANK : Cell이 빈칸일 경우 "" 스트링 객체 생성
                         when (cellNum) {
                             0 -> machineData.index = cellTypeCasting(currentCell)
                             1 -> machineData.branch = cellTypeCasting(currentCell)
