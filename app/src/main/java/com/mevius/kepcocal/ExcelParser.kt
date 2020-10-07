@@ -71,12 +71,12 @@ class ExcelParser {
                         }
                         cellNum++
                     }
-                    Log.d("엑셀 테스트", "${machineData.index.toString()} " +
-                            "${machineData.branch.toString()} " +
-                            "${machineData.computerizedNumber.toString()} " +
-                            "${machineData.lineName.toString()} " +
-                            "${machineData.lineNumber.toString()} " +
-                            "${machineData.manufacturingNumber.toString()} "
+                    Log.d("엑셀 테스트", "${machineData.index} " +
+                            "${machineData.branch} " +
+                            "${machineData.computerizedNumber} " +
+                            "${machineData.lineName} " +
+                            "${machineData.lineNumber} " +
+                            "${machineData.manufacturingNumber} "
                     )
                     machineList.add(machineData)
                     rowNum++
@@ -147,7 +147,7 @@ class ExcelParser {
      * 간단한 타입캐스팅 함수.
      * poi 특성상 정수데이터도 double로 읽어들이는 불편함때문에 제작.
      */
-    fun cellTypeCasting (cell : Cell) : String{
+    private fun cellTypeCasting (cell : Cell) : String{
         return when (cell.cellType){
             XSSFCell.CELL_TYPE_NUMERIC -> cell.numericCellValue.toInt().toString()
             else -> cell.toString()

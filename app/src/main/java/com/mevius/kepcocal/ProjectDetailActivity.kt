@@ -8,9 +8,9 @@ import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_project_detail.*
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapView  // ** Caution! import package
-import okhttp3.MediaType
-import okhttp3.Request
-import okhttp3.RequestBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class ProjectDetailActivity : AppCompatActivity() {
     private val machineList = arrayListOf<MachineData>()    // 기기 리스트
@@ -43,22 +43,33 @@ class ProjectDetailActivity : AppCompatActivity() {
         Log.d("JSON STRING 출력해본다 ㅋㅋㅋㅋㅋ", jString)
 
 
+
+
         /**
          * 임시로 OKHttp 써볼까?
          * */
-
-        val url = "https://dsctest.oasisfores.com/handle_post"
-        val body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jString)
-        val request = Request.Builder()
-            .url(url)
-            .post(body)
-            .build()
 
         val mapView = MapView(this)
 
         val mapViewContainer = mapViewProjectDetail as ViewGroup
 
         mapViewContainer.addView(mapView)
+
+        val api = GeocoderAPI.create()
+
+        // Import는 다 Retrofit으로
+        api.getCoordinate("가운로2길").enqueue(object : Callback<ResultGetCoordinate> {
+            override fun onResponse(
+                call: Call<ResultGetCoordinate>,
+                response: Response<ResultGetCoordinate>
+            ) {
+                Log.d("웹테스트트트트ㅡ틑트트트", "성공 !!!! ${response.raw()}")
+            }
+
+            override fun onFailure(call: Call<ResultGetCoordinate>, t: Throwable) {
+                Log.d("웹테스트트트트ㅡ틑트트트", "실패 !!!! $t")
+            }
+        })
 
 //        val markers = arrayOf<MapPOIItem>()
 //
