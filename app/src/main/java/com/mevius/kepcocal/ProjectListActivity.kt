@@ -25,7 +25,6 @@ import kotlinx.android.synthetic.main.activity_project_list.*
 * - 불러온 엑셀 파일의 파일명을 입력받은 프로젝트명으로 Rename 하여 앱 내부 저장공간인 /Android/data/com.mevius.kepcocal/files 에 복사
 * - 파일명 = 프로젝트명 이므로 프로젝트 리스트를 띄울 때는 파일명 리스트만 읽으면 됨
 *
-* 길게 눌러서(Long Click) 삭제 기능은 구현 예정
 *
 * ListView 프로젝트 리스트 갱신
 * 파일 목록 상의 파일명과 수정 날짜를 읽어서 ArrayList 에 갱신... 따로 클래스화하여 FAB onClick 이벤트에 추가

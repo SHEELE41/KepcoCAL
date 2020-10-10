@@ -11,4 +11,8 @@ data class MachineData (var computerizedNumber : String){   // 전산화번호 3
     var manufacturingNumber = ""  // 제조번호 9
     var address1 = "" // 주소1 10
     var address2 = "" // 주소2 11
+
+    // api 요청 후에도 coordinateLng, coordinateLat가 없다는 것은 주소가 둘 다 없거나 잘못된 주소일 경우.
+    var coordinateLng = ""
+    var coordinateLat = ""
 }

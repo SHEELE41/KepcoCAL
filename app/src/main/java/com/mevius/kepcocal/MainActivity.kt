@@ -3,6 +3,7 @@ package com.mevius.kepcocal
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import com.kakao.sdk.common.KakaoSdk
 import kotlinx.android.synthetic.main.activity_main.*
 
