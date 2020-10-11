@@ -174,6 +174,7 @@ class ProjectDetailActivity : AppCompatActivity() {
                         // 최종 아이템인지 확인
                         // 최종 아이템 또한 isnoCoord 확인을 거쳤으므로 리스트에 포함되어 있음
                         if (machineCounter == machineList.size){
+                            val computerizedNumberCalculator = ComputerizedNumberCalculator()
                             for (noCoordMachine in noCoordMachineArrayList){
                                 var closestDistance : Long = Long.MAX_VALUE
                                 var closestMachine : MachineData? = null
@@ -184,14 +185,28 @@ class ProjectDetailActivity : AppCompatActivity() {
 
                                     if (machine.coordinateLat != "" && machine.coordinateLng != ""){    // 좌표 있음
                                         // 정렬처럼 갈수록 더 짧은 거리로 갱신하면 되겠네
-                                        val computerizedNumberCalculator = ComputerizedNumberCalculator(machine.computerizedNumber, noCoordMachine.computerizedNumber)
-                                        if (closestDistance > computerizedNumberCalculator.getTotalDistance()){
-                                            closestDistance = computerizedNumberCalculator.getTotalDistance()
+                                        if (closestDistance > computerizedNumberCalculator.getTotalDistance(machine.computerizedNumber, noCoordMachine.computerizedNumber)){
+                                            closestDistance = computerizedNumberCalculator.getTotalDistance(machine.computerizedNumber, noCoordMachine.computerizedNumber)
                                             closestMachine = machine
                                         }
                                     }
                                 }
                                 // 대충 거리차이로 좌표 구하고 지도에 찍는다는 코드
+                                if (closestMachine != null){
+                                    noCoordMachine.coordinateLng = (closestMachine.coordinateLng.toDouble() + ((computerizedNumberCalculator.getXDistance(closestMachine.computerizedNumber, noCoordMachine.computerizedNumber).toDouble() * 2.0) / (91290.0 + 85397.0))).toString()    //127
+                                    Log.d("좌표 테스트입니당", "${noCoordMachine.lineName} ${noCoordMachine.lineNumber} ${noCoordMachine.coordinateLng}")
+                                    Log.d("가장 가까운 기기", "${closestMachine.lineName} ${closestMachine.lineNumber} ${closestMachine.coordinateLng}")
+                                    Log.d("현재 차이값", "${closestMachine.lineName} ${closestMachine.lineNumber} ${computerizedNumberCalculator.getXDistance(closestMachine.computerizedNumber, noCoordMachine.computerizedNumber)}")
+                                    noCoordMachine.coordinateLat = (closestMachine.coordinateLat.toDouble() + ((computerizedNumberCalculator.getYDistance(closestMachine.computerizedNumber, noCoordMachine.computerizedNumber).toDouble() * 2.0) / (110941.0 + 111034.0))).toString()  //12
+                                    Log.d("좌표 테스트입니당", noCoordMachine.coordinateLat)
+                                    marker.itemName = noCoordMachine.computerizedNumber
+                                    marker.mapPoint = MapPoint.mapPointWithGeoCoord(
+                                        noCoordMachine.coordinateLat.toDouble(),
+                                        noCoordMachine.coordinateLng.toDouble()
+                                    )
+                                    Log.d("왜 안되는겨?", "ㄹㅇ루")
+                                    mapView.addPOIItem(marker)
+                                }
                             }
                         }
                     }

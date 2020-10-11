@@ -19,25 +19,25 @@ import kotlin.math.pow
  * 마지막 글자는 기기고유번호. 별 의미 없음
  */
 
-class ComputerizedNumberCalculator (private var baseNumber : String, private var targetNumber : String) {
+class ComputerizedNumberCalculator () {
     private val re = Regex("[^0-9]")    // 혹시 모를 문자를 제거하기 위한 패턴(숫자 빼고 다 날림)
 
-    fun getXDistance () : Int { // 양수면 동쪽 음수면 서쪽 기준으로 출력
+    fun getXDistance (baseNumber : String, targetNumber : String) : Int { // 양수면 동쪽 음수면 서쪽 기준으로 출력
         val diffOfFirstBlock = targetNumber.substring(0..1).toInt() - baseNumber.substring(0..1).toInt()
         val diffOfSecondBlock = alphaToXIndex(targetNumber[4]) - alphaToXIndex(baseNumber[4])
         val diffOfThirdBlock = re.replace(targetNumber, "")[4].toInt() - re.replace(baseNumber, "")[4].toInt()
         return ((diffOfFirstBlock * 2000) + (diffOfSecondBlock * 500) + (diffOfThirdBlock * 50))
     }
 
-    fun getYDistance () : Int { // 양수면 북쪽 음수면 남쪽 기준으로 출력
+    fun getYDistance (baseNumber : String, targetNumber : String) : Int { // 양수면 북쪽 음수면 남쪽 기준으로 출력
         val diffOfFirstBlock = targetNumber.substring(2..3).toInt() - baseNumber.substring(2..3).toInt()
         val diffOfSecondBlock = alphaToYIndex(targetNumber[4]) - alphaToYIndex(baseNumber[4])
         val diffOfThirdBlock = re.replace(targetNumber, "")[5].toInt() - re.replace(baseNumber, "")[5].toInt()
         return ((diffOfFirstBlock * 2000) + (diffOfSecondBlock * 500) + (diffOfThirdBlock * 50))
     }
 
-    fun getTotalDistance() : Long {
-        return getXDistance().toDouble().pow(2).toLong() + getYDistance().toDouble().pow(2).toLong()
+    fun getTotalDistance(baseNumber : String, targetNumber : String) : Long {
+        return getXDistance(baseNumber, targetNumber).toDouble().pow(2).toLong() + getYDistance(baseNumber, targetNumber).toDouble().pow(2).toLong()
     }
 
     private fun alphaToXIndex (alpha : Char) : Int {
