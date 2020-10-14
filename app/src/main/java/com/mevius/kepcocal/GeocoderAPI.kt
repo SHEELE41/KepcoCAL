@@ -4,6 +4,7 @@ import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
@@ -16,11 +17,11 @@ import retrofit2.http.Query
  */
 interface GeocoderAPI {
     @GET("v2/local/search/address.json")   // API 상세 경로, format : json
-    fun getCoordinate(
+    suspend fun getCoordinate(
         @Query("query") query: String,
         @Query("page") display: Int? = null,
         @Query("size") start: Int? = null
-    ): Call<ResultGetCoordinate>
+    ): Response<ResultGetCoordinate>
 
     /**
      * [GeocoderAPI Interface companion object]
