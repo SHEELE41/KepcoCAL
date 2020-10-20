@@ -23,7 +23,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".ProjectListActivity" />
-        <activity android:name=".ProjectDetailActivity" />
+        <activity android:name=".ProjectDetailActivity"/>
         <!--meta-data tag must be in application tag-->
         <meta-data android:name="com.kakao.sdk.AppKey" android:value="@string/kakao_app_key"/>
     </application>

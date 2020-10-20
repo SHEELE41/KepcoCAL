@@ -13,8 +13,13 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.FileInputStream
 import com.mevius.kepcocal.MachineData as MachineData
 
+/**
+ * [ExcelParser]
+ * 엑셀 데이터를 파싱하는 메소드를 가진 클래스
+ * 조건부 컴파일 방법 찾아서 HSSF, XSSF 방법 생각하기
+ */
 class ExcelParser {
-    private val globalApplicationContext = GlobalApplication.instance.applicationContext()
+    private val globalApplicationContext = GlobalApplication.instance.applicationContext()  // 저장소 경로를 위한 AppContext 불가피.
     private val mOutputDir = globalApplicationContext.getExternalFilesDir(null)     // /Android/data/com.mevius.kepcocal/files
 
     /**

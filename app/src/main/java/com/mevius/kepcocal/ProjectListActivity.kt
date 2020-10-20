@@ -33,10 +33,13 @@ import kotlinx.android.synthetic.main.activity_project_list.*
 
 class ProjectListActivity : AppCompatActivity() {
     private val READ_REQUEST_CODE: Int = 42     // Request Code for SAF
-    private val TAG : String = "ProjectListActivity"    // Log TAG String
-    private val projectFileManager = ProjectFileManager()   // ProjectFile(xls)Manager for save, copy, list
-    private var itemDataList = arrayListOf<ProjectListViewItemData>()   // ArrayList<Project> For ListView
-    private val listViewAdapter = ProjectListViewAdapter(this, itemDataList)    // new ListViewAdapter
+    private val TAG: String = "ProjectListActivity"    // Log TAG String
+    private val projectFileManager =
+        ProjectFileManager()   // ProjectFile(xls)Manager for save, copy, list
+    private var itemDataList =
+        arrayListOf<ProjectListViewItemData>()   // ArrayList<Project> For ListView
+    private val listViewAdapter =
+        ProjectListViewAdapter(this, itemDataList)    // new ListViewAdapter
 
     /*
     * syncList => return itemDataList.size (int)
@@ -44,7 +47,7 @@ class ProjectListActivity : AppCompatActivity() {
     * 동시에 리스트 사이즈가 0이면, 즉 파일이 하나도 없으면 하나도 없다는 안내 이미지 띄우기
     */
     private fun sync() {
-        if(projectFileManager.syncList(itemDataList) == 0) {
+        if (projectFileManager.syncList(itemDataList) == 0) {
             iv_isEmpty.visibility = View.VISIBLE
         } else {
             iv_isEmpty.visibility = View.INVISIBLE
@@ -66,9 +69,13 @@ class ProjectListActivity : AppCompatActivity() {
          * 아이템 클릭시 프로젝트 상세 액티비티로 넘어가기 위한 코드
          * 아이템을 선택하면 해당 프로젝트의 ProjectDetailActivity 로 넘어감.
          */
-        lv_project_list.setOnItemClickListener () { parent, view, position, id ->
-            val intent = Intent(this, ProjectDetailActivity::class.java)
-            intent.putExtra("fileName", itemDataList[position].projectName)
+        lv_project_list.setOnItemClickListener() { _, _, position, _ ->
+            val intent = Intent(this, ProjectDetailActivity::class.java).apply {
+                putExtra(
+                    "fileName",
+                    itemDataList[position].projectName
+                )
+            }
             startActivity(intent)
         }
 
@@ -78,11 +85,14 @@ class ProjectListActivity : AppCompatActivity() {
          * 길게 눌러서 프로젝트 삭제 확인 다이얼로그 띄움
          * 파일을 선택하면 onActivityResult 액티비티로 넘어감.
          */
-        lv_project_list.setOnItemLongClickListener() { parent, view, position, id ->
-            val builder: AlertDialog.Builder = AlertDialog.Builder(this,  android.R.style.Theme_DeviceDefault_Light_Dialog_NoActionBar_MinWidth)
+        lv_project_list.setOnItemLongClickListener() { _, _, position, _ ->
+            val builder: AlertDialog.Builder = AlertDialog.Builder(
+                this,
+                android.R.style.Theme_DeviceDefault_Light_Dialog_NoActionBar_MinWidth
+            )
             builder.setTitle("프로젝트 삭제") //제목
             builder.setMessage("정말로 삭제하시겠어요?")
-            builder.setPositiveButton("확인") { dialog, which ->
+            builder.setPositiveButton("확인") { dialog, _ ->
                 projectFileManager.removeFile(itemDataList[position].projectName)
                 sync()
                 listViewAdapter.notifyDataSetChanged()
@@ -90,7 +100,7 @@ class ProjectListActivity : AppCompatActivity() {
             }
             builder.setNegativeButton(
                 android.R.string.cancel
-            ) { dialog, which -> dialog.cancel() }
+            ) { dialog, _ -> dialog.cancel() }
             builder.show()
             true
         }
@@ -101,7 +111,7 @@ class ProjectListActivity : AppCompatActivity() {
          * 누르면 SAF 를 통해 엑셀 파일을 선택할 수 있음
          * 파일을 선택하면 onActivityResult 액티비티로 넘어감.
          */
-        fab_project_list.setOnClickListener(){
+        fab_project_list.setOnClickListener() {
 
             // Type of Target File
             val mimeTypes = arrayOf(
@@ -123,11 +133,17 @@ class ProjectListActivity : AppCompatActivity() {
                     for (mimeType in mimeTypes) {
                         mimeTypesStr += "$mimeType|"
                     }
-                    type = mimeTypesStr.substring(0, mimeTypesStr.length - 1)   // "application/vnd.ms-excel|application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    type = mimeTypesStr.substring(
+                        0,
+                        mimeTypesStr.length - 1
+                    )   // "application/vnd.ms-excel|application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 }
             }
 
-            startActivityForResult(intent, READ_REQUEST_CODE)   // Start Activity with RequestCode for onActivityResult
+            startActivityForResult(
+                intent,
+                READ_REQUEST_CODE
+            )   // Start Activity with RequestCode for onActivityResult
         }
     }
 
@@ -144,7 +160,7 @@ class ProjectListActivity : AppCompatActivity() {
 
         if (requestCode == READ_REQUEST_CODE && resultCode == Activity.RESULT_OK) {     // When Result is successful
 
-            var projectNameInput : String = "filename"
+            var projectNameInput: String
 
             val builder: AlertDialog.Builder = AlertDialog.Builder(this)
             builder.setTitle("Project Name")
@@ -156,13 +172,16 @@ class ProjectListActivity : AppCompatActivity() {
 
             builder.setPositiveButton(
                 android.R.string.ok
-            ) { dialog, which ->
+            ) { dialog, _ ->
                 projectNameInput =
                     viewInflated.findViewById<AutoCompleteTextView>(R.id.input).text.toString()
                 Log.d(TAG, projectNameInput)
 
                 data?.data?.also { uri ->
-                    projectFileManager.saveFileAs(uri, projectNameInput)      // Copy File Which is selected by SAF to Internal App Storage
+                    projectFileManager.saveFileAs(
+                        uri,
+                        projectNameInput
+                    )      // Copy File Which is selected by SAF to Internal App Storage
                     sync()
                     dialog.dismiss()
 
@@ -179,7 +198,7 @@ class ProjectListActivity : AppCompatActivity() {
 
             builder.setNegativeButton(
                 android.R.string.cancel
-            ) { dialog, which -> dialog.cancel() }      // If Click Cancel, Do Nothing
+            ) { dialog, _ -> dialog.cancel() }      // If Click Cancel, Do Nothing
 
             builder.show()      // Show Dialog
         }

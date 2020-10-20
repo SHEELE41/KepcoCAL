@@ -38,7 +38,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.core:core-ktx:1.3.2'
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'com.google.android.material:material:1.2.1'
 
@@ -49,10 +49,12 @@ dependencies {
     implementation "com.kakao.sdk:v2-navi:2.0.2" // 카카오내비
     implementation files('libs/libDaumMapAndroid.jar')
 
+    // 엑셀 파싱을 위한 라이브러리. 4.0 이상 버전이 존재하지만 sdk 버전과 충돌...
     implementation 'org.apache.poi:poi:3.8'
     implementation 'org.apache.poi:poi-ooxml:3.8'
 
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9' // Coroutine
+    implementation 'com.github.arimorty:floatingsearchview:2.1.1'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
