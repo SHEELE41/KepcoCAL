@@ -1,13 +1,13 @@
-package com.mevius.kepcocal
+package com.mevius.kepcocal.view.main
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import com.kakao.sdk.common.KakaoSdk
 import kotlinx.android.synthetic.main.activity_main.*
 
-import com.kakao.sdk.common.util.Utility
+import com.mevius.kepcocal.view.project_detail.ProjectDetailActivity
+import com.mevius.kepcocal.view.project_list.ProjectListActivity
+import com.mevius.kepcocal.R
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -15,17 +15,17 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         btn_menu1.setOnClickListener() {
-            var intent = Intent(this, ProjectListActivity::class.java)
+            val intent = Intent(this, ProjectListActivity::class.java)
             startActivity(intent)
         }
 
         btn_menu2.setOnClickListener() {
-            var intent = Intent(this, ProjectDetailActivity::class.java)
+            val intent = Intent(this, ProjectDetailActivity::class.java)
             startActivity(intent)
         }
 
         btn_menu3.setOnClickListener() {
-            var intent = Intent(this, ProjectListActivity::class.java)
+            val intent = Intent(this, ProjectListActivity::class.java)
             startActivity(intent)
         }
     }

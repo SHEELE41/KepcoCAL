@@ -1,4 +1,4 @@
-package com.mevius.kepcocal
+package com.mevius.kepcocal.view.project_list.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -7,8 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
+import com.mevius.kepcocal.R
 
-class ProjectListViewAdapter (val context: Context, val itemDataList : ArrayList<ProjectListViewItemData>) : BaseAdapter() {
+class ProjectListViewAdapter (private val context: Context, private val itemDataList : ArrayList<ProjectListViewItemData>) : BaseAdapter() {
     override fun getCount(): Int {
         return itemDataList.size
     }
@@ -23,7 +24,7 @@ class ProjectListViewAdapter (val context: Context, val itemDataList : ArrayList
 
     @SuppressLint("ViewHolder", "InflateParams")
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        val view : View = LayoutInflater.from(context).inflate(R.layout.project_list_listview_item, null)
+        val view : View = LayoutInflater.from(context).inflate(R.layout.project_list_listview_item, parent, false)
         val tvProjectName = view.findViewById<TextView>(R.id.tv_project_name)
         val tvDate = view.findViewById<TextView>(R.id.tv_date)
 

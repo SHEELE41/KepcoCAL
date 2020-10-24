@@ -1,4 +1,4 @@
-package com.mevius.kepcocal
+package com.mevius.kepcocal.data.network.model
 
 data class ResultGetCoordinate (
     var documents : List<DocumentItem>

@@ -1,10 +1,12 @@
-package com.mevius.kepcocal
+package com.mevius.kepcocal.util
 
 import android.annotation.SuppressLint
 import android.database.Cursor
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.provider.OpenableColumns
+import com.mevius.kepcocal.GlobalApplication
+import com.mevius.kepcocal.view.project_list.adapter.ProjectListViewItemData
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException

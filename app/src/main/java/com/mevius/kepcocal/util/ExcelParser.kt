@@ -1,6 +1,8 @@
-package com.mevius.kepcocal
+package com.mevius.kepcocal.util
 
 import android.util.Log
+import com.mevius.kepcocal.GlobalApplication
+import com.mevius.kepcocal.data.MachineData
 import org.apache.poi.hssf.usermodel.HSSFCell
 import org.apache.poi.hssf.usermodel.HSSFRow
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
@@ -11,7 +13,6 @@ import org.apache.poi.xssf.usermodel.XSSFCell
 import org.apache.poi.xssf.usermodel.XSSFRow
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.FileInputStream
-import com.mevius.kepcocal.MachineData as MachineData
 
 /**
  * [ExcelParser]

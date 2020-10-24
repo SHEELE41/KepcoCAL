@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <menu name="menu_main"></menu>
+    <color name="ic_launcher_background">#FD1414</color>
 </resources>

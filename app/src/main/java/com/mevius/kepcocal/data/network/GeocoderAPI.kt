@@ -1,9 +1,9 @@
-package com.mevius.kepcocal
+package com.mevius.kepcocal.data.network
 
+import com.mevius.kepcocal.data.network.model.ResultGetCoordinate
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

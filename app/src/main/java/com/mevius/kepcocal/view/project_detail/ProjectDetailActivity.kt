@@ -1,12 +1,19 @@
-package com.mevius.kepcocal
+package com.mevius.kepcocal.view.project_detail
 
-import android.app.SearchManager
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.mevius.kepcocal.*
+import com.mevius.kepcocal.data.MachineData
+import com.mevius.kepcocal.data.network.GeocoderAPI
+import com.mevius.kepcocal.data.network.model.ResultGetCoordinate
+import com.mevius.kepcocal.util.ComputerizedNumberCalculator
+import com.mevius.kepcocal.util.ExcelParser
 import kotlinx.android.synthetic.main.activity_project_detail.*
 import kotlinx.coroutines.*
 import net.daum.mf.map.api.MapPOIItem
@@ -21,7 +28,7 @@ import kotlin.coroutines.CoroutineContext
  * 1. 지도에 기기마다 마커 찍고 커스텀마크로 정보 표시
  * 2. 좀 힘들 것 같지만 그 Bottom Sheet로 ListView?
  */
-class ProjectDetailActivity : AppCompatActivity(), CoroutineScope {
+class ProjectDetailActivity : AppCompatActivity(), MapView.POIItemEventListener , CoroutineScope {
     private val machineList = arrayListOf<MachineData>()    // 기기 정보 리스트 생성 (생성만 함)
     private val noCoordMachineArrayList =
         arrayListOf<MachineData>()    // 나중에 전산화번호 참조해서 마커 찍어줄 좌표 없는 객체들 모아놓는 ArrayList
@@ -29,6 +36,7 @@ class ProjectDetailActivity : AppCompatActivity(), CoroutineScope {
     private lateinit var job: Job
     private val VALID_MACHINE = 0
     private val INVALID_MACHINE = 1
+    lateinit var bottomSheetBehavior : BottomSheetBehavior<View>
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
@@ -37,6 +45,8 @@ class ProjectDetailActivity : AppCompatActivity(), CoroutineScope {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_project_detail)
         job = Job()
+
+        bottomSheetBehavior = BottomSheetBehavior.from(rl_bottom_sheet)
 
         // 1. Intent 작업
         // Intent 를 이용하여  ProjectListActivity 로부터 넘어온 fileName 을 수신
@@ -55,8 +65,23 @@ class ProjectDetailActivity : AppCompatActivity(), CoroutineScope {
         // 2. MapView 띄우기
         mapView = MapView(this)
         MapView.setMapTilePersistentCacheEnabled(true)  // 맵뷰 캐시 사용
+
         val mapViewContainer = mapViewProjectDetail as ViewGroup
         mapViewContainer.addView(mapView)
+
+        // 나중에 런타임 퍼미션 추가해주기
+//        fab_project_detail.setOnClickListener() {
+//            mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading
+//        }
+
+        floating_search_view.setOnQueryChangeListener { _: String, _: String ->
+            @Override
+            fun onSearchTextChanged(oldQuery : String, newQuery : String) {
+                val newSearchSuggestions : List<SearchSuggestion> = listOf()
+
+                floating_search_view.swapSuggestions(newSearchSuggestions)
+            }
+        }
 
         // 3. suspend function(비동기) displayMachineLocation 실행
         launch { displayMachinesLocation() }
@@ -259,5 +284,27 @@ class ProjectDetailActivity : AppCompatActivity(), CoroutineScope {
             1 -> {this.markerType = MapPOIItem.MarkerType.RedPin; this.selectedMarkerType = MapPOIItem.MarkerType.BluePin}  // INVALID_MACHINE
             else -> {this.markerType = MapPOIItem.MarkerType.BluePin; this.selectedMarkerType = MapPOIItem.MarkerType.RedPin}   // DEFAULT
         }
+    }
+
+    override fun onPOIItemSelected(p0: MapView?, p1: MapPOIItem?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onCalloutBalloonOfPOIItemTouched(p0: MapView?, p1: MapPOIItem?) {
+    }
+
+    override fun onCalloutBalloonOfPOIItemTouched(
+        p0: MapView?,
+        p1: MapPOIItem?,
+        p2: MapPOIItem.CalloutBalloonButtonType?
+    ) {
+        val onClickedMachineCNum = p1?.itemName?:""
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        tv_in_bottom_sheet.text = onClickedMachineCNum
+        Log.d("###########################################","마커 말풍선 클릭")
+    }
+
+    override fun onDraggablePOIItemMoved(p0: MapView?, p1: MapPOIItem?, p2: MapPoint?) {
+        TODO("Not yet implemented")
     }
 }

@@ -1,8 +1,7 @@
-package com.mevius.kepcocal
+package com.mevius.kepcocal.view.project_list
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -11,6 +10,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.AutoCompleteTextView
 import androidx.appcompat.app.AppCompatActivity
+import com.mevius.kepcocal.util.ProjectFileManager
+import com.mevius.kepcocal.view.project_list.adapter.ProjectListViewAdapter
+import com.mevius.kepcocal.view.project_list.adapter.ProjectListViewItemData
+import com.mevius.kepcocal.R
+import com.mevius.kepcocal.view.project_detail.ProjectDetailActivity
 import kotlinx.android.synthetic.main.activity_project_list.*
 
 
@@ -40,7 +44,6 @@ class ProjectListActivity : AppCompatActivity() {
         arrayListOf<ProjectListViewItemData>()   // ArrayList<Project> For ListView
     private val listViewAdapter =
         ProjectListViewAdapter(this, itemDataList)    // new ListViewAdapter
-
     /*
     * syncList => return itemDataList.size (int)
     * 데이터 리스트 동기화
@@ -58,8 +61,6 @@ class ProjectListActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_project_list)
 
-        supportActionBar?.title = "프로젝트 리스트"    // Set AppBar Title
-
         sync()      // Synchronize List
 
         lv_project_list.adapter = listViewAdapter   // Set Apapter to Listview in xml
@@ -69,7 +70,7 @@ class ProjectListActivity : AppCompatActivity() {
          * 아이템 클릭시 프로젝트 상세 액티비티로 넘어가기 위한 코드
          * 아이템을 선택하면 해당 프로젝트의 ProjectDetailActivity 로 넘어감.
          */
-        lv_project_list.setOnItemClickListener() { _, _, position, _ ->
+        lv_project_list.setOnItemClickListener { _, _, position, _ ->
             val intent = Intent(this, ProjectDetailActivity::class.java).apply {
                 putExtra(
                     "fileName",
@@ -85,7 +86,7 @@ class ProjectListActivity : AppCompatActivity() {
          * 길게 눌러서 프로젝트 삭제 확인 다이얼로그 띄움
          * 파일을 선택하면 onActivityResult 액티비티로 넘어감.
          */
-        lv_project_list.setOnItemLongClickListener() { _, _, position, _ ->
+        lv_project_list.setOnItemLongClickListener { _, _, position, _ ->
             val builder: AlertDialog.Builder = AlertDialog.Builder(
                 this,
                 android.R.style.Theme_DeviceDefault_Light_Dialog_NoActionBar_MinWidth
@@ -111,7 +112,7 @@ class ProjectListActivity : AppCompatActivity() {
          * 누르면 SAF 를 통해 엑셀 파일을 선택할 수 있음
          * 파일을 선택하면 onActivityResult 액티비티로 넘어감.
          */
-        fab_project_list.setOnClickListener() {
+        fab_project_list.setOnClickListener {
 
             // Type of Target File
             val mimeTypes = arrayOf(

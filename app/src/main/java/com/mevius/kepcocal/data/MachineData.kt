@@ -1,4 +1,4 @@
-package com.mevius.kepcocal
+package com.mevius.kepcocal.data
 
 data class MachineData (var computerizedNumber : String){   // 전산화번호 3
     var index = ""    // 연번 1
