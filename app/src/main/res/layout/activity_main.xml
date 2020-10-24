@@ -20,7 +20,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="50dp"
+            android:layout_marginBottom="200dp"
             android:gravity="center"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -32,18 +32,27 @@
                 android:id="@+id/tv_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="sans-serif"
+                android:fontFamily="sans-serif-medium"
+                android:shadowColor="#59000000"
+                android:shadowDx="5"
+                android:shadowDy="5"
+                android:shadowRadius="5"
                 android:text="@string/app_main_title"
-                android:textColor="@color/white"
+                android:textColor="#CBFFFFFF"
                 android:textSize="60sp" />
 
             <TextView
                 android:id="@+id/tv_subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
                 android:fontFamily="sans-serif-light"
+                android:shadowColor="#59000000"
+                android:shadowDx="5"
+                android:shadowDy="5"
+                android:shadowRadius="5"
                 android:text="@string/app_main_subtitle"
-                android:textColor="@color/white"
+                android:textColor="#CBFFFFFF"
                 android:textSize="18sp" />
         </LinearLayout>
 
@@ -65,9 +74,9 @@
                 android:layout_marginHorizontal="@dimen/main_button_margin_horizontal"
                 android:background="@xml/button_radius"
                 android:fontFamily="sans-serif"
-                android:text="프로젝트 리스트"
+                android:text="@string/main_button_menu1"
                 android:textColor="@color/dark_gray"
-                android:textSize="@dimen/main_button_text_size" />
+                android:textSize="@dimen/main_button_text_size"/>
 
             <Button
                 android:id="@+id/btn_menu2"

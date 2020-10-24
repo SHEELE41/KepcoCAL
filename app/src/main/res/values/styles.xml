@@ -10,6 +10,34 @@
         <item name="android:statusBarColor">#00FFFFFF</item>
         <!--Status Bar 글자색깔-->
         <item name="android:windowLightStatusBar">true</item>
+
     </style>
+
+    <style name="AppTheme.PopupOverlay" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">#65FFFFFF</item>
+        <item name="colorAccent">@color/colorAccent</item>
+
+        <!--Status Bar 배경색-->
+        <item name="android:statusBarColor">#00FFFFFF</item>
+        <!--Status Bar 글자색깔-->
+        <item name="android:windowLightStatusBar">true</item>
+
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">#65FFFFFF</item>
+        <item name="colorAccent">@color/colorAccent</item>
+
+        <!--Status Bar 배경색-->
+        <item name="android:statusBarColor">#00FFFFFF</item>
+        <!--Status Bar 글자색깔-->
+        <item name="android:windowLightStatusBar">true</item>
+
+    </style>
+
 
 </resources>

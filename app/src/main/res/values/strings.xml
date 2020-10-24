@@ -2,7 +2,8 @@
     <string name="app_name">KepcoCAL</string>
     <string name="kakao_app_key">586b93d1ccc28ebac97b0e8953374b3c</string>
     <string name="app_main_title">KepcoCAL</string>
-    <string name="app_main_subtitle">당신 손 안의 NDIS</string>
+    <string name="app_main_subtitle">내 손 안의 NDIS</string>
+    <string name="main_button_menu1">프로젝트 리스트</string>
     <string name="action_location">location</string>
     <string name="hint_project_name">프로젝트명을 입력해주세요.</string>
     <string name="not_found">파일이 없음</string>
