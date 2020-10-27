@@ -10,9 +10,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.AutoCompleteTextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.mevius.kepcocal.util.ProjectFileManager
-import com.mevius.kepcocal.view.project_list.adapter.ProjectListViewAdapter
-import com.mevius.kepcocal.view.project_list.adapter.ProjectListViewItemData
+import com.mevius.kepcocal.view.project_list.adapter.ProjectRVAdapter
+import com.mevius.kepcocal.view.project_list.adapter.ProjectRVItemData
 import com.mevius.kepcocal.R
 import com.mevius.kepcocal.view.project_detail.ProjectDetailActivity
 import kotlinx.android.synthetic.main.activity_project_list.*
@@ -41,9 +42,10 @@ class ProjectListActivity : AppCompatActivity() {
     private val projectFileManager =
         ProjectFileManager()   // ProjectFile(xls)Manager for save, copy, list
     private var itemDataList =
-        arrayListOf<ProjectListViewItemData>()   // ArrayList<Project> For ListView
-    private val listViewAdapter =
-        ProjectListViewAdapter(this, itemDataList)    // new ListViewAdapter
+        arrayListOf<ProjectRVItemData>()   // ArrayList<Project> For ListView
+    private lateinit var recyclerViewAdapter : ProjectRVAdapter
+    private lateinit var recyclerViewLayoutManager: LinearLayoutManager
+
     /*
     * syncList => return itemDataList.size (int)
     * 데이터 리스트 동기화
@@ -63,30 +65,26 @@ class ProjectListActivity : AppCompatActivity() {
 
         sync()      // Synchronize List
 
-        lv_project_list.adapter = listViewAdapter   // Set Apapter to Listview in xml
-
         /*
-         * [ListView Project Item onClickListener ]
+         * [RecyclerView Project Item onClick]
          * 아이템 클릭시 프로젝트 상세 액티비티로 넘어가기 위한 코드
          * 아이템을 선택하면 해당 프로젝트의 ProjectDetailActivity 로 넘어감.
          */
-        lv_project_list.setOnItemClickListener { _, _, position, _ ->
+        val itemClick : (ProjectRVItemData) -> Unit = {
             val intent = Intent(this, ProjectDetailActivity::class.java).apply {
                 putExtra(
                     "fileName",
-                    itemDataList[position].projectName
+                    it.projectName
                 )
             }
             startActivity(intent)
         }
-
         /*
-         * [ListView Project Item onLongClickListener ]
+         * [RecyclerView Project Item onLongClick]
          * 프로젝트(엑셀 파일) 삭제를 위한 코드
          * 길게 눌러서 프로젝트 삭제 확인 다이얼로그 띄움
-         * 파일을 선택하면 onActivityResult 액티비티로 넘어감.
          */
-        lv_project_list.setOnItemLongClickListener { _, _, position, _ ->
+        val itemLongClick : (ProjectRVItemData) -> Boolean = {
             val builder: AlertDialog.Builder = AlertDialog.Builder(
                 this,
                 android.R.style.Theme_DeviceDefault_Light_Dialog_NoActionBar_MinWidth
@@ -94,9 +92,9 @@ class ProjectListActivity : AppCompatActivity() {
             builder.setTitle("프로젝트 삭제") //제목
             builder.setMessage("정말로 삭제하시겠어요?")
             builder.setPositiveButton("확인") { dialog, _ ->
-                projectFileManager.removeFile(itemDataList[position].projectName)
+                projectFileManager.removeFile(it.projectName)
                 sync()
-                listViewAdapter.notifyDataSetChanged()
+                recyclerViewAdapter.notifyDataSetChanged()
                 dialog.dismiss()
             }
             builder.setNegativeButton(
@@ -105,6 +103,12 @@ class ProjectListActivity : AppCompatActivity() {
             builder.show()
             true
         }
+
+        // RecyclerView 설정
+        recyclerViewAdapter = ProjectRVAdapter(this, itemDataList,itemClick, itemLongClick)
+        recyclerViewLayoutManager = LinearLayoutManager(this)
+        rv_project_list.adapter = recyclerViewAdapter   // Set Apapter to RecyclerView in xml
+        rv_project_list.layoutManager = recyclerViewLayoutManager
 
         /*
          * [Floating Action Button onClickListener ]
@@ -213,6 +217,6 @@ class ProjectListActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         sync()
-        listViewAdapter.notifyDataSetChanged()
+        recyclerViewAdapter.notifyDataSetChanged()
     }
 }

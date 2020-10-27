@@ -6,7 +6,7 @@ import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.provider.OpenableColumns
 import com.mevius.kepcocal.GlobalApplication
-import com.mevius.kepcocal.view.project_list.adapter.ProjectListViewItemData
+import com.mevius.kepcocal.view.project_list.adapter.ProjectRVItemData
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
@@ -101,12 +101,12 @@ class ProjectFileManager {
      * 갱신된 ArrayList size를 반환하므로 0일 경우 이미지가 뜨게 하는 것 가능
      */
     @SuppressLint("SimpleDateFormat")
-    fun syncList (itemDataList : ArrayList<ProjectListViewItemData>) : Int {
+    fun syncList (itemDataList : ArrayList<ProjectRVItemData>) : Int {
         itemDataList.clear()    // Clear Existing ArrayList items. (이거 안하면 리스트에 같은게 두번 들어감, 즉 정말로 현재 존재하는 것만 보겠다는 것)
 
         File(mOutputDir.toString()).walk().forEach {
             if(it.extension == "xls" || it.extension == "xlsx"){    // Add excel files only
-                val projectListViewItemData = ProjectListViewItemData(it.name, SimpleDateFormat("yyyy-MM-dd").format(it.lastModified()))
+                val projectListViewItemData = ProjectRVItemData(it.name, SimpleDateFormat("yyyy-MM-dd").format(it.lastModified()))
                 itemDataList.add(projectListViewItemData)
             }
         }

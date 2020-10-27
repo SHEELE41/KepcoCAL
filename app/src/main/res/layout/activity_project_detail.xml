@@ -35,6 +35,7 @@
         app:behavior_hideable="true"
         app:behavior_peekHeight="200dp"
         app:layout_behavior="@string/bottom_sheet_behavior">
+
         <TextView
             android:id="@+id/tv_in_bottom_sheet"
             android:layout_height="wrap_content"
