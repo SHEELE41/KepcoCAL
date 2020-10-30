@@ -48,12 +48,15 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         arrayListOf<MachineData>()    // 나중에 전산화번호 참조해서 마커 찍어줄 좌표 없는 객체들 모아놓는 ArrayList
     private lateinit var mapView: MapView
     private lateinit var job: Job
-    private val VALID_MACHINE = 0
-    private val INVALID_MACHINE = 1
-    private val PERMISSION_REQUEST_CODE = 1001
-    private val REQUEST_CHECK_SETTINGS = 100
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
     private lateinit var layoutBottomSheet: LinearLayout
+
+    companion object{
+        const val PERMISSION_REQUEST_CODE = 1001
+        const val REQUEST_CHECK_SETTINGS = 1002
+        const val VALID_MACHINE = 0
+        const val INVALID_MACHINE = 1
+    }
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
