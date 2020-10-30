@@ -2,8 +2,10 @@ package com.mevius.kepcocal.view.project_detail
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
@@ -15,8 +17,12 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.*
+import com.google.android.gms.tasks.Task
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.mevius.kepcocal.*
+import com.mevius.kepcocal.R
 import com.mevius.kepcocal.data.MachineData
 import com.mevius.kepcocal.data.network.GeocoderAPI
 import com.mevius.kepcocal.data.network.model.ResultGetCoordinate
@@ -48,6 +54,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     private val VALID_MACHINE = 0
     private val INVALID_MACHINE = 1
     private val PERMISSION_REQUEST_CODE = 1001
+    private val REQUEST_CHECK_SETTINGS = 100
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
     private lateinit var layoutBottomSheet: LinearLayout
 
@@ -97,13 +104,40 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
             }
         }
 
+
+        // 권한과 설정을 동시에 체크하는 방법은? lsqbuilder에 LocationRequest add
         floatingSearchView.setOnMenuItemClickListener { menuItem ->
             if (menuItem.itemId == R.id.action_location) {
                 if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {   // 권한이 부여되어있다면
                     // 위치 서비스 켜져있는지 체크
+                    val locationRequest = LocationRequest.create().apply { priority = LocationRequest.PRIORITY_HIGH_ACCURACY }
+                    val lsqBuilder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
+                    val client: SettingsClient = LocationServices.getSettingsClient(this)
+                    val task: Task<LocationSettingsResponse> = client.checkLocationSettings(lsqBuilder.build())
+                    task.addOnSuccessListener {
+                        if (it.locationSettingsStates.isLocationPresent){
+                            Log.d("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$", it.locationSettingsStates.toString())
+                            Log.d("###############################################", "켜짐, 권한 모두 만족")
+                            mapView.currentLocationTrackingMode =
+                                MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading    // 트래킹 실행
+                        }
+                    }
 
-                    mapView.currentLocationTrackingMode =
-                        MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading    // 트래킹 실행
+                    task.addOnFailureListener { exception ->
+                        Log.d("###############################################", "권한 OK, But 켜져있지 않음")
+                        if (exception is ResolvableApiException){
+                            // Location settings are not satisfied, but this can be fixed
+                            // by showing the user a dialog.
+                            try {
+                                // Show the dialog by calling startResolutionForResult(),
+                                // and check the result in onActivityResult().
+                                exception.startResolutionForResult(this@ProjectDetailActivity,
+                                    REQUEST_CHECK_SETTINGS)
+                            } catch (sendEx: IntentSender.SendIntentException) {
+                                // Ignore the error.
+                            }
+                        }
+                    }
                 } else {    // 권한이 부여되어있지 않다면
                     requestPermissions(
                         arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
@@ -113,6 +147,8 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
             }
         }
 
+
+
         // 3. suspend function(비동기) displayMachineLocation 실행
         launch { displayMachinesLocation() }
     }
@@ -121,6 +157,17 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     override fun onDestroy() {
         super.onDestroy()
         job.cancel()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val states = LocationSettingsStates.fromIntent(intent)
+        when(resultCode){
+            Activity.RESULT_OK -> mapView.currentLocationTrackingMode =
+                MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading    // 트래킹 실행
+            Activity.RESULT_CANCELED -> Toast.makeText(this, "CANCELED!!", Toast.LENGTH_SHORT).show()
+            else -> Toast.makeText(this, "EWWEG!!", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onRequestPermissionsResult(
