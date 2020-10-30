@@ -21,7 +21,6 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.mevius.kepcocal.*
 import com.mevius.kepcocal.R
 import com.mevius.kepcocal.data.MachineData
 import com.mevius.kepcocal.data.network.GeocoderAPI
@@ -41,8 +40,6 @@ import kotlin.coroutines.CoroutineContext
  * [ProjectDetailActivity]
  * 한 프로젝트(엑셀파일)에 해당되는 상세 정보가 담긴 액티비티
  * 구현 계획중인 기능
- * 1. 지도에 기기마다 마커 찍고 커스텀마크로 정보 표시
- * 2. 좀 힘들 것 같지만 그 Bottom Sheet로 ListView?
  */
 class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     MapView.POIItemEventListener, CoroutineScope {
@@ -61,40 +58,45 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
 
+    // Activity와 Coroutine 생성주기를 맞춰주기 위해 onDestroy()에 job.cancel()
+    override fun onDestroy() {
+        super.onDestroy()
+        job.cancel()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_project_detail)
 
-        // Layout 작업
-        layoutBottomSheet = bottom_sheet
-        bottomSheetBehavior = BottomSheetBehavior.from(layoutBottomSheet)
-
-        // Coroutine job 선언
+        // 1. Coroutine job 선언
         job = Job()
 
-        // Intent 작업
+        // 2. Intent 및 Parsing 작업
         // Intent 를 이용하여  ProjectListActivity 로부터 넘어온 fileName 을 수신
         val fileName = intent.getStringExtra("fileName")
-
-        // 만약 전달받은 fileName 이 Null 이라면 즉시 액티비티 종료
-        if (fileName == null) {
+        if (fileName == null) { // 만약 전달받은 fileName 이 Null 이라면 즉시 액티비티 종료
             Toast.makeText(this, "올바르지 않은 프로젝트입니다.", Toast.LENGTH_SHORT).show()
             finish()
         }
-
         // 수신받은 fileName 을 이용하여 엑셀 파일로부터 데이터를 읽어와 ArrayList 에 저장
         val excelParser = ExcelParser()     // Excel Parser 선언
         excelParser.excelToList(fileName!!, machineList)    // machineList 에 정상적으로 정보 이동 완료
 
-        // MapView 설정 및 띄우기
+        // 3. Layout 작업
+        layoutBottomSheet = bottom_sheet
+        bottomSheetBehavior = BottomSheetBehavior.from(layoutBottomSheet)
+
+        // 4. MapView 설정 및 띄우기
         mapView = MapView(this)
-        mapView.setMapViewEventListener(this)
-        mapView.setPOIItemEventListener(this)   // 중요
-        MapView.setMapTilePersistentCacheEnabled(true)  // 맵뷰 캐시 사용
+        mapView.setMapViewEventListener(this)   // MapViewEventListener Binding
+        mapView.setPOIItemEventListener(this)   // POIItemEventListener Binding
+        MapView.setMapTilePersistentCacheEnabled(true)  // Use MapView Cache
         val mapViewContainer = mapViewProjectDetail as ViewGroup
         mapViewContainer.addView(mapView)
 
+        // 5. Floating Search View 설정 및 Listener Binding
         val floatingSearchView = floating_search_view
+
         floatingSearchView.setOnQueryChangeListener { _: String, _: String ->
             @Override
             fun onSearchTextChanged(oldQuery: String, newQuery: String) {
@@ -104,72 +106,87 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
             }
         }
 
-
-        // 권한과 설정을 동시에 체크하는 방법은? lsqbuilder에 LocationRequest add
+        // FloatingSearchView 우측 버튼 중 무언가가 눌렸을 때
         floatingSearchView.setOnMenuItemClickListener { menuItem ->
-            if (menuItem.itemId == R.id.action_location) {
-                if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {   // 권한이 부여되어있다면
-                    // 위치 서비스 켜져있는지 체크
-                    val locationRequest = LocationRequest.create().apply { priority = LocationRequest.PRIORITY_HIGH_ACCURACY }
-                    val lsqBuilder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
-                    val client: SettingsClient = LocationServices.getSettingsClient(this)
-                    val task: Task<LocationSettingsResponse> = client.checkLocationSettings(lsqBuilder.build())
-                    task.addOnSuccessListener {
-                        if (it.locationSettingsStates.isLocationPresent){
-                            Log.d("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$", it.locationSettingsStates.toString())
-                            Log.d("###############################################", "켜짐, 권한 모두 만족")
-                            mapView.currentLocationTrackingMode =
-                                MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading    // 트래킹 실행
-                        }
-                    }
-
-                    task.addOnFailureListener { exception ->
-                        Log.d("###############################################", "권한 OK, But 켜져있지 않음")
-                        if (exception is ResolvableApiException){
-                            // Location settings are not satisfied, but this can be fixed
-                            // by showing the user a dialog.
-                            try {
-                                // Show the dialog by calling startResolutionForResult(),
-                                // and check the result in onActivityResult().
-                                exception.startResolutionForResult(this@ProjectDetailActivity,
-                                    REQUEST_CHECK_SETTINGS)
-                            } catch (sendEx: IntentSender.SendIntentException) {
-                                // Ignore the error.
-                            }
-                        }
-                    }
-                } else {    // 권한이 부여되어있지 않다면
-                    requestPermissions(
-                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                        PERMISSION_REQUEST_CODE
-                    )
-                }
+            if (menuItem.itemId == R.id.action_location) {  // 근데 그 중 위치 버튼이 눌렸을 때
+                // 위치 권한 및 기능 on/off 확인 후 현위치 Tracking
+                checkSettingAndTracking()
             }
         }
 
-
-
-        // 3. suspend function(비동기) displayMachineLocation 실행
+        // 6. suspend function(비동기) displayMachineLocation 실행
         launch { displayMachinesLocation() }
     }
 
-    // Activity와 Coroutine 생성주기를 맞춰주기 위해 onDestroy()에 job.cancel()
-    override fun onDestroy() {
-        super.onDestroy()
-        job.cancel()
-    }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        val states = LocationSettingsStates.fromIntent(intent)
-        when(resultCode){
-            Activity.RESULT_OK -> mapView.currentLocationTrackingMode =
-                MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading    // 트래킹 실행
-            Activity.RESULT_CANCELED -> Toast.makeText(this, "CANCELED!!", Toast.LENGTH_SHORT).show()
-            else -> Toast.makeText(this, "EWWEG!!", Toast.LENGTH_SHORT).show()
+    /**
+     * [checkSettingAndTracking]
+     * 1. Runtime Location Permission Check
+     * 2. Location API State On/Off Check
+     * 3. If conditions aren't satisfied -> show dialogs
+     * 4. If conditions are satisfied -> tracking present location
+     */
+    private fun checkSettingAndTracking() {
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {   // If permission is granted
+            // Check Location API State is ON
+            val locationRequest = LocationRequest.create().apply { priority = LocationRequest.PRIORITY_HIGH_ACCURACY }  // ACCESS_FINE_LOCATION
+            val lsqBuilder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
+            val client: SettingsClient = LocationServices.getSettingsClient(this)
+            val task: Task<LocationSettingsResponse> = client.checkLocationSettings(lsqBuilder.build())
+
+            // If State is ON
+            task.addOnSuccessListener {
+                if (it.locationSettingsStates.isLocationPresent){
+                    // Start Tracking
+                    mapView.currentLocationTrackingMode =
+                        MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading
+                }
+            }
+
+            // If State is OFF
+            task.addOnFailureListener { exception ->
+                if (exception is ResolvableApiException){
+                    // Location settings are not satisfied, but this can be fixed
+                    // by showing the user a dialog.
+                    try {
+                        // Show the dialog by calling startResolutionForResult(),
+                        // and check the result in onActivityResult().
+                        exception.startResolutionForResult(this@ProjectDetailActivity,
+                            REQUEST_CHECK_SETTINGS)
+                    } catch (sendEx: IntentSender.SendIntentException) {
+                        // Ignore the error.
+                    }
+                }
+            }
+        } else {    // If permission isn't granted
+            // RequestPermissions (show dialog)
+            requestPermissions(
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                PERMISSION_REQUEST_CODE
+            )
         }
     }
 
+    /**
+     * [onRequestPermissionsResult]
+     * 위치 기능 켜짐 요청 Dialog 선택 결과에 따른 루틴들이 모여있는 함수
+     */
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when(resultCode){
+            // Start Tracking
+            Activity.RESULT_OK -> mapView.currentLocationTrackingMode =
+                MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading
+            // When User Choose Cancel -> Toast
+            Activity.RESULT_CANCELED -> Toast.makeText(this, "위치 기능이 꺼져있습니다.", Toast.LENGTH_SHORT).show()
+            else -> Toast.makeText(this, "위치 기능이 꺼져있습니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * [onRequestPermissionsResult]
+     * 권한 요청 Dialog 선택 결과에 따른 루틴들이 모여있는 함수
+     */
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -177,19 +194,24 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
+            // 위치 권한에 관한 결과. when 조건 추가해줌으로써 다른 권한 허용도 같은 함수에서 따낼 수 있음
             PERMISSION_REQUEST_CODE -> {
                 if (grantResults.isEmpty()) {
+                    // 그럴 일은 없겠지만 결과가 비어있는 경우
                     throw RuntimeException("Empty Permission Result")
                 }
+
+                // 사용자가 Dialog 에서 허용을 눌러 제대로 권한 부여가 된 경우
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Start Tracking
                     MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading
-                } else {
+                } else {    // 한 번 허용 눌렀을 때
                     if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
                         requestPermissions(
                             arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                             PERMISSION_REQUEST_CODE
                         )
-                    } else {
+                    } else {    // 사용자가 Dialog 에서 다시 묻지 않음을 눌렀는데 다시 요청이 들어온 경우
                         showDialogToGetPermission()
                     }
                 }
@@ -197,15 +219,22 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         }
     }
 
+
+    /**
+     * [showDialogToGetPermission]
+     * 사용자가 Dialog 에서 다시 묻지 않음을 눌렀는데 다시 요청이 들어온 경우
+     * 이미 설정이 다시는 묻지 않는 것이 되어버렸기 때문에 사용자가 앱 설정창에 가서 직접 허용해야 함
+     */
     private fun showDialogToGetPermission() {
         val builder = AlertDialog.Builder(this)
-        builder.setTitle("Permisisons request")
+        builder.setTitle("권한 요청")
             .setMessage(
-                "We need the location permission for some reason. " +
-                        "You need to move on Settings to grant some permissions"
+                "해당 앱의 기능을 수행하기 위해서는 위치 권한이 필요합니다. " +
+                        "위치 권한을 허용해주시기 바랍니다."
             )
 
-        builder.setPositiveButton("OK") { dialogInterface, i ->
+        // 허용 누르면 앱 설정창으로 이동
+        builder.setPositiveButton("확인") { _, _ ->
             val intent = Intent(
                 Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                 Uri.fromParts("package", packageName, null)
@@ -213,7 +242,8 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             startActivity(intent)   // 6
         }
-        builder.setNegativeButton("Later") { dialogInterface, i ->
+        // 나중에 누르면 또 무시(아무 것도 안 함)
+        builder.setNegativeButton("나중에") { _, _ ->
             // ignore
         }
         val dialog = builder.create()
@@ -393,13 +423,24 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         }
     }
 
+    /**
+     * [onPOIItemSelected] function
+     * 마커 클릭 시 호출되는 함수.
+     * 무슨 기능 넣을지는 일단 생각중...
+     */
     override fun onPOIItemSelected(p0: MapView?, p1: MapPOIItem?) {
         Log.d("###########################################", "마커 클릭")
     }
 
+    // Deprecated
     override fun onCalloutBalloonOfPOIItemTouched(p0: MapView?, p1: MapPOIItem?) {
     }
 
+    /**
+     * [onCalloutBalloonOfPOIItemTouched] function
+     * 마커 터치하면 나오는 말풍선을 터치했을 때 호출되는 함수
+     * 해당 마커에 해당되는 기기의 MachineData Instance를 찾아 BottomSheet 뷰에 정보 매핑
+     */
     @SuppressLint("SetTextI18n")
     override fun onCalloutBalloonOfPOIItemTouched(
         mMapView: MapView?,
@@ -445,6 +486,11 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     override fun onMapViewZoomLevelChanged(p0: MapView?, p1: Int) {
     }
 
+    /**
+     * [onMapViewSingleTapped] function
+     * MapView 자체가 한번 터치되었을 때 호출되는 함수
+     * BottomSheet 올라가있으면 내려줌
+     */
     override fun onMapViewSingleTapped(p0: MapView?, p1: MapPoint?) {
         // 맵 클릭 시 BottomSheet 내리기
         if (bottomSheetBehavior.state != BottomSheetBehavior.STATE_COLLAPSED) {
