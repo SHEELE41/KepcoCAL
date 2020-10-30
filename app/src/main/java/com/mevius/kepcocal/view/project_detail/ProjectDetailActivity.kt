@@ -1,12 +1,17 @@
 package com.mevius.kepcocal.view.project_detail
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.AlertDialog
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion
@@ -23,6 +28,7 @@ import kotlinx.coroutines.*
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView  // ** Caution! import package
+import java.lang.RuntimeException
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -41,6 +47,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     private lateinit var job: Job
     private val VALID_MACHINE = 0
     private val INVALID_MACHINE = 1
+    private val PERMISSION_REQUEST_CODE = 1001
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
     private lateinit var layoutBottomSheet: LinearLayout
 
@@ -55,6 +62,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         layoutBottomSheet = bottom_sheet
         bottomSheetBehavior = BottomSheetBehavior.from(layoutBottomSheet)
 
+        // Coroutine job 선언
         job = Job()
 
         // Intent 작업
@@ -71,7 +79,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         val excelParser = ExcelParser()     // Excel Parser 선언
         excelParser.excelToList(fileName!!, machineList)    // machineList 에 정상적으로 정보 이동 완료
 
-        // MapView 띄우기
+        // MapView 설정 및 띄우기
         mapView = MapView(this)
         mapView.setMapViewEventListener(this)
         mapView.setPOIItemEventListener(this)   // 중요
@@ -79,17 +87,29 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         val mapViewContainer = mapViewProjectDetail as ViewGroup
         mapViewContainer.addView(mapView)
 
-        // 나중에 런타임 퍼미션 추가해주기
-//        fab_project_detail.setOnClickListener() {
-//            mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading
-//        }
-
-        floating_search_view.setOnQueryChangeListener { _: String, _: String ->
+        val floatingSearchView = floating_search_view
+        floatingSearchView.setOnQueryChangeListener { _: String, _: String ->
             @Override
             fun onSearchTextChanged(oldQuery: String, newQuery: String) {
                 val newSearchSuggestions: List<SearchSuggestion> = listOf()
 
                 floating_search_view.swapSuggestions(newSearchSuggestions)
+            }
+        }
+
+        floatingSearchView.setOnMenuItemClickListener { menuItem ->
+            if (menuItem.itemId == R.id.action_location) {
+                if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {   // 권한이 부여되어있다면
+                    // 위치 서비스 켜져있는지 체크
+
+                    mapView.currentLocationTrackingMode =
+                        MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading    // 트래킹 실행
+                } else {    // 권한이 부여되어있지 않다면
+                    requestPermissions(
+                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                        PERMISSION_REQUEST_CODE
+                    )
+                }
             }
         }
 
@@ -101,6 +121,56 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     override fun onDestroy() {
         super.onDestroy()
         job.cancel()
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            PERMISSION_REQUEST_CODE -> {
+                if (grantResults.isEmpty()) {
+                    throw RuntimeException("Empty Permission Result")
+                }
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading
+                } else {
+                    if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                        requestPermissions(
+                            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                            PERMISSION_REQUEST_CODE
+                        )
+                    } else {
+                        showDialogToGetPermission()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showDialogToGetPermission() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Permisisons request")
+            .setMessage(
+                "We need the location permission for some reason. " +
+                        "You need to move on Settings to grant some permissions"
+            )
+
+        builder.setPositiveButton("OK") { dialogInterface, i ->
+            val intent = Intent(
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.fromParts("package", packageName, null)
+            )
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)   // 6
+        }
+        builder.setNegativeButton("Later") { dialogInterface, i ->
+            // ignore
+        }
+        val dialog = builder.create()
+        dialog.show()
     }
 
     /**
@@ -292,12 +362,14 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         val onClickedMachineCNum = mMapPOIItem?.itemName ?: ""
         var onClickedMachineData: MachineData? = null
 
+        // 선택된 마커에 대한 기기 찾기(전산화번호 대조)
         for (machineData in machineList) {
             if (onClickedMachineCNum == machineData.computerizedNumber) {
                 onClickedMachineData = machineData
             }
         }
 
+        // 기기의 데이터를 뷰에 매핑
         onClickedMachineData?.let {
             bs_tv_line_name_number.text = it.lineName + " " + it.lineNumber
             bs_tv_index.text = it.index
@@ -308,6 +380,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
                 it.company + " " + it.manufacturingNumber + " (" + it.manufacturingYear + "." + it.manufacturingDate + ")"
         }
 
+        // BottomSheet 숨겨져있으면 열기
         if (bottomSheetBehavior.state != BottomSheetBehavior.STATE_EXPANDED) {
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
         }
