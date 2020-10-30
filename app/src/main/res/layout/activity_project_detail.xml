@@ -28,20 +28,6 @@
         app:floatingSearch_menu="@menu/menu_main"
         app:floatingSearch_close_search_on_keyboard_dismiss="true"/>
 
-    <RelativeLayout
-        android:id="@+id/rl_bottom_sheet"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:behavior_hideable="true"
-        app:behavior_peekHeight="200dp"
-        app:layout_behavior="@string/bottom_sheet_behavior">
-
-        <TextView
-            android:id="@+id/tv_in_bottom_sheet"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:text="가나다라">
-        </TextView>
-    </RelativeLayout>
+    <include layout="@layout/project_detail_bottom_sheet"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

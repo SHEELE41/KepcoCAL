@@ -34,7 +34,7 @@ class ProjectRVAdapter(
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        holder.bind(itemDataList[position], context)
+        holder.bind(itemDataList[position])
     }
 
     inner class Holder(
@@ -44,7 +44,7 @@ class ProjectRVAdapter(
         var tvProjectName: TextView? = itemView.tv_project_name
         var tvDate: TextView? = itemView.tv_date
 
-        fun bind(projectRVItemData: ProjectRVItemData, context: Context) {
+        fun bind(projectRVItemData: ProjectRVItemData) {
             tvProjectName?.text = projectRVItemData.projectName
             tvDate?.text = projectRVItemData.modifiedDate
 

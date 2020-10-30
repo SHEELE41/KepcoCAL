@@ -1,9 +1,12 @@
 package com.mevius.kepcocal.view.project_detail
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion
@@ -15,6 +18,7 @@ import com.mevius.kepcocal.data.network.model.ResultGetCoordinate
 import com.mevius.kepcocal.util.ComputerizedNumberCalculator
 import com.mevius.kepcocal.util.ExcelParser
 import kotlinx.android.synthetic.main.activity_project_detail.*
+import kotlinx.android.synthetic.main.project_detail_bottom_sheet.*
 import kotlinx.coroutines.*
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
@@ -28,7 +32,8 @@ import kotlin.coroutines.CoroutineContext
  * 1. 지도에 기기마다 마커 찍고 커스텀마크로 정보 표시
  * 2. 좀 힘들 것 같지만 그 Bottom Sheet로 ListView?
  */
-class ProjectDetailActivity : AppCompatActivity(), MapView.POIItemEventListener , CoroutineScope {
+class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
+    MapView.POIItemEventListener, CoroutineScope {
     private val machineList = arrayListOf<MachineData>()    // 기기 정보 리스트 생성 (생성만 함)
     private val noCoordMachineArrayList =
         arrayListOf<MachineData>()    // 나중에 전산화번호 참조해서 마커 찍어줄 좌표 없는 객체들 모아놓는 ArrayList
@@ -36,7 +41,8 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.POIItemEventListener 
     private lateinit var job: Job
     private val VALID_MACHINE = 0
     private val INVALID_MACHINE = 1
-    lateinit var bottomSheetBehavior : BottomSheetBehavior<View>
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
+    private lateinit var layoutBottomSheet: LinearLayout
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
@@ -44,11 +50,14 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.POIItemEventListener 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_project_detail)
+
+        // Layout 작업
+        layoutBottomSheet = bottom_sheet
+        bottomSheetBehavior = BottomSheetBehavior.from(layoutBottomSheet)
+
         job = Job()
 
-        bottomSheetBehavior = BottomSheetBehavior.from(rl_bottom_sheet)
-
-        // 1. Intent 작업
+        // Intent 작업
         // Intent 를 이용하여  ProjectListActivity 로부터 넘어온 fileName 을 수신
         val fileName = intent.getStringExtra("fileName")
 
@@ -62,10 +71,11 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.POIItemEventListener 
         val excelParser = ExcelParser()     // Excel Parser 선언
         excelParser.excelToList(fileName!!, machineList)    // machineList 에 정상적으로 정보 이동 완료
 
-        // 2. MapView 띄우기
+        // MapView 띄우기
         mapView = MapView(this)
+        mapView.setMapViewEventListener(this)
+        mapView.setPOIItemEventListener(this)   // 중요
         MapView.setMapTilePersistentCacheEnabled(true)  // 맵뷰 캐시 사용
-
         val mapViewContainer = mapViewProjectDetail as ViewGroup
         mapViewContainer.addView(mapView)
 
@@ -76,8 +86,8 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.POIItemEventListener 
 
         floating_search_view.setOnQueryChangeListener { _: String, _: String ->
             @Override
-            fun onSearchTextChanged(oldQuery : String, newQuery : String) {
-                val newSearchSuggestions : List<SearchSuggestion> = listOf()
+            fun onSearchTextChanged(oldQuery: String, newQuery: String) {
+                val newSearchSuggestions: List<SearchSuggestion> = listOf()
 
                 floating_search_view.swapSuggestions(newSearchSuggestions)
             }
@@ -98,7 +108,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.POIItemEventListener 
      * API 통신을 이용하여 기기의 좌표 정보를 얻고 MapView에 마커를 추가하는 함수.
      */
     private suspend fun displayMachinesLocation() {
-        Log.d("###################################", "API 요청 함수 시작")
+        Log.d("###################################", "API 요청 시작")
         // api 객체 생성.
         // 어차피 같은 KakaoAPI, 그 중 Geocode API를 사용하므로 for 문 밖에 한번 선언해주는걸로 여러번 재활용 가능.
         // 함수 내부의 지역 변수이므로 함수 끝나면 싹 정리됨.
@@ -163,10 +173,8 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.POIItemEventListener 
                                 machineData.coordinateLat.toDouble(),
                                 machineData.coordinateLng.toDouble()
                             )
-                            Log.d("##################################","마커 참조")
 
                             mapView.addPOIItem(marker)
-                            Log.d("##################################","맵뷰 참조")
 
                             if (onResponseCounter == 0) {   // 첫 번째 machineData에 대한 Response일 때
                                 // 현재 마커의 위치를 중심점으로 설정 및 스케일 설정
@@ -196,7 +204,6 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.POIItemEventListener 
      * 좌표 정보가 유효한 가까운 기기를 기준점으로 하여 전산화번호 연산 후 자신의 좌표 도출
      */
     private fun displayInvalidAddrMachine() {
-        Log.d("###################################", "문제있는 함수 시작")
         // 전산화번호 계산기 객체 선언
         val cNumberCalculator = ComputerizedNumberCalculator()
 
@@ -209,11 +216,13 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.POIItemEventListener 
             val marker = MapPOIItem()   // 선언
             marker.setMarkerProperty(INVALID_MACHINE)
 
-            cNumberCalculator.targetNumber = noCoordMachine.computerizedNumber  // 한 순회마다 noCoordMachine 에 대한 전산화번호로 갱신
+            cNumberCalculator.targetNumber =
+                noCoordMachine.computerizedNumber  // 한 순회마다 noCoordMachine 에 대한 전산화번호로 갱신
 
             // 위도 경도 정보가 제대로 존재하면서 noCoordMachine과 가장 가까운 기기를 찾기 위한 반복문
             for (machine in machineList) {
-                cNumberCalculator.baseNumber = machine.computerizedNumber   // 한 순회마다 machineList 안의 machine 에 대한 전산화번호로 갱신
+                cNumberCalculator.baseNumber =
+                    machine.computerizedNumber   // 한 순회마다 machineList 안의 machine 에 대한 전산화번호로 갱신
                 if (machine.coordinateLat != "" && machine.coordinateLng != "") {    // 좌표 있는 기기 찾으면 둘 사이의 거리 계산(좌표 없는 기기 - 현재 기기)
                     // 정렬처럼 갈수록 더 짧은 거리로 갱신하면 되겠네
                     if (closestDistance > cNumberCalculator.getTotalDistance()) {
@@ -225,40 +234,15 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.POIItemEventListener 
 
             // 위도 경도 정보가 존재하는 가장 가까운 기기가 존재한다면 그 기기를 기준으로 좌표 계산 후 지도에 추가
             if (closestMachine != null) {
-                Log.d(
-                    "################################### 전산화번호 테스트",
-                    noCoordMachine.computerizedNumber
-                )
                 cNumberCalculator.baseNumber =
                     closestMachine.computerizedNumber    // for문을 계속 돌면서 마지막 machine의 값이 되어있을 것이므로 여기서는 갱신해줘야함.
                 // 좌표 계산 루틴
                 noCoordMachine.coordinateLng =
                     (closestMachine.coordinateLng.toDouble() + ((cNumberCalculator.getXDistance()
                         .toDouble() * 2.0) / (91290.0 + 85397.0))).toString()    //127
-                Log.d(
-                    "좌표 테스트입니당",
-                    "${noCoordMachine.lineName} ${noCoordMachine.lineNumber} ${noCoordMachine.coordinateLng}"
-                )
-                Log.d(
-                    "가장 가까운 기기",
-                    "${closestMachine.lineName} ${closestMachine.lineNumber} ${closestMachine.coordinateLng}"
-                )
-                Log.d(
-                    "현재 차이값",
-                    "${closestMachine.lineName} ${closestMachine.lineNumber} ${cNumberCalculator.getXDistance()}"
-                )
                 noCoordMachine.coordinateLat =
                     (closestMachine.coordinateLat.toDouble() + ((cNumberCalculator.getYDistance()
                         .toDouble() * 2.0) / (110941.0 + 111034.0))).toString()  //37
-                Log.d("좌표 테스트입니당", noCoordMachine.coordinateLat)
-                Log.d(
-                    "가장 가까운 기기",
-                    "${closestMachine.lineName} ${closestMachine.lineNumber} ${closestMachine.coordinateLat}"
-                )
-                Log.d(
-                    "현재 차이값",
-                    "${closestMachine.lineName} ${closestMachine.lineNumber} ${cNumberCalculator.getYDistance()}"
-                )
 
                 // 마커 정보 세팅 및 지도에 추가
                 marker.itemName = noCoordMachine.computerizedNumber
@@ -276,35 +260,90 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.POIItemEventListener 
      * 마커 속성 설정 확장함수
      * 인자로 마커 타입이 들어오면 그에 맞는 마커 속성 설정
      */
-    private fun MapPOIItem.setMarkerProperty(machineType : Int) {
+    private fun MapPOIItem.setMarkerProperty(machineType: Int) {
         this.showAnimationType = MapPOIItem.ShowAnimationType.DropFromHeaven  // 생성 시 애니메이션
         this.tag = 0  // 태그?
-        when(machineType){
-            0 -> {this.markerType = MapPOIItem.MarkerType.BluePin; this.selectedMarkerType = MapPOIItem.MarkerType.RedPin}  // VALID_MACHINE
-            1 -> {this.markerType = MapPOIItem.MarkerType.RedPin; this.selectedMarkerType = MapPOIItem.MarkerType.BluePin}  // INVALID_MACHINE
-            else -> {this.markerType = MapPOIItem.MarkerType.BluePin; this.selectedMarkerType = MapPOIItem.MarkerType.RedPin}   // DEFAULT
+        when (machineType) {
+            0 -> {
+                this.markerType = MapPOIItem.MarkerType.BluePin
+            }  // VALID_MACHINE
+            1 -> {
+                this.markerType = MapPOIItem.MarkerType.RedPin
+            }  // INVALID_MACHINE
+            else -> {
+                this.markerType = MapPOIItem.MarkerType.BluePin
+            }   // DEFAULT
         }
     }
 
     override fun onPOIItemSelected(p0: MapView?, p1: MapPOIItem?) {
-        TODO("Not yet implemented")
+        Log.d("###########################################", "마커 클릭")
     }
 
     override fun onCalloutBalloonOfPOIItemTouched(p0: MapView?, p1: MapPOIItem?) {
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onCalloutBalloonOfPOIItemTouched(
-        p0: MapView?,
-        p1: MapPOIItem?,
-        p2: MapPOIItem.CalloutBalloonButtonType?
+        mMapView: MapView?,
+        mMapPOIItem: MapPOIItem?,
+        mCalloutBalloonButtonType: MapPOIItem.CalloutBalloonButtonType?
     ) {
-        val onClickedMachineCNum = p1?.itemName?:""
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-        tv_in_bottom_sheet.text = onClickedMachineCNum
-        Log.d("###########################################","마커 말풍선 클릭")
+        val onClickedMachineCNum = mMapPOIItem?.itemName ?: ""
+        var onClickedMachineData: MachineData? = null
+
+        for (machineData in machineList) {
+            if (onClickedMachineCNum == machineData.computerizedNumber) {
+                onClickedMachineData = machineData
+            }
+        }
+
+        onClickedMachineData?.let {
+            bs_tv_line_name_number.text = it.lineName + " " + it.lineNumber
+            bs_tv_index.text = it.index
+            bs_tv_computerized_number.text = it.computerizedNumber
+            bs_tv_address.text =
+                if (it.address1 != "") it.address1 else if (it.address2 != "") it.address2 else "주소 데이터가 유효하지 않아 계산된 위치에 찍힌 핀입니다."
+            bs_tv_manufacturing_data.text =
+                it.company + " " + it.manufacturingNumber + " (" + it.manufacturingYear + "." + it.manufacturingDate + ")"
+        }
+
+        if (bottomSheetBehavior.state != BottomSheetBehavior.STATE_EXPANDED) {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        }
     }
 
     override fun onDraggablePOIItemMoved(p0: MapView?, p1: MapPOIItem?, p2: MapPoint?) {
-        TODO("Not yet implemented")
+    }
+
+    override fun onMapViewInitialized(p0: MapView?) {
+    }
+
+    override fun onMapViewCenterPointMoved(p0: MapView?, p1: MapPoint?) {
+    }
+
+    override fun onMapViewZoomLevelChanged(p0: MapView?, p1: Int) {
+    }
+
+    override fun onMapViewSingleTapped(p0: MapView?, p1: MapPoint?) {
+        // 맵 클릭 시 BottomSheet 내리기
+        if (bottomSheetBehavior.state != BottomSheetBehavior.STATE_COLLAPSED) {
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        }
+    }
+
+    override fun onMapViewDoubleTapped(p0: MapView?, p1: MapPoint?) {
+    }
+
+    override fun onMapViewLongPressed(p0: MapView?, p1: MapPoint?) {
+    }
+
+    override fun onMapViewDragStarted(p0: MapView?, p1: MapPoint?) {
+    }
+
+    override fun onMapViewDragEnded(p0: MapView?, p1: MapPoint?) {
+    }
+
+    override fun onMapViewMoveFinished(p0: MapView?, p1: MapPoint?) {
     }
 }
