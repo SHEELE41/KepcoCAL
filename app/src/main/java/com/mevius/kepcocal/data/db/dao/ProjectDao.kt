@@ -1,5 +1,6 @@
 package com.mevius.kepcocal.data.db.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -8,12 +9,12 @@ import com.mevius.kepcocal.data.db.entity.Project
 
 @Dao
 interface ProjectDao {
-    @Query("SELECT * FROM project")
-    fun getAll(): List<Project>
+    @Query("SELECT * FROM Project")
+    fun getAll(): LiveData<List<Project>>
 
     @Insert
-    fun insertAll(vararg projects: Project)
+    suspend fun insert(project: Project)
 
     @Delete
-    fun delete(project: Project)
+    suspend fun delete(project: Project)
 }

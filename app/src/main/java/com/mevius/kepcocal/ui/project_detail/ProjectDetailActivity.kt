@@ -1,4 +1,4 @@
-package com.mevius.kepcocal.view.project_detail
+package com.mevius.kepcocal.ui.project_detail
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -16,7 +16,6 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
@@ -27,6 +26,7 @@ import com.mevius.kepcocal.data.network.GeocoderAPI
 import com.mevius.kepcocal.data.network.model.ResultGetCoordinate
 import com.mevius.kepcocal.util.ComputerizedNumberCalculator
 import com.mevius.kepcocal.util.ExcelParser
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_project_detail.*
 import kotlinx.android.synthetic.main.project_detail_bottom_sheet.*
 import kotlinx.coroutines.*
@@ -41,6 +41,7 @@ import kotlin.coroutines.CoroutineContext
  * 한 프로젝트(엑셀파일)에 해당되는 상세 정보가 담긴 액티비티
  * 구현 계획중인 기능
  */
+
 class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     MapView.POIItemEventListener, CoroutineScope {
     private val machineList = arrayListOf<MachineData>()    // 기기 정보 리스트 생성 (생성만 함)

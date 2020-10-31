@@ -1,4 +1,4 @@
-package com.mevius.kepcocal.view.project_list.adapter
+package com.mevius.kepcocal.ui.project_list.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -7,15 +7,17 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.mevius.kepcocal.R
+import com.mevius.kepcocal.data.db.entity.Project
 import kotlinx.android.synthetic.main.project_list_rv_item.view.*
 
 class ProjectRVAdapter(
     private val context: Context,
-    private val itemDataList: ArrayList<ProjectRVItemData>,
-    private val itemClick: (ProjectRVItemData) -> Unit,
-    private val itemLongClick: (ProjectRVItemData) -> Boolean
+    private val itemClick: (Project) -> Unit,
+    private val itemLongClick: (Project) -> Boolean
 ) :
     RecyclerView.Adapter<ProjectRVAdapter.Holder>() {
+    private var projects = emptyList<Project>()
+
     override fun getItemId(position: Int): Long {
         return position.toLong()
     }
@@ -30,11 +32,16 @@ class ProjectRVAdapter(
     }
 
     override fun getItemCount(): Int {
-        return itemDataList.size
+        return projects.size
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        holder.bind(itemDataList[position])
+        holder.bind(projects[position])
+    }
+
+    internal fun setProjects(projects: List<Project>) {
+        this.projects = projects
+        notifyDataSetChanged()
     }
 
     inner class Holder(
@@ -44,12 +51,12 @@ class ProjectRVAdapter(
         var tvProjectName: TextView? = itemView.tv_project_name
         var tvDate: TextView? = itemView.tv_date
 
-        fun bind(projectRVItemData: ProjectRVItemData) {
-            tvProjectName?.text = projectRVItemData.projectName
-            tvDate?.text = projectRVItemData.modifiedDate
+        fun bind(project: Project) {
+            tvProjectName?.text = project.projectName
+            tvDate?.text = project.modifiedDate
 
-            itemView.setOnClickListener { itemClick(projectRVItemData) }
-            itemView.setOnLongClickListener { itemLongClick(projectRVItemData) }
+            itemView.setOnClickListener { itemClick(project) }
+            itemView.setOnLongClickListener { itemLongClick(project) }
         }
     }
 }

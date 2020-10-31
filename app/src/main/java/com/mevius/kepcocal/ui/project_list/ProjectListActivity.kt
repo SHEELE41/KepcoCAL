@@ -1,4 +1,4 @@
-package com.mevius.kepcocal.view.project_list
+package com.mevius.kepcocal.ui.project_list
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -10,13 +10,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.AutoCompleteTextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.mevius.kepcocal.util.ProjectFileManager
-import com.mevius.kepcocal.view.project_list.adapter.ProjectRVAdapter
-import com.mevius.kepcocal.view.project_list.adapter.ProjectRVItemData
+import com.mevius.kepcocal.ui.project_list.adapter.ProjectRVAdapter
+import com.mevius.kepcocal.ui.project_list.adapter.ProjectRVItemData
 import com.mevius.kepcocal.R
-import com.mevius.kepcocal.view.project_detail.ProjectDetailActivity
+import com.mevius.kepcocal.data.db.entity.Project
+import com.mevius.kepcocal.ui.project_detail.ProjectDetailActivity
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_project_list.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 /*
@@ -35,7 +41,6 @@ import kotlinx.android.synthetic.main.activity_project_list.*
 * 파일 목록 상의 파일명과 수정 날짜를 읽어서 ArrayList 에 갱신... 따로 클래스화하여 FAB onClick 이벤트에 추가
 */
 
-
 class ProjectListActivity : AppCompatActivity() {
     private val READ_REQUEST_CODE: Int = 42     // Request Code for SAF
     private val TAG: String = "ProjectListActivity"    // Log TAG String
@@ -45,6 +50,8 @@ class ProjectListActivity : AppCompatActivity() {
         arrayListOf<ProjectRVItemData>()   // ArrayList<Project> For ListView
     private lateinit var recyclerViewAdapter : ProjectRVAdapter
     private lateinit var recyclerViewLayoutManager: LinearLayoutManager
+
+    private lateinit var projectListViewModel: ProjectListViewModel
 
     /*
     * syncList => return itemDataList.size (int)
@@ -63,14 +70,13 @@ class ProjectListActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_project_list)
 
-        sync()      // Synchronize List
 
         /*
          * [RecyclerView Project Item onClick]
          * 아이템 클릭시 프로젝트 상세 액티비티로 넘어가기 위한 코드
          * 아이템을 선택하면 해당 프로젝트의 ProjectDetailActivity 로 넘어감.
          */
-        val itemClick : (ProjectRVItemData) -> Unit = {
+        val itemClick : (Project) -> Unit = {
             val intent = Intent(this, ProjectDetailActivity::class.java).apply {
                 putExtra(
                     "fileName",
@@ -84,7 +90,7 @@ class ProjectListActivity : AppCompatActivity() {
          * 프로젝트(엑셀 파일) 삭제를 위한 코드
          * 길게 눌러서 프로젝트 삭제 확인 다이얼로그 띄움
          */
-        val itemLongClick : (ProjectRVItemData) -> Boolean = {
+        val itemLongClick : (Project) -> Boolean = {
             val builder: AlertDialog.Builder = AlertDialog.Builder(
                 this,
                 android.R.style.Theme_DeviceDefault_Light_Dialog_NoActionBar_MinWidth
@@ -92,9 +98,10 @@ class ProjectListActivity : AppCompatActivity() {
             builder.setTitle("프로젝트 삭제") //제목
             builder.setMessage("정말로 삭제하시겠어요?")
             builder.setPositiveButton("확인") { dialog, _ ->
-                projectFileManager.removeFile(it.projectName)
-                sync()
-                recyclerViewAdapter.notifyDataSetChanged()
+//                it.projectName?.let { it1 -> projectFileManager.removeFile(it1) }
+//                sync()
+//                recyclerViewAdapter.notifyDataSetChanged()
+                projectListViewModel.delete(it)
                 dialog.dismiss()
             }
             builder.setNegativeButton(
@@ -105,10 +112,15 @@ class ProjectListActivity : AppCompatActivity() {
         }
 
         // RecyclerView 설정
-        recyclerViewAdapter = ProjectRVAdapter(this, itemDataList,itemClick, itemLongClick)
+        recyclerViewAdapter = ProjectRVAdapter(this, itemClick, itemLongClick)
         recyclerViewLayoutManager = LinearLayoutManager(this)
         rv_project_list.adapter = recyclerViewAdapter   // Set Apapter to RecyclerView in xml
         rv_project_list.layoutManager = recyclerViewLayoutManager
+
+        projectListViewModel = ViewModelProvider(this).get(ProjectListViewModel::class.java)
+        projectListViewModel.allProjects.observe(this, Observer { projects ->
+            projects?.let { recyclerViewAdapter.setProjects(it) }
+        })
 
         /*
          * [Floating Action Button onClickListener ]
@@ -183,21 +195,28 @@ class ProjectListActivity : AppCompatActivity() {
                 Log.d(TAG, projectNameInput)
 
                 data?.data?.also { uri ->
+                    // 기존 방식 일단 두기...
+                    /*
                     projectFileManager.saveFileAs(
                         uri,
                         projectNameInput
                     )      // Copy File Which is selected by SAF to Internal App Storage
                     sync()
-                    dialog.dismiss()
+                    */
 
-                    /*
+
                     // Other way to renew List
                     // 새로 추가될 때 입력받은 프로젝트명 + 오늘 날짜로 리스트 추가
-                    itemDataList.add(ProjectListViewItemData(
-                        "$projectNameInput.xlsx", SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(
-                        Date()
-                    )))
-                    */
+//                    itemDataList.add(ProjectRVItemData(
+//                        "$projectNameInput.xlsx", SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(
+//                        Date()
+//                    )))
+
+                    val project = Project(null,"$projectNameInput.xlsx", SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(
+                        Date()))
+                    projectListViewModel.insert(project)
+
+                    dialog.dismiss()
                 }
             }
 
@@ -216,7 +235,7 @@ class ProjectListActivity : AppCompatActivity() {
      */
     override fun onResume() {
         super.onResume()
-        sync()
+        //sync()
         recyclerViewAdapter.notifyDataSetChanged()
     }
 }

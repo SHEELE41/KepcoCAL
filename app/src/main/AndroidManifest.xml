@@ -15,15 +15,15 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".view.main.MainActivity">
+        <activity android:name=".ui.main.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".view.project_list.ProjectListActivity" />
-        <activity android:name=".view.project_detail.ProjectDetailActivity"/>
+        <activity android:name=".ui.project_list.ProjectListActivity" />
+        <activity android:name=".ui.project_detail.ProjectDetailActivity"/>
         <!--meta-data tag must be in application tag-->
         <meta-data android:name="com.kakao.sdk.AppKey" android:value="@string/kakao_app_key"/>
     </application>

@@ -8,7 +8,7 @@ import com.mevius.kepcocal.data.db.entity.Machine
 
 @Dao
 interface MachineDao {
-    @Query("SELECT * FROM machine")
+    @Query("SELECT * FROM Machine")
     fun getAll(): List<Machine>
 
     @Insert
