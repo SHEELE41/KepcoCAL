@@ -16,4 +16,6 @@ data class MachineData (var computerizedNumber : String){   // 전산화번호 3
     // 따라서 두 가지 경우 모두 고려해 주어야 함.
     var coordinateLng = ""  // Longitude : 경도 : X축 (127...)
     var coordinateLat = ""  // Latitude : 위도 : Y축 (37...)
+
+    var isDone = false  // 작업 완료 여부
 }

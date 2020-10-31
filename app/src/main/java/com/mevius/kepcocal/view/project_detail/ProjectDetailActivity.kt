@@ -100,12 +100,17 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         // 5. Floating Search View 설정 및 Listener Binding
         val floatingSearchView = floating_search_view
 
-        floatingSearchView.setOnQueryChangeListener { _: String, _: String ->
-            @Override
-            fun onSearchTextChanged(oldQuery: String, newQuery: String) {
-                val newSearchSuggestions: List<SearchSuggestion> = listOf()
+        floatingSearchView.setOnQueryChangeListener { oldQuery, newQuery ->
+            if (oldQuery != "" && newQuery == ""){
+                floatingSearchView.clearSuggestions()
+            } else {
+                //this shows the top left circular progress
+                //you can call it where ever you want, but
+                //it makes sense to do it when loading something in
+                //the background.
+                floatingSearchView.showProgress()
 
-                floating_search_view.swapSuggestions(newSearchSuggestions)
+
             }
         }
 
