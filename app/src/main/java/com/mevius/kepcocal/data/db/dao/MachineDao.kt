@@ -1,5 +1,6 @@
 package com.mevius.kepcocal.data.db.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -9,10 +10,10 @@ import com.mevius.kepcocal.data.db.entity.Machine
 @Dao
 interface MachineDao {
     @Query("SELECT * FROM Machine")
-    fun getAll(): List<Machine>
+    fun getAll(): LiveData<List<Machine>>
 
     @Insert
-    fun insertAll(vararg machines: Machine)
+    fun insert(machine: Machine)
 
     @Delete
     fun delete(machine: Machine)

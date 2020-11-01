@@ -1,5 +1,9 @@
 package com.mevius.kepcocal.util
 
+import android.database.Cursor
+import android.net.Uri
+import android.os.ParcelFileDescriptor
+import android.provider.OpenableColumns
 import android.util.Log
 import com.mevius.kepcocal.GlobalApplication
 import com.mevius.kepcocal.data.MachineData
@@ -13,33 +17,44 @@ import org.apache.poi.xssf.usermodel.XSSFCell
 import org.apache.poi.xssf.usermodel.XSSFRow
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.FileInputStream
+import java.io.FileNotFoundException
 
 /**
  * [ExcelParser]
  * 엑셀 데이터를 파싱하는 메소드를 가진 클래스
  * 조건부 컴파일 방법 찾아서 HSSF, XSSF 방법 생각하기
  */
-class ExcelParser {
+class ExcelParser(private val uri: Uri) {
     private val globalApplicationContext = GlobalApplication.instance.applicationContext()  // 저장소 경로를 위한 AppContext 불가피.
-    private val mOutputDir = globalApplicationContext.getExternalFilesDir(null)     // /Android/data/com.mevius.kepcocal/files
+    private var pfd: ParcelFileDescriptor? = null
+    private var fileInputStream: FileInputStream? = null
 
     /**
      * [excelToList]
      * 엑셀 데이터를 ArrayList 형태로 읽어들이는 함수.
      * 조건부 컴파일 방법 찾아서 HSSF, XSSF 방법 생각하기
      */
-    fun excelToList(fileName : String, machineList : ArrayList<MachineData>){
+    fun excelToList(): ArrayList<MachineData>{
+        val machineList = arrayListOf<MachineData>()
+
+        try {
+            pfd = uri.let { globalApplicationContext.contentResolver?.openFileDescriptor(it, "r") }
+            fileInputStream = FileInputStream(pfd?.fileDescriptor)
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        }
+
         /*
         * Case 1.
         * When extension is "xls" -> HSSF(poi)
         */
-        if (fileName.substringAfterLast(".") == "xls") {     // When extension is "xls" -> HSSF
+        if (getFileName()?.substringAfterLast(".") == "xls") {     // When extension is "xls" -> HSSF
             try {
                 /*
                 * 엑셀 파일 제어 가능한 객체로 불러오기
                 */
                 // FileInputStream
-                val mInputStream = FileInputStream("$mOutputDir/$fileName")
+                val mInputStream = fileInputStream
 
                 // POISFileSystem 객체 (xsl)
                 val mFileSystem = POIFSFileSystem(mInputStream)
@@ -84,19 +99,20 @@ class ExcelParser {
             } catch (e: Exception) {
                 Log.d("엑셀파서에러로그", "에러 발생함.")
             }
+            return machineList
         }
 
         /*
         * Case 2.
         * When extension is "xlsx" -> XSSF(ooxml)
         */
-        else if(fileName.substringAfterLast(".") == "xlsx"){
+        else if(getFileName()?.substringAfterLast(".") == "xlsx"){
             try {
                 /*
                 * 엑셀 파일 제어 가능한 객체로 불러오기
                 */
                 // FileInputStream
-                val mInputStream = FileInputStream("$mOutputDir/$fileName")
+                val mInputStream = fileInputStream
 
                 // WorkBook(엑셀 파일)
                 val mWorkBook = XSSFWorkbook(mInputStream)
@@ -139,6 +155,7 @@ class ExcelParser {
                 Log.d("엑셀파서에러로그","에러 발생함.")
             }
         }
+        return machineList
     }
 
     /**
@@ -151,5 +168,31 @@ class ExcelParser {
             XSSFCell.CELL_TYPE_NUMERIC -> cell.numericCellValue.toInt().toString()
             else -> cell.toString()
         }
+    }
+
+    /**
+     * [getFileName]
+     * SAF에서 선택된 파일의 파일명을 반환함
+     */
+    private fun getFileName(): String? {
+        var result: String? = null
+        if (uri.scheme == "content") {
+            val cursor: Cursor? = globalApplicationContext.contentResolver?.query(uri, null, null, null, null)
+            try {
+                if (cursor != null && cursor.moveToFirst()) {
+                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
+                }
+            } finally {
+                cursor?.close()
+            }
+        }
+        if (result == null) {
+            result = uri.path
+            val cut = result!!.lastIndexOf('/')
+            if (cut != -1) {
+                result = result.substring(cut + 1)
+            }
+        }
+        return result
     }
 }

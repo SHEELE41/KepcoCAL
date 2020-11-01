@@ -4,7 +4,6 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
-import com.kakao.sdk.common.util.SdkLogLevel
 import com.mevius.kepcocal.data.db.AppDatabase
 import com.mevius.kepcocal.data.db.entity.Project
 import com.mevius.kepcocal.data.repository.ProjectRepository

@@ -83,8 +83,8 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
             finish()
         }
         // 수신받은 fileName 을 이용하여 엑셀 파일로부터 데이터를 읽어와 ArrayList 에 저장
-        val excelParser = ExcelParser()     // Excel Parser 선언
-        excelParser.excelToList(fileName!!, machineList)    // machineList 에 정상적으로 정보 이동 완료
+        //val excelParser = ExcelParser()     // Excel Parser 선언
+        //excelParser.excelToList(fileName!!, machineList)    // machineList 에 정상적으로 정보 이동 완료
 
         // 3. Layout 작업
         layoutBottomSheet = bottom_sheet
