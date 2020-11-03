@@ -10,5 +10,4 @@ data class Project(
     @ColumnInfo(name = "project_name") val projectName: String?,
     @ColumnInfo(name = "modified_date") val modifiedDate: String?
 ) {
-    constructor(): this(0,"", "")
 }

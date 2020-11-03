@@ -17,5 +17,6 @@ data class MachineData (var computerizedNumber : String){   // 전산화번호 3
     var coordinateLng = ""  // Longitude : 경도 : X축 (127...)
     var coordinateLat = ""  // Latitude : 위도 : Y축 (37...)
 
+    var isNoCoord = false   // API 작업 이후에도 좌표 없는지
     var isDone = false  // 작업 완료 여부
 }

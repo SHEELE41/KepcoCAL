@@ -31,7 +31,8 @@ data class Machine(
     @ColumnInfo(name = "second_address") val address2: String?,
     @ColumnInfo(name = "coordinate_lng") val coordinateLng: String?,
     @ColumnInfo(name = "coordinate_lat") val coordinateLat: String?,
-    @ColumnInfo(name = "is_done") val isDone: Boolean
+    @ColumnInfo(name = "is_done") val isDone: Boolean,
+    @ColumnInfo(name = "is_no_coord") val isNoCoord: Boolean
 ) {
     constructor() : this(null,
         null,
@@ -48,5 +49,7 @@ data class Machine(
         "",
         "",
         "",
-        false)
+        false,
+        false
+    )
 }

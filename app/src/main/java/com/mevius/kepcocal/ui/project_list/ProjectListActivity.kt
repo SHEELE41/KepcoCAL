@@ -15,6 +15,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.mevius.kepcocal.ui.project_list.adapter.ProjectRVAdapter
 import com.mevius.kepcocal.R
 import com.mevius.kepcocal.data.MachineData
+import com.mevius.kepcocal.data.db.AppDatabase
+import com.mevius.kepcocal.data.db.entity.Machine
 import com.mevius.kepcocal.data.db.entity.Project
 import com.mevius.kepcocal.data.network.GeocoderAPI
 import com.mevius.kepcocal.data.network.model.ResultGetCoordinate
@@ -23,8 +25,6 @@ import com.mevius.kepcocal.util.ComputerizedNumberCalculator
 import com.mevius.kepcocal.util.ExcelParser
 import kotlinx.android.synthetic.main.activity_project_list.*
 import kotlinx.coroutines.*
-import net.daum.mf.map.api.MapPOIItem
-import net.daum.mf.map.api.MapPoint
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.coroutines.CoroutineContext
@@ -52,6 +52,9 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
     private lateinit var recyclerViewAdapter: ProjectRVAdapter
     private lateinit var recyclerViewLayoutManager: LinearLayoutManager
     private lateinit var projectListViewModel: ProjectListViewModel
+    private var lastRowId: Long = 0
+
+    lateinit var appDatabase: AppDatabase
     lateinit var job: Job
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job
@@ -64,6 +67,8 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_project_list)
         job = Job()
+        appDatabase = AppDatabase.getDatabase(this, this)
+
         /*
          * [RecyclerView Project Item onClick]
          * 아이템 클릭시 프로젝트 상세 액티비티로 넘어가기 위한 코드
@@ -111,7 +116,7 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
         projectListViewModel = ViewModelProvider(this).get(ProjectListViewModel::class.java)
         projectListViewModel.allProjects.observe(this, { projects ->
             projects?.let {
-                if (projects.isEmpty()){
+                if (it.isEmpty()) {
                     iv_isEmpty.visibility = View.VISIBLE
                 } else {
                     iv_isEmpty.visibility = View.INVISIBLE
@@ -193,15 +198,20 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
                 data?.data?.also { uri ->
                     val project = Project(
                         null,
-                        "$projectNameInput.xlsx",
+                        projectNameInput,
                         todayDateFormat
                     )
-                    projectListViewModel.insert(project)
+                    lastRowId = projectListViewModel.insert(project)
+                    projectListViewModel.lastProject.observe(this, {
+                        it?.let {
+                            lastRowId = it.id ?: 0
+                        }
+                    })
 
                     val excelParser = ExcelParser(uri)
                     machineList = excelParser.excelToList()
                     launch {
-                        displayInvalidAddrMachine()
+                        insertProjectMachineData()
                     }
                     dialog.dismiss()
                 }
@@ -216,7 +226,7 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
     }
 
 
-    private suspend fun displayMachinesLocation() {
+    private suspend fun insertProjectMachineData() {
         Log.d("###################################", "API 요청 시작")
         // api 객체 생성.
         // 어차피 같은 KakaoAPI, 그 중 Geocode API를 사용하므로 for 문 밖에 한번 선언해주는걸로 여러번 재활용 가능.
@@ -255,7 +265,6 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
                     // Import 는 다 Retrofit2로 (Not OkHttp3!)
                     launch {
                         val response = api.getCoordinate(machineAddr)
-
                         if (response.isSuccessful) {
                             /*
                             * >> machineData에 좌표 데이터 넣어주기 전에 고려해야 할 것
@@ -264,69 +273,99 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
                             * 3. documents 자체가 null이 될 수도 있나...? X
                             */
                             val resultInstance: ResultGetCoordinate? = response.body()
-                            if (resultInstance?.documents?.size != 0 && resultInstance != null) {
-                                machineData.coordinateLng = resultInstance.documents[0].x.toString()
-                                machineData.coordinateLat = resultInstance.documents[0].y.toString()
+                            resultInstance?.let {
+                                if (it.documents.isNotEmpty()){
+                                    machineData.coordinateLng = it.documents[0].x.toString()
+                                    machineData.coordinateLat = it.documents[0].y.toString()
+                                }
                             }
                         }
 
                         if (machineData.coordinateLng != "" && machineData.coordinateLat != "") {   // 좌표가 둘 다 비어있지 않다면
-                            // 마커 추가까지 정상적으로 완료된 개수
+                            val machineEntity = Machine(
+                                null,
+                                lastRowId,
+                                machineData.index,
+                                machineData.branch,
+                                machineData.computerizedNumber,
+                                machineData.lineName,
+                                machineData.lineNumber,
+                                machineData.company,
+                                machineData.manufacturingYear,
+                                machineData.manufacturingDate,
+                                machineData.manufacturingNumber,
+                                machineData.address1,
+                                machineData.address2,
+                                machineData.coordinateLng,
+                                machineData.coordinateLat,
+                                machineData.isDone,
+                                machineData.isNoCoord
+                            )
+                            val localDataSource = appDatabase.machineDao()
+                            localDataSource.insert(machineEntity)
+
                             onResponseCounter++
 
                         } else {  // 좌표 하나라도 invalid 할 시 바로 좌표누락기기리스트에 넣어버림
-                            noCoordMachineArrayList.add(machineData)
+                            machineData.isNoCoord = true
                         }
                     }  // for문마다 생기는 launch의 마지막 : 여기까지 한 작업의 단위로 묶어 비동기로 던져줘야 함.
                 }
             }.join()    // 부모 launch 종료에 맞춤
             // 마찬가지로 비동기실행
-            launch { displayInvalidAddrMachine() }
+            launch { calculateInvalidAddrMachineData() }
         }
     }
 
     /**
-     * [displayInvalidAddrMachine] function
+     * [calculateInvalidAddrMachineData] function
      * 좌표 정보가 유효하지 않은 기기들을 지도상에 표시하는 메소드
      * 좌표 정보가 유효한 가까운 기기를 기준점으로 하여 전산화번호 연산 후 자신의 좌표 도출
      */
-    private fun displayInvalidAddrMachine() {
+    private fun calculateInvalidAddrMachineData() {
         // 전산화번호 계산기 객체 선언
         val cNumberCalculator = ComputerizedNumberCalculator()
 
         // 좌표 정보가 존재하지 않는 기기들의 리스트를 순회하는 반복문
-        for (noCoordMachine in noCoordMachineArrayList) {
-            var closestDistance: Long = Long.MAX_VALUE  // 이 부분도 좀 고쳤으면.
-            var closestMachine: MachineData? = null
+        for (noCoordMachine in machineList) {   // 일단 모든 리스트를 다 돌긴 함
+            if (noCoordMachine.isNoCoord) {  // isNoCoord가 true인 기기에 대해서만 실행
+                var closestDistance: Long = Long.MAX_VALUE  // 이 부분도 좀 고쳤으면.
+                var closestMachine: MachineData? = null
 
-            cNumberCalculator.targetNumber =
-                noCoordMachine.computerizedNumber  // 한 순회마다 noCoordMachine 에 대한 전산화번호로 갱신
+                cNumberCalculator.targetNumber =
+                    noCoordMachine.computerizedNumber  // 한 순회마다 noCoordMachine 에 대한 전산화번호로 갱신
 
-            // 위도 경도 정보가 제대로 존재하면서 noCoordMachine과 가장 가까운 기기를 찾기 위한 반복문
-            for (machine in machineList) {
-                cNumberCalculator.baseNumber =
-                    machine.computerizedNumber   // 한 순회마다 machineList 안의 machine 에 대한 전산화번호로 갱신
-                if (machine.coordinateLat != "" && machine.coordinateLng != "") {    // 좌표 있는 기기 찾으면 둘 사이의 거리 계산(좌표 없는 기기 - 현재 기기)
-                    // 정렬처럼 갈수록 더 짧은 거리로 갱신하면 되겠네
-                    if (closestDistance > cNumberCalculator.getTotalDistance()) {
-                        closestDistance = cNumberCalculator.getTotalDistance()
-                        closestMachine = machine
+                // 위도 경도 정보가 제대로 존재하면서 noCoordMachine과 가장 가까운 기기를 찾기 위한 반복문
+                for (machine in machineList) {
+                    cNumberCalculator.baseNumber =
+                        machine.computerizedNumber   // 한 순회마다 machineList 안의 machine 에 대한 전산화번호로 갱신
+                    if (machine.coordinateLat != "" && machine.coordinateLng != "") {    // 좌표 있는 기기 찾으면 둘 사이의 거리 계산(좌표 없는 기기 - 현재 기기)
+                        // 정렬처럼 갈수록 더 짧은 거리로 갱신하면 되겠네
+                        if (closestDistance > cNumberCalculator.getTotalDistance()) {
+                            closestDistance = cNumberCalculator.getTotalDistance()
+                            closestMachine = machine
+                        }
                     }
                 }
-            }
 
-            // 위도 경도 정보가 존재하는 가장 가까운 기기가 존재한다면 그 기기를 기준으로 좌표 계산 후 지도에 추가
-            if (closestMachine != null) {
-                cNumberCalculator.baseNumber =
-                    closestMachine.computerizedNumber    // for문을 계속 돌면서 마지막 machine의 값이 되어있을 것이므로 여기서는 갱신해줘야함.
-                // 좌표 계산 루틴
-                noCoordMachine.coordinateLng =
-                    (closestMachine.coordinateLng.toDouble() + ((cNumberCalculator.getXDistance()
-                        .toDouble() * 2.0) / (91290.0 + 85397.0))).toString()    //127
-                noCoordMachine.coordinateLat =
-                    (closestMachine.coordinateLat.toDouble() + ((cNumberCalculator.getYDistance()
-                        .toDouble() * 2.0) / (110941.0 + 111034.0))).toString()  //37
+                // 위도 경도 정보가 존재하는 가장 가까운 기기가 존재한다면 그 기기를 기준으로 좌표 계산 후 지도에 추가
+                closestMachine?.let {
+                    cNumberCalculator.baseNumber =
+                        it.computerizedNumber    // for문을 계속 돌면서 마지막 machine의 값이 되어있을 것이므로 여기서는 갱신해줘야함.
+                    // 좌표 계산 루틴
+                    noCoordMachine.coordinateLng =
+                        (it.coordinateLng.toDouble() + ((cNumberCalculator.getXDistance()
+                            .toDouble() * 2.0) / (91290.0 + 85397.0))).toString()    //127
+                    noCoordMachine.coordinateLat =
+                        (it.coordinateLat.toDouble() + ((cNumberCalculator.getYDistance()
+                            .toDouble() * 2.0) / (110941.0 + 111034.0))).toString()  //37
+                }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        job.cancel()
     }
 }
