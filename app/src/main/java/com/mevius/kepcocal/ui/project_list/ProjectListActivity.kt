@@ -124,6 +124,11 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
                 recyclerViewAdapter.setProjects(it)
             }
         })
+        projectListViewModel.lastProject.observe(this, {
+            it?.let {
+                lastRowId = it.id ?: 0
+            }
+        })
 
         /*
          * [Floating Action Button onClickListener ]
@@ -202,11 +207,6 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
                         todayDateFormat
                     )
                     lastRowId = projectListViewModel.insert(project)
-                    projectListViewModel.lastProject.observe(this, {
-                        it?.let {
-                            lastRowId = it.id ?: 0
-                        }
-                    })
 
                     val excelParser = ExcelParser(uri)
                     machineList = excelParser.excelToList()
