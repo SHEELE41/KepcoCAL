@@ -73,7 +73,8 @@ Coroutine 구성 요소 그 첫 번째, **CoroutineContext**입니다.
 Coroutine 또한 이와 같습니다. 무슨 소리냐구요?  
 우리가 만들어줄 **Coroutine을 선수, CoroutineContext를 경기장**으로 생각하시면 됩니다.  
 
-결국 CoroutineContext를 설정해준다는 것은 **Coroutine의 실행 목적에 맞게 실행될 특정 Thread Pool을 지정**해주는 것이죠. (수영 선수가 육상 경기장에 가있으면 안되겠죠? \^\^)  
+결국 CoroutineContext를 설정해준다는 것은 **Coroutine의 실행 목적에 맞게 실행될 특정 Thread Pool을 지정**해주는 것이라고 할 수 있습니다.  
+(수영 선수가 육상 경기장에 가있으면 안되겠죠? \^\^)  
 
 ![basic\_coroutine](https://oasisfores.com/wp-content/uploads/2020/11/basic_coroutine.png)  
 
