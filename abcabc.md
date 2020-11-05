@@ -4,15 +4,17 @@
 ![coroutine\_gif](https://oasisfores.com/wp-content/uploads/2020/11/1_OEX52nKgM1SHGO4l1mvV1A.gif)  
 
 **Coroutine**을 굳이 한 문장으로 표현하자면 **비선점(Non-Preemptive), 협력형(Cooperative) 멀티태스킹의 서브 루틴 형태로서 동시성(Concurrency)을 지원하며, 비동기 작업을 쉽게 처리할 수 있도록 도와주는 것**... 이라고 할 수 있습니다.  
+
 네. 이렇게만 보면 대체 무슨 소리인지 이해가 하나도 되지 않습니다.  
 Coroutine이라는 개념은 **Kotlin에만 국한된 것이 아니며** 세상에 모습을 드러낸 것은 이미 한참 전 일이기 때문에 동작 원리부터 하나하나 설명하기 시작하면 끝이 없어집니다.  
+
 하지만 제목에도 적혀있듯이 이 글은**Android에서의 Kotlin Coroutine 사용법**을 알려주기 위한 글이고, 이 제목을 클릭하여 들어오신 분들은 Coroutine이 무엇인지, 어디에 쓰는지는 대충 알고 계신 상태일 것이라고 생각합니다.  
 따라서 이번 글에서는 Coroutine의 개념적인 부분보다는 **실제로 Kotlin Android 앱 개발에서 Coroutine이 어떤 방식으로 사용되는지**를 위주로 진행하려고 합니다. (여러분의 시간은 소중하니까요.)  
 Coroutine이 무엇이고 어떻게 동작하는지에 대해서는 인터넷에 잘 쓰여진 글들이 정말 많으니 개인적으로 찾아보시면 도움이 될 것입니다.  
 
 # Coroutine 사용을 위한 사전 준비
-긴 말 필요 없이 바로 Coroutine을 만들어보...기 전에 우선 **Dependency를 추가**해주어야 합니다.
-간단히 **build.gradle (:app)** 파일에 다음 코드를 입력해줌으로써 Coroutine을 사용할 수 있습니다. 
+긴 말 필요 없이 바로 Coroutine을 만들어보...기 전에 우선 **Dependency를 추가**해주어야 합니다.  
+간단히 **build.gradle (:app)** 파일에 다음 코드를 입력해줌으로써 Coroutine을 사용할 수 있습니다.  
 ``` {.lang:default .decode:true}
 dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9'
@@ -22,13 +24,13 @@ dependencies {
 
 # Coroutine 만들기
 
-이제 진짜 Coroutine을 만들어봅시다. 기본적으로 Coroutine은 다음과 같은 형태로 만들 수 있습니다.
+이제 진짜 Coroutine을 만들어봅시다. 기본적으로 Coroutine은 다음과 같은 형태로 만들 수 있습니다.  
 
 ![basic\_coroutine](https://oasisfores.com/wp-content/uploads/2020/11/basic_coroutine.png) 
 
-아이고... 뭔가 또 복잡하죠? 일단 위에건 잊어버리고 그냥 아주 단순한 Coroutine을 하나 만들어봅시다. 
-1초 뒤에 Work is Done! 문자열이 출력되는 간단한 루틴입니다.
-위 사진과 비교했을 때 **어떤 자리에 어떤 단어가 들어갔는지**를 잘 보시면 이해에 도움이 되실 겁니다.
+아이고... 뭔가 또 복잡하죠? 일단 위에건 잊어버리고 그냥 아주 단순한 Coroutine을 하나 만들어봅시다.  
+1초 뒤에 Work is Done! 문자열이 출력되는 간단한 루틴입니다.  
+위 사진과 비교했을 때 **어떤 자리에 어떤 단어가 들어갔는지**를 잘 보시면 이해에 도움이 되실 겁니다.  
 
 ``` {.lang:default .decode:true}
 val scope = CoroutineScope(Dispatchers.IO)    // CoroutineScope 생성
@@ -46,35 +48,37 @@ Coroutine이라는 단어가 너무 많네요. 위 코드를 기준으로 바꿔
 1. **Dispatchers.IO**를 이용하여 Coroutine이 실행될**CoroutineScope**를 만들고
 2. 만들어준 **CoroutineScope**에서 **launch**를 이용하여 { } 안의 코드를 Coroutine으로 실행시킵니다.
 
-어떠신가요? 아직 잘 와닿지 않으시죠? 
+어떠신가요? 아직 잘 와닿지 않으시죠?  
 각 요소가 무엇을 의미하는지는 이후 차근차근 설명드릴테니 우선 **Coroutine의 세 가지 구성 요소와 흐름**만 기억해주세요!
 
-##### **Context**로 **Scope**를 만들고, **Builder**를 이용하여 그 **Scope** 안에서 실행!
+##### **Context**로 **Scope**를 만들고, **Builder**를 이용하여 그 **Scope** 안에서 실행!  
+
+
 
 
 # 첫 번째, CoroutineContext
 
-Coroutine 구성 요소 그 첫 번째, **CoroutineContext**입니다. 
-말 그대로 Coroutine이 실행될 **Context**, '맥락'을 지정해주는 것인데요.
-간단한 예로 **올림픽 경기**를 생각해볼 수 있습니다. 
-'Coroutine 얘기 하다 말고 갑자기 웬 올림픽이냐' 라고 하실 수도 있겠지만 일단 그냥 생각해보자구요. \^\^ 
+Coroutine 구성 요소 그 첫 번째, **CoroutineContext**입니다.  
+말 그대로 Coroutine이 실행될 **Context**, '맥락'을 지정해주는 것인데요.  
+간단한 예로 **올림픽 경기**를 생각해볼 수 있습니다.  
+'Coroutine 얘기 하다 말고 갑자기 웬 올림픽이냐' 라고 하실 수도 있겠지만 일단 그냥 생각해보자구요. \^\^  
 
-올림픽 경기에는 수영, 달리기, 양궁, 등과 같이 여러가지 종목이 있습니다. 
-여러가지 종목이 있는 만큼 경기장 또한 여러 개 존재하겠죠? 
-이 때 경기에 참가하는 선수들은 **자신의 종목에 맞게 각 경기장에 위치**해있을 것입니다.
-Coroutine 또한 이와 같습니다. 무슨 소리냐구요? 
-우리가 만들어줄 **Coroutine을 선수, CoroutineContext를 경기장**으로 생각하시면 됩니다. 
+올림픽 경기에는 수영, 달리기, 양궁, 등과 같이 여러가지 종목이 있습니다.  
+여러가지 종목이 있는 만큼 경기장 또한 여러 개 존재하겠죠?  
+이 때 경기에 참가하는 선수들은 **자신의 종목에 맞게 각 경기장에 위치**해있을 것입니다.  
+Coroutine 또한 이와 같습니다. 무슨 소리냐구요?  
+우리가 만들어줄 **Coroutine을 선수, CoroutineContext를 경기장**으로 생각하시면 됩니다.  
 
-결국 CoroutineContext를 설정해준다는 것은 **Coroutine의 실행 목적에 맞게 실행될 특정 Thread Pool을 지정**해주는 것이죠. (수영 선수가 육상 경기장에 가있으면 안되겠죠? \^\^)
+결국 CoroutineContext를 설정해준다는 것은 **Coroutine의 실행 목적에 맞게 실행될 특정 Thread Pool을 지정**해주는 것이죠. (수영 선수가 육상 경기장에 가있으면 안되겠죠? \^\^)  
 
-![basic\_coroutine](https://oasisfores.com/wp-content/uploads/2020/11/basic_coroutine.png) 
+![basic\_coroutine](https://oasisfores.com/wp-content/uploads/2020/11/basic_coroutine.png)  
 
-위 그림을 보시면 알 수 있듯이 CoroutineContext에는 Job, Dispatcher.Main, IO, Default... 등이 있고 각각이 의미하는 것은 아래와 같습니다. (Job에 대한 내용은 이후에 다룰 것입니다.)
+위 그림을 보시면 알 수 있듯이 CoroutineContext에는 Job, Dispatcher.Main, IO, Default... 등이 있고 각각이 의미하는 것은 아래와 같습니다. (Job에 대한 내용은 이후에 다룰 것입니다.)  
 
-**Dispatcher.Main : UI를 구성하는 작업이 모여있는 쓰레드 풀**
-**Dispatcher.IO : (파일 혹은 소켓을) 읽고 쓰는 작업이 모여있는 쓰레드 풀**
-**Dispatcher.Default : 기본 쓰레드 풀, CPU 사용량이 많은 작업에 적합**
-(이외에도 잘 쓰이지는 않지만 특정 목적을 위해 사용되는 몇몇 쓰레드 풀이 존재하니 자세한 것은 공식 문서를 참조하시면 좋습니다.)
+**Dispatcher.Main : UI를 구성하는 작업이 모여있는 쓰레드 풀**  
+**Dispatcher.IO : (파일 혹은 소켓을) 읽고 쓰는 작업이 모여있는 쓰레드 풀**  
+**Dispatcher.Default : 기본 쓰레드 풀, CPU 사용량이 많은 작업에 적합**  
+(이외에도 잘 쓰이지는 않지만 특정 목적을 위해 사용되는 몇몇 쓰레드 풀이 존재하니 자세한 것은 공식 문서를 참조하시면 좋습니다.)  
 
 위 내용을 참조하여 만들어줄 Coroutine의 작업 내용에 맞게 Thread Pool을 선택하면 됩니다.
 파일을 읽고 쓰는 작업이라면 IO를, UI 관련 작업이라면 Main을 선택하면 되겠죠?
