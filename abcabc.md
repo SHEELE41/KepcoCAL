@@ -129,6 +129,7 @@ val job = scope.launch{
 
 <br>
 **2. GlobalScope**
+
 ``` {.lang:default .decode:true}
 public object GlobalScope : CoroutineScope {
     /**
@@ -192,7 +193,7 @@ println("World!")
 
 **추가) GlobalScope와 Job** GlobalScope 사용을 지양해야하는 이유는 바로 이 Job에 있습니다.  
 **GlobalScope에는 연결된 Job이 없기 때문**에 구조화된 동시성에서 얻을 수 있는 모든 이점이 사라지며, GlobalScope를 사용하는 코루틴에서 예외를 발생해도 다른 코루틴에 영향을 미치지 않습니다.  
-**구조화된 동시성이 느슨해지는 것입니다.**
+**구조화된 동시성이 느슨해지는 것입니다.**  
 <br>
 <br>
 
@@ -378,7 +379,7 @@ suspend fun myCoroutine() {
 
 위와 같이 **어떠한 함수 내부에서 Coroutine(suspend function)을 실행할 수 있게** 만들어주려면 **suspend** 라는 단어를 붙여주어야 합니다.  
 **suspend**를 붙여줌으로써 **해당 함수는 하나의 Coroutine으로 동작하기 위한 자격**을 얻게되며, **일시중지 및 재개(suspend & resume)이 가능**해집니다.  
-이렇게 만들어진 **suspend function**은 아무데서나 사용될 수 없고 어떠한 **Coroutine 혹은 suspend function 내부에서 사용**되어야 합니다. (일반 영역에서 사용 시 Compile Error)  
+이렇게 만들어진 **suspend function**은 아무데서나 사용될 수 없고 어떠한 **Coroutine 혹은 suspend function 내부에서 사용**되어야 합니다. (일반 영역에서 사용 시 Compile Error)   
 <br>
 <br>
 
