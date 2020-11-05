@@ -128,7 +128,8 @@ val job = scope.launch{
 이 때 **CoroutineScope를 Activity의 Life-Cycle에 맞춰주면 Activity가 종료될 때 Coroutine도 함께 종료**되도록 만들어 줄 수 있습니다.  
 
 <br>
-**2. GlobalScope**
+
+**2. GlobalScope**  
 
 ``` {.lang:default .decode:true}
 public object GlobalScope : CoroutineScope {
@@ -246,7 +247,7 @@ scope.launch(Dispatchers.Default) {
 
 **첫 번째 Coroutine**은 처음에 선언한 CoroutineScope - 1과 **별개로 새로운 CoroutineScope - 2(Dispatchers.Default)를 선언**하여 **Dispatchers.Default 상에서 실행**됩니다.  
 **두 번째 Coroutine은 처음**에 선언한 CoroutineScope - 1(Dispatchers.Main)에서 돌아가는 Coroutine이지만 **CoroutineBuilder 단에서 CoroutineContext를 Dispatchers.Default로 재설정해주므로 역시 Dispatchers.Default 상에서 실행**됩니다.  
-결과적으로 **두 Coroutine 모두 Background(Dispatchers.Default)에서 실행**된다는 것을 알 수 있는데요.   이때 두 Coroutine의 CoroutineScope가 서로 다르므로 둘 중 하나의 작업을 취소해도 나머지 작업은 영향을 받지 않습니다.
+결과적으로 **두 Coroutine 모두 Background(Dispatchers.Default)에서 실행**된다는 것을 알 수 있는데요.   이때 두 Coroutine의 CoroutineScope가 서로 다르므로 둘 중 하나의 작업을 취소해도 나머지 작업은 영향을 받지 않습니다.  
 <br>
 
 #### 2. Job
@@ -293,7 +294,7 @@ suspend fun main() = coroutineScope {
 ![result\_coroutine](https://oasisfores.com/wp-content/uploads/2020/11/result_coroutine-e1604513656990.png) 
 
 부모 CoroutineScope의 Job을 cancel 하므로 위 코드의 결과는 **Coroutine1 Start Coroutine2 Start** 가 됩니다.  
-코드의 실행 결과는 [https://kotlinlang.org/\#try-kotlin](https://kotlinlang.org/#try-kotlin)에서 직접 확인하실 수 있습니다.
+코드의 실행 결과는 [https://kotlinlang.org/\#try-kotlin](https://kotlinlang.org/#try-kotlin)에서 직접 확인하실 수 있습니다.  
 <br>
 
 #### 3. Coroutine의 부모 - 자식 관계
@@ -365,7 +366,7 @@ CoroutineScope(Dispatchers.IO + job).launch{    // Child / Cancel
 
 그에 대한 해답은 바로 **CoroutineContext의 + job**에 있습니다.  
 **따로 생성한 CoroutineScope를 이용하는 것도 모자라 Thread Pool까지 다르지만 이 + job 덕분에 상위 Coroutine의 영향을 받는 것입니다.**  
-이처럼 CoroutineContext의 일종인 Job을 잘 이용하면 **상위 Coroutine과 하위 Coroutine 사이의 관계**를 나타낼 수 있습니다.
+이처럼 CoroutineContext의 일종인 Job을 잘 이용하면 **상위 Coroutine과 하위 Coroutine 사이의 관계**를 나타낼 수 있습니다.  
 <br>
 
 #### 4. suspend
@@ -424,7 +425,7 @@ CoroutineContext를 설정하는 방식에 약간의 거부감이 있을 수는 
 위와 같이 Coroutine을 사용하기 위한 기본 설정이 끝났다면 **onCreate, onResume과 같은 함수에서 CoroutineScope 선언 없이 바로 launch{} 혹은 async{}를 이용하여 Coroutine을 실행**시킬 수 있습니다.  
 이 때 onCreate 함수 자체는 CoroutineBuilder의 { } 내부가 아니므로 **job.join()과 같은 suspend 함수를 바로 사용할 수는 없음**에 주의해야 합니다. 
 
-Activity는 따로 제공되는 Coroutine 모듈이 없지만 ViewModel이나 Room과 같은 몇몇 객체를 위한 Coroutine 모듈은 [공식적으로 배포](https://developer.android.com/kotlin/ktx?hl=ko)되고 있으니 참고하시면 더욱 다채로운 기능 구현이 가능할 것입니다.
+Activity는 따로 제공되는 Coroutine 모듈이 없지만 ViewModel이나 Room과 같은 몇몇 객체를 위한 Coroutine 모듈은 [공식적으로 배포](https://developer.android.com/kotlin/ktx?hl=ko)되고 있으니 참고하시면 더욱 다채로운 기능 구현이 가능할 것입니다.  
 <br>
 <br>
 
