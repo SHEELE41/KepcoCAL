@@ -11,6 +11,8 @@ Coroutine이라는 개념은 **Kotlin에만 국한된 것이 아니며** 세상�
 하지만 제목에도 적혀있듯이 이 글은**Android에서의 Kotlin Coroutine 사용법**을 알려주기 위한 글이고, 이 제목을 클릭하여 들어오신 분들은 Coroutine이 무엇인지, 어디에 쓰는지는 대충 알고 계신 상태일 것이라고 생각합니다.  
 따라서 이번 글에서는 Coroutine의 개념적인 부분보다는 **실제로 Kotlin Android 앱 개발에서 Coroutine이 어떤 방식으로 사용되는지**를 위주로 진행하려고 합니다. (여러분의 시간은 소중하니까요.)  
 Coroutine이 무엇이고 어떻게 동작하는지에 대해서는 인터넷에 잘 쓰여진 글들이 정말 많으니 개인적으로 찾아보시면 도움이 될 것입니다.  
+<br>
+<br>
 
 # Coroutine 사용을 위한 사전 준비
 긴 말 필요 없이 바로 Coroutine을 만들어보...기 전에 우선 **Dependency를 추가**해주어야 합니다.  
@@ -21,6 +23,8 @@ dependencies {
 }
 ```
 이 외에도 다양한 요소에 대한 Coroutine을 사용하고 싶다면 다음 링크를 참조하시기 바랍니다. ([https://developer.android.com/kotlin/ktx?hl=ko\#viewmodel](https://developer.android.com/kotlin/ktx?hl=ko#viewmodel))
+<br>
+<br>
 
 # Coroutine 만들기
 
@@ -52,8 +56,8 @@ Coroutine이라는 단어가 너무 많네요. 위 코드를 기준으로 바꿔
 각 요소가 무엇을 의미하는지는 이후 차근차근 설명드릴테니 우선 **Coroutine의 세 가지 구성 요소와 흐름**만 기억해주세요!
 
 ##### **Context**로 **Scope**를 만들고, **Builder**를 이용하여 그 **Scope** 안에서 실행!  
-
-
+<br>
+<br>
 
 
 # 첫 번째, CoroutineContext
@@ -80,10 +84,10 @@ Coroutine 또한 이와 같습니다. 무슨 소리냐구요?
 **Dispatcher.Default : 기본 쓰레드 풀, CPU 사용량이 많은 작업에 적합**  
 (이외에도 잘 쓰이지는 않지만 특정 목적을 위해 사용되는 몇몇 쓰레드 풀이 존재하니 자세한 것은 공식 문서를 참조하시면 좋습니다.)  
 
-위 내용을 참조하여 만들어줄 Coroutine의 작업 내용에 맞게 Thread Pool을 선택하면 됩니다.
-파일을 읽고 쓰는 작업이라면 IO를, UI 관련 작업이라면 Main을 선택하면 되겠죠?
+위 내용을 참조하여 만들어줄 Coroutine의 작업 내용에 맞게 Thread Pool을 선택하면 됩니다.  
+파일을 읽고 쓰는 작업이라면 IO를, UI 관련 작업이라면 Main을 선택하면 되겠죠?  
 
-Coroutine에서 CoroutineContext를 지정해주는 방법은 아래와 같이 **CoroutineScope, 혹은 CoroutineBuilder에서 넘겨주는 것**인데 이 두 방식의 차이점은 이후에 따로 설명하도록 하겠습니다.
+Coroutine에서 CoroutineContext를 지정해주는 방법은 아래와 같이 **CoroutineScope, 혹은 CoroutineBuilder에서 넘겨주는 것**인데 이 두 방식의 차이점은 이후에 따로 설명하도록 하겠습니다.  
 
 ``` {.lang:default .decode:true}
 val scope = CoroutineScope(Dispatchers.Main)
@@ -97,14 +101,17 @@ scope.launch(Dispatchers.Default) {
 }
 ```
 
+<br>
+<br>
+
 # 두 번째, CoroutineScope
-Coroutine 구성 요소 그 두 번째, **CoroutineScope**입니다. 
-CoroutineContext로 Coroutine이 어디서 실행될지를 정해주었다면 이 **Coroutine을 제어할 수 있는 Scope, '범위'를 지정**해주어야 합니다. 
-이때 말하는 제어라는 것은 **작업을 취소**시키거나, **어떤 작업이 끝날 때까지 기다리는 것**을 의미합니다.
+Coroutine 구성 요소 그 두 번째, **CoroutineScope**입니다.  
+CoroutineContext로 Coroutine이 어디서 실행될지를 정해주었다면 이 **Coroutine을 제어할 수 있는 Scope, '범위'를 지정**해주어야 합니다.  
+이때 말하는 제어라는 것은 **작업을 취소**시키거나, **어떤 작업이 끝날 때까지 기다리는 것**을 의미합니다.  
 
-**CoroutineScope의 종류**는 크게 두 가지가 있습니다. 
+**CoroutineScope의 종류**는 크게 두 가지가 있습니다.  
 
-**1. 사용자 지정 CoroutineScope**
+**1. 사용자 지정 CoroutineScope**  
 
 ``` {.lang:default .decode:true}
 val scope = CoroutineScope(CoroutineContext ex. Dispatchers.Main...)
@@ -113,11 +120,11 @@ val job = scope.launch{
 }
 ```
 
-가장 기본이 되는 방식의 CoroutineScope입니다. 
-이를 이용하면 **특정 Coroutine이 필요해질 때마다 새로 선언해주고, 필요 없어지면 종료**되도록 할 수 있습니다. 
-예를 들어 어떤 Activity에 보여줄 데이터를 Coroutine으로 불러오고 있다고 생각해봅시다.
-만약 해당 Activity가 도중에 갑자기 종료된다면 **불러오고 있는 데이터는 더 이상 필요가 없으므로 Coroutine도 함께 종료**되어야 합니다.
-이 때 **CoroutineScope를 Activity의 Life-Cycle에 맞춰주면 Activity가 종료될 때 Coroutine도 함께 종료**되도록 만들어 줄 수 있습니다. 
+가장 기본이 되는 방식의 CoroutineScope입니다.  
+이를 이용하면 **특정 Coroutine이 필요해질 때마다 새로 선언해주고, 필요 없어지면 종료**되도록 할 수 있습니다.  
+예를 들어 어떤 Activity에 보여줄 데이터를 Coroutine으로 불러오고 있다고 생각해봅시다.  
+만약 해당 Activity가 도중에 갑자기 종료된다면 **불러오고 있는 데이터는 더 이상 필요가 없으므로 Coroutine도 함께 종료**되어야 합니다.  
+이 때 **CoroutineScope를 Activity의 Life-Cycle에 맞춰주면 Activity가 종료될 때 Coroutine도 함께 종료**되도록 만들어 줄 수 있습니다.  
 
 **2. GlobalScope**
 ``` {.lang:default .decode:true}
@@ -136,10 +143,10 @@ GlobalScope.launch{
 }
 ```
 
-CoroutineScope의 특별한 형태로, **앱이 실행될 때부터 앱이 종료될 때까지 Coroutine을 실행시킬 수 있는 Scope**입니다. 
-어떤 Activity에서 GlobalScope를 통해 실행된 Coroutine은 **Activity가 종료되어도 해당 Coroutine이 완료될 때까지 동작**합니다.
-**앱이 실행되는 동안 장시간, 혹은 주기적으로 실행되어야 하는 Coroutine에 적합**하며, **필요할 때만 수행되어야 하는 Coroutine은 사용자 지정 CoroutineScope 사용이 권장**됩니다.
-CoroutineScope에 대한 자세한 사용 방법은 아래에서 실제 예시와 함께 다룰 예정입니다.
+CoroutineScope의 특별한 형태로, **앱이 실행될 때부터 앱이 종료될 때까지 Coroutine을 실행시킬 수 있는 Scope**입니다.  
+어떤 Activity에서 GlobalScope를 통해 실행된 Coroutine은 **Activity가 종료되어도 해당 Coroutine이 완료될 때까지 동작**합니다.  
+**앱이 실행되는 동안 장시간, 혹은 주기적으로 실행되어야 하는 Coroutine에 적합**하며, **필요할 때만 수행되어야 하는 Coroutine은 사용자 지정 CoroutineScope 사용이 권장**됩니다.  
+CoroutineScope에 대한 자세한 사용 방법은 아래에서 실제 예시와 함께 다룰 예정입니다.  
 
 # 세 번째, CoroutineBuilder
 대망의 마지막, **CoroutineBuilder**입니다.
