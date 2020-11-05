@@ -22,7 +22,7 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9'
 }
 ```
-이 외에도 다양한 요소에 대한 Coroutine을 사용하고 싶다면 다음 링크를 참조하시기 바랍니다. ([https://developer.android.com/kotlin/ktx?hl=ko\#viewmodel](https://developer.android.com/kotlin/ktx?hl=ko#viewmodel))
+이 외에도 다양한 요소에 대한 Coroutine을 사용하고 싶다면 다음 링크를 참조하시기 바랍니다. ([https://developer.android.com/kotlin/ktx?hl=ko\#viewmodel](https://developer.android.com/kotlin/ktx?hl=ko#viewmodel))  
 <br>
 <br>
 
