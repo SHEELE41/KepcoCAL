@@ -1,13 +1,14 @@
 ![post\_main](https://oasisfores.com/wp-content/uploads/2020/11/post_main.png)
 
 # 시작하기 전에...
-![coroutine\_gif](https://oasisfores.com/wp-content/uploads/2020/11/1_OEX52nKgM1SHGO4l1mvV1A.gif)
-**Coroutine**을 굳이 한 문장으로 표현하자면 **비선점(Non-Preemptive), 협력형(Cooperative) 멀티태스킹의 서브 루틴 형태로서 동시성(Concurrency)을 지원하며, 비동기 작업을 쉽게 처리할 수 있도록 도와주는 것**... 이라고 할 수 있습니다. 
-네. 이렇게만 보면 대체 무슨 소리인지 이해가 하나도 되지 않습니다. 
-Coroutine이라는 개념은 **Kotlin에만 국한된 것이 아니며** 세상에 모습을 드러낸 것은 이미 한참 전 일이기 때문에 동작 원리부터 하나하나 설명하기 시작하면 끝이 없어집니다. 
-하지만 제목에도 적혀있듯이 이 글은**Android에서의 Kotlin Coroutine 사용법**을 알려주기 위한 글이고, 이 제목을 클릭하여 들어오신 분들은 Coroutine이 무엇인지, 어디에 쓰는지는 대충 알고 계신 상태일 것이라고 생각합니다.
-따라서 이번 글에서는 Coroutine의 개념적인 부분보다는 **실제로 Kotlin Android 앱 개발에서 Coroutine이 어떤 방식으로 사용되는지**를 위주로 진행하려고 합니다. (여러분의 시간은 소중하니까요.) 
-Coroutine이 무엇이고 어떻게 동작하는지에 대해서는 인터넷에 잘 쓰여진 글들이 정말 많으니 개인적으로 찾아보시면 도움이 될 것입니다.
+![coroutine\_gif](https://oasisfores.com/wp-content/uploads/2020/11/1_OEX52nKgM1SHGO4l1mvV1A.gif)  
+
+**Coroutine**을 굳이 한 문장으로 표현하자면 **비선점(Non-Preemptive), 협력형(Cooperative) 멀티태스킹의 서브 루틴 형태로서 동시성(Concurrency)을 지원하며, 비동기 작업을 쉽게 처리할 수 있도록 도와주는 것**... 이라고 할 수 있습니다.  
+네. 이렇게만 보면 대체 무슨 소리인지 이해가 하나도 되지 않습니다.  
+Coroutine이라는 개념은 **Kotlin에만 국한된 것이 아니며** 세상에 모습을 드러낸 것은 이미 한참 전 일이기 때문에 동작 원리부터 하나하나 설명하기 시작하면 끝이 없어집니다.  
+하지만 제목에도 적혀있듯이 이 글은**Android에서의 Kotlin Coroutine 사용법**을 알려주기 위한 글이고, 이 제목을 클릭하여 들어오신 분들은 Coroutine이 무엇인지, 어디에 쓰는지는 대충 알고 계신 상태일 것이라고 생각합니다.  
+따라서 이번 글에서는 Coroutine의 개념적인 부분보다는 **실제로 Kotlin Android 앱 개발에서 Coroutine이 어떤 방식으로 사용되는지**를 위주로 진행하려고 합니다. (여러분의 시간은 소중하니까요.)  
+Coroutine이 무엇이고 어떻게 동작하는지에 대해서는 인터넷에 잘 쓰여진 글들이 정말 많으니 개인적으로 찾아보시면 도움이 될 것입니다.  
 
 # Coroutine 사용을 위한 사전 준비
 긴 말 필요 없이 바로 Coroutine을 만들어보...기 전에 우선 **Dependency를 추가**해주어야 합니다.
