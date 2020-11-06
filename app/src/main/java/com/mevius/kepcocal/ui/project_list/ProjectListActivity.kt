@@ -4,9 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.AutoCompleteTextView
@@ -15,7 +13,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.mevius.kepcocal.ui.project_list.adapter.ProjectRVAdapter
 import com.mevius.kepcocal.R
-import com.mevius.kepcocal.data.MachineData
 import com.mevius.kepcocal.data.db.AppDatabase
 import com.mevius.kepcocal.data.db.entity.Machine
 import com.mevius.kepcocal.data.db.entity.Project
@@ -48,9 +45,10 @@ import kotlin.coroutines.CoroutineContext
 */
 
 class ProjectListActivity : AppCompatActivity(), CoroutineScope {
+    private var machineList = arrayListOf<Machine>()    // 기기 정보 리스트 생성 (생성만 함)
+    private var lastProjectRowId: Long = 0
     private val safRequestCode: Int = 42     // Request Code for SAF
     private val todayDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-    private var lastRowId: Long = 0
 
     private lateinit var recyclerViewAdapter: ProjectRVAdapter
     private lateinit var recyclerViewLayoutManager: LinearLayoutManager
@@ -60,10 +58,6 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job
-
-    private var machineList = arrayListOf<MachineData>()    // 기기 정보 리스트 생성 (생성만 함)
-    private val noCoordMachineArrayList =
-        arrayListOf<MachineData>()    // 나중에 전산화번호 참조해서 마커 찍어줄 좌표 없는 객체들 모아놓는 ArrayList
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -135,7 +129,7 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
         })
         projectListViewModel.lastProject.observe(this, {
             it?.let {
-                lastRowId = it.id ?: 0
+                lastProjectRowId = it.id ?: 0
             }
         })
 
@@ -198,9 +192,11 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
                         )
                         projectListViewModel.insert(project)
 
-                        val excelParser = ExcelParser(uri)
-                        machineList = excelParser.excelToList()
-                        insertProjectMachineData()
+                        launch {
+                            // Log.d("##################################Launch1", this.coroutineContext[Job].toString())
+                            machineList = ExcelParser(uri).excelToList()
+                            insertProjectMachineData()
+                        }
                         dialog.dismiss()
                     }
                 }
@@ -214,12 +210,11 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
 
 
     private fun insertProjectMachineData() = launch {
+        // Log.d("##################################Launch2", this.coroutineContext[Job].toString())
         // api 객체 생성.
         // 어차피 같은 KakaoAPI, 그 중 Geocode API를 사용하므로 for 문 밖에 한번 선언해주는걸로 여러번 재활용 가능.
         // 함수 내부의 지역 변수이므로 함수 끝나면 싹 정리됨.
         val api = GeocoderAPI.create()
-
-        var onResponseCounter = 0
 
         /*
         * [Coroutine]
@@ -236,6 +231,7 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
         */
 
         launch {    // 부모 코루틴은 생성된 자식 코루틴들이 모두 완료될 때 까지 대기
+            // Log.d("##################################Launch3", this.coroutineContext[Job].toString())
             for (machineData in machineList) {
                 // 비어있지 않은 주소를 machineAddr에 전달
                 val machineAddr: String = if (machineData.address1 != "") {
@@ -244,12 +240,13 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
                     machineData.address2
                 } else {
                     // 주소 둘 다 비어있으면 그냥 다음으로 넘어감
-                    noCoordMachineArrayList.add(machineData)
+                    machineData.isNoCoord = true
                     continue
                 }
 
                 // Import 는 다 Retrofit2로 (Not OkHttp3!)
                 launch {
+                    // Log.d("##################################Launch4", this.coroutineContext[Job].toString())
                     val response = api.getCoordinate(machineAddr)
                     if (response.isSuccessful) {
                         /*
@@ -268,29 +265,8 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
                     }
 
                     if (machineData.coordinateLng != "" && machineData.coordinateLat != "") {   // 좌표가 둘 다 비어있지 않다면
-                        val machineEntity = Machine(
-                            null,
-                            lastRowId,
-                            machineData.index,
-                            machineData.branch,
-                            machineData.computerizedNumber,
-                            machineData.lineName,
-                            machineData.lineNumber,
-                            machineData.company,
-                            machineData.manufacturingYear,
-                            machineData.manufacturingDate,
-                            machineData.manufacturingNumber,
-                            machineData.address1,
-                            machineData.address2,
-                            machineData.coordinateLng,
-                            machineData.coordinateLat,
-                            machineData.isDone,
-                            machineData.isNoCoord
-                        )
-                        val localDataSource = appDatabase.machineDao()
-                        localDataSource.insert(machineEntity)
-
-                        onResponseCounter++
+                        machineData.projectId = lastProjectRowId
+                        appDatabase.machineDao().insert(machineData)
 
                     } else {  // 좌표 하나라도 invalid 할 시 바로 좌표누락기기리스트에 넣어버림
                         machineData.isNoCoord = true
@@ -300,7 +276,6 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
         }.join()    // 부모 launch 종료에 맞춤
         // 마찬가지로 비동기실행
         launch { calculateInvalidAddrMachineData() }
-
     }
 
     /**
@@ -312,14 +287,14 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
         // 전산화번호 계산기 객체 선언
         val cNumberCalculator = ComputerizedNumberCalculator()
 
-        // 좌표 정보가 존재하지 않는 기기들의 리스트를 순회하는 반복문
-        for (noCoordMachine in machineList) {   // 일단 모든 리스트를 다 돌긴 함
-            if (noCoordMachine.isNoCoord) {  // isNoCoord가 true인 기기에 대해서만 실행
+        // 좌표 정보가 존재하지 않는 기기들을 순회하는 반복문
+        machineList.forEach {
+            if (it.isNoCoord) {
                 var closestDistance: Long = Long.MAX_VALUE  // 이 부분도 좀 고쳤으면.
-                var closestMachine: MachineData? = null
+                var closestMachine: Machine? = null
 
                 cNumberCalculator.targetNumber =
-                    noCoordMachine.computerizedNumber  // 한 순회마다 noCoordMachine 에 대한 전산화번호로 갱신
+                    it.computerizedNumber  // 한 순회마다 noCoordMachine 에 대한 전산화번호로 갱신
 
                 // 위도 경도 정보가 제대로 존재하면서 noCoordMachine과 가장 가까운 기기를 찾기 위한 반복문
                 for (machine in machineList) {
@@ -335,16 +310,18 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
                 }
 
                 // 위도 경도 정보가 존재하는 가장 가까운 기기가 존재한다면 그 기기를 기준으로 좌표 계산 후 지도에 추가
-                closestMachine?.let {
+                closestMachine?.let { itClosestMachine ->
                     cNumberCalculator.baseNumber =
-                        it.computerizedNumber    // for문을 계속 돌면서 마지막 machine의 값이 되어있을 것이므로 여기서는 갱신해줘야함.
+                        itClosestMachine.computerizedNumber    // for문을 계속 돌면서 마지막 machine의 값이 되어있을 것이므로 여기서는 갱신해줘야함.
                     // 좌표 계산 루틴
-                    noCoordMachine.coordinateLng =
-                        (it.coordinateLng.toDouble() + ((cNumberCalculator.getXDistance()
-                            .toDouble() * 2.0) / (91290.0 + 85397.0))).toString()    //127
-                    noCoordMachine.coordinateLat =
-                        (it.coordinateLat.toDouble() + ((cNumberCalculator.getYDistance()
-                            .toDouble() * 2.0) / (110941.0 + 111034.0))).toString()  //37
+                    it.apply {
+                        projectId = lastProjectRowId
+                        coordinateLng =
+                            (itClosestMachine.coordinateLng.toDouble() + cNumberCalculator.getLngDelta()).toString()    // 127
+                        coordinateLat =
+                            (itClosestMachine.coordinateLat.toDouble() + cNumberCalculator.getLatDelta()).toString()    // 37
+                    }
+                    appDatabase.machineDao().insert(it)
                 }
             }
         }
@@ -352,6 +329,7 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
 
     override fun onDestroy() {
         super.onDestroy()
+        // Coroutine들의 Life-Cycle이 Activity의 Life-Cycle에 따라 종료 시 함께 취소됨
         job.cancel()
     }
 }

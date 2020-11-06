@@ -3,7 +3,6 @@ package com.mevius.kepcocal.data.db.dao
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.mevius.kepcocal.data.db.entity.Project
-import com.mevius.kepcocal.data.db.entity.ProjectWithMachines
 
 @Dao
 interface ProjectDao {
@@ -19,7 +18,7 @@ interface ProjectDao {
     @Delete
     suspend fun delete(project: Project)
 
-    @Transaction
-    @Query("SELECT * FROM Project")
-    suspend fun getProjectWithMachines(): List<ProjectWithMachines>
+//    @Transaction
+//    @Query("SELECT * FROM Project")
+//    suspend fun getProjectWithMachines(): List<ProjectWithMachines>
 }

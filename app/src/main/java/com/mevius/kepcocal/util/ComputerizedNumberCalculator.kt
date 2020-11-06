@@ -24,7 +24,7 @@ import kotlin.math.pow
  * 나중에 최종 좌표 구하는 과정까지 한번에?
  * 그러기 위해서는 기준 기기 좌표까지 필드로 받아야 함.
  * */
-class ComputerizedNumberCalculator() {
+class ComputerizedNumberCalculator {
     var baseNumber = ""     // 거리 계산의 기준이 되는 기기의 전산화번호
     var targetNumber = ""   // 좌표를 구하고 싶은 기기의 전산화번호
     private val re = Regex("[^0-9]")    // 혹시 모를 문자를 제거하기 위한 패턴(숫자 빼고 다 날림)
@@ -52,6 +52,16 @@ class ComputerizedNumberCalculator() {
     // Base와 Target 사이의 종합 거리 계산 메소드
     fun getTotalDistance(): Long {
         return getXDistance().toDouble().pow(2).toLong() + getYDistance().toDouble().pow(2).toLong()
+    }
+
+    // Lng 차이 계산 메소드
+    fun getLngDelta(): Double{
+        return ((getXDistance().toDouble() * 2.0) / (91290.0 + 85397.0))
+    }
+
+    // Lat 차이 계산 메소드
+    fun getLatDelta(): Double{
+        return ((getYDistance().toDouble() * 2.0) / (110941.0 + 111034.0))
     }
 
     // 전산화번호 특성상 각 축 방향의 거리를 계산하기 위해 알파벳 -> 숫자값 변환이 필요

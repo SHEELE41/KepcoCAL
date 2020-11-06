@@ -17,7 +17,6 @@ class ProjectListViewModel(application: Application): AndroidViewModel(applicati
     private val repository: ProjectRepository
     val allProjects: LiveData<List<Project>>
     var lastProject: LiveData<Project>
-    var lastRowId: Long = 0
 
     init {
         val projectDao = AppDatabase.getDatabase(application, viewModelScope).projectDao()

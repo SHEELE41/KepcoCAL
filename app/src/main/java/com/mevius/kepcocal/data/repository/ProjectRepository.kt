@@ -19,7 +19,7 @@ class ProjectRepository constructor(
     }
 
     val allProjects: LiveData<List<Project>> = localDataSource.getAll()
-    var lastProject: LiveData<Project> = localDataSource.getLastProjectLive()
+    val lastProject: LiveData<Project> = localDataSource.getLastProjectLive()
 
     suspend fun insert(project: Project){
         localDataSource.insert(project)
