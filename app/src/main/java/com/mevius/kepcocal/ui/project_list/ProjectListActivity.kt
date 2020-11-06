@@ -208,7 +208,6 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
         }
     }
 
-
     private fun insertProjectMachineData() = launch {
         // Log.d("##################################Launch2", this.coroutineContext[Job].toString())
         // api 객체 생성.
