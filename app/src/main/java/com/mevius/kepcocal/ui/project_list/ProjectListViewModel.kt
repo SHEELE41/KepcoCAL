@@ -26,11 +26,10 @@ class ProjectListViewModel(application: Application): AndroidViewModel(applicati
         lastProject = repository.lastProject
     }
 
-    fun insert(project: Project) :Long {
+    fun insert(project: Project){
         viewModelScope.launch(Dispatchers.IO){
-            lastRowId = repository.insert(project)
+            repository.insert(project)
         }
-        return lastRowId
     }
 
     fun delete(project: Project) = viewModelScope.launch(Dispatchers.IO) {

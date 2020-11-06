@@ -1,5 +1,6 @@
 package com.mevius.kepcocal.ui.project_list
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
@@ -49,13 +50,14 @@ import kotlin.coroutines.CoroutineContext
 class ProjectListActivity : AppCompatActivity(), CoroutineScope {
     private val safRequestCode: Int = 42     // Request Code for SAF
     private val todayDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+    private var lastRowId: Long = 0
+
     private lateinit var recyclerViewAdapter: ProjectRVAdapter
     private lateinit var recyclerViewLayoutManager: LinearLayoutManager
     private lateinit var projectListViewModel: ProjectListViewModel
-    private var lastRowId: Long = 0
+    private lateinit var appDatabase: AppDatabase
+    private lateinit var job: Job
 
-    lateinit var appDatabase: AppDatabase
-    lateinit var job: Job
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job
 
@@ -66,7 +68,10 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_project_list)
+        // Job 초기화
         job = Job()
+
+        // Database 선언
         appDatabase = AppDatabase.getDatabase(this, this)
 
         /*
@@ -90,20 +95,21 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
          * 길게 눌러서 프로젝트 삭제 확인 다이얼로그 띄움
          */
         val itemLongClick: (Project) -> Boolean = {
-            val builder: AlertDialog.Builder = AlertDialog.Builder(
+            AlertDialog.Builder(
                 this,
                 android.R.style.Theme_DeviceDefault_Light_Dialog_NoActionBar_MinWidth
-            )
-            builder.setTitle("프로젝트 삭제") //제목
-            builder.setMessage("정말로 삭제하시겠어요?")
-            builder.setPositiveButton("확인") { dialog, _ ->
-                projectListViewModel.delete(it)
-                dialog.dismiss()
+            ).apply {
+                setTitle("프로젝트 삭제") //제목
+                setMessage("정말로 삭제하시겠어요?")
+                setPositiveButton(android.R.string.ok) { dialog, _ ->
+                    projectListViewModel.delete(it)
+                    dialog.dismiss()
+                }
+                setNegativeButton(
+                    android.R.string.cancel
+                ) { dialog, _ -> dialog.cancel() }
+                this.show()
             }
-            builder.setNegativeButton(
-                android.R.string.cancel
-            ) { dialog, _ -> dialog.cancel() }
-            builder.show()
             true
         }
 
@@ -113,7 +119,10 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
         rv_project_list.adapter = recyclerViewAdapter   // Set Apapter to RecyclerView in xml
         rv_project_list.layoutManager = recyclerViewLayoutManager
 
+        // ViewModel 선언
         projectListViewModel = ViewModelProvider(this).get(ProjectListViewModel::class.java)
+
+        // ViewModel observe
         projectListViewModel.allProjects.observe(this, { projects ->
             projects?.let {
                 if (it.isEmpty()) {
@@ -137,34 +146,19 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
          * 파일을 선택하면 onActivityResult 액티비티로 넘어감.
          */
         fab_project_list.setOnClickListener {
-
             // Type of Target File
             val mimeTypes = arrayOf(
                 "application/vnd.ms-excel",
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
-
             // Attach Excel File With SAF(Storage Access Framework)
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                 addCategory(Intent.CATEGORY_OPENABLE)
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {      // Case of Higher Version than KITKAT
-                    type = if (mimeTypes.size == 1) mimeTypes[0] else "*/*"     // All Files
-                    if (mimeTypes.isNotEmpty()) {
-                        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
-                    }
-                } else {
-                    var mimeTypesStr = ""
-                    for (mimeType in mimeTypes) {
-                        mimeTypesStr += "$mimeType|"
-                    }
-                    type = mimeTypesStr.substring(
-                        0,
-                        mimeTypesStr.length - 1
-                    )   // "application/vnd.ms-excel|application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                type = "*/*"
+                if (mimeTypes.isNotEmpty()) {
+                    this.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
                 }
             }
-
             startActivityForResult(
                 intent,
                 safRequestCode
@@ -180,54 +174,46 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
      * 저장은 OK 눌렀을 때만 이루어짐.
      * Cancel 누를 경우 아무것도 안함.
      */
+    @SuppressLint("InflateParams")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == safRequestCode && resultCode == Activity.RESULT_OK) {     // When Result is successful
-
+        if (requestCode == safRequestCode && resultCode == Activity.RESULT_OK) {     // When is SAF Request & Result is successful
             var projectNameInput: String
-
-            val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-            builder.setTitle("Project Name")
-
             val viewInflated: View = LayoutInflater.from(this)
                 .inflate(R.layout.dialog_with_edit_text, null)
 
-            builder.setView(viewInflated)
+            AlertDialog.Builder(this).apply {
+                setTitle("프로젝트 추가")
+                setView(viewInflated)
+                setPositiveButton(
+                    android.R.string.ok
+                ) { dialog, _ ->
+                    projectNameInput =
+                        viewInflated.findViewById<AutoCompleteTextView>(R.id.input).text.toString()
+                    data?.data?.also { uri ->
+                        val project = Project(
+                            null,
+                            projectNameInput,
+                            todayDateFormat
+                        )
+                        projectListViewModel.insert(project)
 
-            builder.setPositiveButton(
-                android.R.string.ok
-            ) { dialog, _ ->
-                projectNameInput =
-                    viewInflated.findViewById<AutoCompleteTextView>(R.id.input).text.toString()
-                data?.data?.also { uri ->
-                    val project = Project(
-                        null,
-                        projectNameInput,
-                        todayDateFormat
-                    )
-                    lastRowId = projectListViewModel.insert(project)
-
-                    val excelParser = ExcelParser(uri)
-                    machineList = excelParser.excelToList()
-                    launch {
+                        val excelParser = ExcelParser(uri)
+                        machineList = excelParser.excelToList()
                         insertProjectMachineData()
+                        dialog.dismiss()
                     }
-                    dialog.dismiss()
                 }
+                setNegativeButton(
+                    android.R.string.cancel
+                ) { dialog, _ -> dialog.cancel() }      // If Click Cancel, Do Nothing
+                show()
             }
-
-            builder.setNegativeButton(
-                android.R.string.cancel
-            ) { dialog, _ -> dialog.cancel() }      // If Click Cancel, Do Nothing
-
-            builder.show()      // Show Dialog
         }
     }
 
 
-    private suspend fun insertProjectMachineData() {
-        Log.d("###################################", "API 요청 시작")
+    private fun insertProjectMachineData() = launch {
         // api 객체 생성.
         // 어차피 같은 KakaoAPI, 그 중 Geocode API를 사용하므로 for 문 밖에 한번 선언해주는걸로 여러번 재활용 가능.
         // 함수 내부의 지역 변수이므로 함수 끝나면 싹 정리됨.
@@ -248,73 +234,73 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
         * 9. 자식 launch 의 범위는 꼭 마커 찍는 곳까지 묶어줘야 함.
         * 10. 모든 launch 다 끝나면(join) 좌표 누락된 noCoordMachineArrayList 의 기기들 좌표 계산해서 찍어줌.
         */
-        coroutineScope {
-            launch {    // 부모 코루틴은 생성된 자식 코루틴들이 모두 완료될 때 까지 대기
-                for (machineData in machineList) {
-                    // 비어있지 않은 주소를 machineAddr에 전달
-                    val machineAddr: String = if (machineData.address1 != "") {
-                        machineData.address1
-                    } else if (machineData.address2 != "") {
-                        machineData.address2
-                    } else {
-                        // 주소 둘 다 비어있으면 그냥 다음으로 넘어감
-                        noCoordMachineArrayList.add(machineData)
-                        continue
-                    }
 
-                    // Import 는 다 Retrofit2로 (Not OkHttp3!)
-                    launch {
-                        val response = api.getCoordinate(machineAddr)
-                        if (response.isSuccessful) {
-                            /*
-                            * >> machineData에 좌표 데이터 넣어주기 전에 고려해야 할 것
-                            * 1. Response의 documents 리스트가 비어있지는 않은가?
-                            * 2. response.body()가 null은 아닌가?    // response 자체는 null이 아니지만 body는 가능성 존재
-                            * 3. documents 자체가 null이 될 수도 있나...? X
-                            */
-                            val resultInstance: ResultGetCoordinate? = response.body()
-                            resultInstance?.let {
-                                if (it.documents.isNotEmpty()){
-                                    machineData.coordinateLng = it.documents[0].x.toString()
-                                    machineData.coordinateLat = it.documents[0].y.toString()
-                                }
+        launch {    // 부모 코루틴은 생성된 자식 코루틴들이 모두 완료될 때 까지 대기
+            for (machineData in machineList) {
+                // 비어있지 않은 주소를 machineAddr에 전달
+                val machineAddr: String = if (machineData.address1 != "") {
+                    machineData.address1
+                } else if (machineData.address2 != "") {
+                    machineData.address2
+                } else {
+                    // 주소 둘 다 비어있으면 그냥 다음으로 넘어감
+                    noCoordMachineArrayList.add(machineData)
+                    continue
+                }
+
+                // Import 는 다 Retrofit2로 (Not OkHttp3!)
+                launch {
+                    val response = api.getCoordinate(machineAddr)
+                    if (response.isSuccessful) {
+                        /*
+                        * >> machineData에 좌표 데이터 넣어주기 전에 고려해야 할 것
+                        * 1. Response의 documents 리스트가 비어있지는 않은가?
+                        * 2. response.body()가 null은 아닌가?    // response 자체는 null이 아니지만 body는 가능성 존재
+                        * 3. documents 자체가 null이 될 수도 있나...? X
+                        */
+                        val resultInstance: ResultGetCoordinate? = response.body()
+                        resultInstance?.let {
+                            if (it.documents.isNotEmpty()) {
+                                machineData.coordinateLng = it.documents[0].x.toString()
+                                machineData.coordinateLat = it.documents[0].y.toString()
                             }
                         }
+                    }
 
-                        if (machineData.coordinateLng != "" && machineData.coordinateLat != "") {   // 좌표가 둘 다 비어있지 않다면
-                            val machineEntity = Machine(
-                                null,
-                                lastRowId,
-                                machineData.index,
-                                machineData.branch,
-                                machineData.computerizedNumber,
-                                machineData.lineName,
-                                machineData.lineNumber,
-                                machineData.company,
-                                machineData.manufacturingYear,
-                                machineData.manufacturingDate,
-                                machineData.manufacturingNumber,
-                                machineData.address1,
-                                machineData.address2,
-                                machineData.coordinateLng,
-                                machineData.coordinateLat,
-                                machineData.isDone,
-                                machineData.isNoCoord
-                            )
-                            val localDataSource = appDatabase.machineDao()
-                            localDataSource.insert(machineEntity)
+                    if (machineData.coordinateLng != "" && machineData.coordinateLat != "") {   // 좌표가 둘 다 비어있지 않다면
+                        val machineEntity = Machine(
+                            null,
+                            lastRowId,
+                            machineData.index,
+                            machineData.branch,
+                            machineData.computerizedNumber,
+                            machineData.lineName,
+                            machineData.lineNumber,
+                            machineData.company,
+                            machineData.manufacturingYear,
+                            machineData.manufacturingDate,
+                            machineData.manufacturingNumber,
+                            machineData.address1,
+                            machineData.address2,
+                            machineData.coordinateLng,
+                            machineData.coordinateLat,
+                            machineData.isDone,
+                            machineData.isNoCoord
+                        )
+                        val localDataSource = appDatabase.machineDao()
+                        localDataSource.insert(machineEntity)
 
-                            onResponseCounter++
+                        onResponseCounter++
 
-                        } else {  // 좌표 하나라도 invalid 할 시 바로 좌표누락기기리스트에 넣어버림
-                            machineData.isNoCoord = true
-                        }
-                    }  // for문마다 생기는 launch의 마지막 : 여기까지 한 작업의 단위로 묶어 비동기로 던져줘야 함.
-                }
-            }.join()    // 부모 launch 종료에 맞춤
-            // 마찬가지로 비동기실행
-            launch { calculateInvalidAddrMachineData() }
-        }
+                    } else {  // 좌표 하나라도 invalid 할 시 바로 좌표누락기기리스트에 넣어버림
+                        machineData.isNoCoord = true
+                    }
+                }  // for문마다 생기는 launch의 마지막 : 여기까지 한 작업의 단위로 묶어 비동기로 던져줘야 함.
+            }
+        }.join()    // 부모 launch 종료에 맞춤
+        // 마찬가지로 비동기실행
+        launch { calculateInvalidAddrMachineData() }
+
     }
 
     /**

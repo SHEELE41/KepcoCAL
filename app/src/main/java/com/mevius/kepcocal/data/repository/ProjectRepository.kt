@@ -1,6 +1,5 @@
 package com.mevius.kepcocal.data.repository
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import com.mevius.kepcocal.data.db.dao.ProjectDao
 import com.mevius.kepcocal.data.db.entity.Project
@@ -22,8 +21,8 @@ class ProjectRepository constructor(
     val allProjects: LiveData<List<Project>> = localDataSource.getAll()
     var lastProject: LiveData<Project> = localDataSource.getLastProjectLive()
 
-    suspend fun insert(project: Project): Long{
-        return localDataSource.insert(project)
+    suspend fun insert(project: Project){
+        localDataSource.insert(project)
     }
 
     suspend fun delete(project: Project){

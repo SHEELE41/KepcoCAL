@@ -14,7 +14,7 @@ interface ProjectDao {
     fun getLastProjectLive(): LiveData<Project>
 
     @Insert
-    suspend fun insert(project: Project): Long
+    suspend fun insert(project: Project)
 
     @Delete
     suspend fun delete(project: Project)
