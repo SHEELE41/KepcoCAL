@@ -12,9 +12,12 @@ interface MachineDao {
     @Query("SELECT * FROM Machine")
     fun getAll(): LiveData<List<Machine>>
 
+    @Query("SELECT * FROM Machine WHERE project_id = :projectId")
+    fun getMachinesWithProjectId(projectId: Long): LiveData<List<Machine>>
+
     @Insert
-    fun insert(machine: Machine)
+    suspend fun insert(machine: Machine)
 
     @Delete
-    fun delete(machine: Machine)
+    suspend fun delete(machine: Machine)
 }

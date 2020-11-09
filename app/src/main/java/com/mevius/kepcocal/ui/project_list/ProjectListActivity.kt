@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -18,6 +19,7 @@ import com.mevius.kepcocal.data.db.entity.Machine
 import com.mevius.kepcocal.data.db.entity.Project
 import com.mevius.kepcocal.data.network.GeocoderAPI
 import com.mevius.kepcocal.data.network.model.ResultGetCoordinate
+import com.mevius.kepcocal.data.repository.ProjectRepository
 import com.mevius.kepcocal.ui.project_detail.ProjectDetailActivity
 import com.mevius.kepcocal.util.ComputerizedNumberCalculator
 import com.mevius.kepcocal.util.ExcelParser
@@ -47,6 +49,7 @@ import kotlin.coroutines.CoroutineContext
 class ProjectListActivity : AppCompatActivity(), CoroutineScope {
     private var machineList = arrayListOf<Machine>()    // 기기 정보 리스트 생성 (생성만 함)
     private var lastProjectRowId: Long = 0
+    private var excelFileUri: Uri? = null
     private val safRequestCode: Int = 42     // Request Code for SAF
     private val todayDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
@@ -66,7 +69,8 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
         job = Job()
 
         // Database 선언
-        appDatabase = AppDatabase.getDatabase(this, this)
+        // 나중에 ViewModel...
+        appDatabase = AppDatabase.getDatabase(this)
 
         /*
          * [RecyclerView Project Item onClick]
@@ -113,8 +117,11 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
         rv_project_list.adapter = recyclerViewAdapter   // Set Apapter to RecyclerView in xml
         rv_project_list.layoutManager = recyclerViewLayoutManager
 
+        val dao =  appDatabase.projectDao()
+        val repository = ProjectRepository.getInstance(dao)
+        val factory = ProjectListViewModelFactory(repository)
         // ViewModel 선언
-        projectListViewModel = ViewModelProvider(this).get(ProjectListViewModel::class.java)
+        projectListViewModel = ViewModelProvider(this, factory).get(ProjectListViewModel::class.java)
 
         // ViewModel observe
         projectListViewModel.allProjects.observe(this, { projects ->
@@ -282,7 +289,7 @@ class ProjectListActivity : AppCompatActivity(), CoroutineScope {
      * 좌표 정보가 유효하지 않은 기기들을 지도상에 표시하는 메소드
      * 좌표 정보가 유효한 가까운 기기를 기준점으로 하여 전산화번호 연산 후 자신의 좌표 도출
      */
-    private fun calculateInvalidAddrMachineData() {
+    private suspend fun calculateInvalidAddrMachineData() {
         // 전산화번호 계산기 객체 선언
         val cNumberCalculator = ComputerizedNumberCalculator()
 
