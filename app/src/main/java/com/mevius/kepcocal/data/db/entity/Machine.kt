@@ -18,6 +18,7 @@ data class Machine(
     @PrimaryKey(autoGenerate = true) var id: Long?,   // 데이터베이스에서 사용할 자동 생성 기기 인덱스(not Null)
     @ColumnInfo(name = "project_id", index = true) var projectId: Long?,    // 외래키(not Null)
 
+    // 엑셀에서 불러올 때 CREATE_NULL_AS_BLANK을 이용하였기 때문에 Null이 될 일은 없음
     @ColumnInfo(name = "machine_id_in_excel") var machineIdInExcel: String,    // 실제 파일에 적혀있는 기기 연번(MachineData의 index)
     @ColumnInfo(name = "branch") var branch: String,
     @ColumnInfo(name = "computerized_number") var computerizedNumber: String,

@@ -23,20 +23,11 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-/*
+/**
 * [ProjectListActivity]
 * 프로젝트(엑셀 파일) 리스트를 띄우고 리스트의 아이템을 추가 / 삭제할 수 있는 기능을 하는 Activity
 * ListView Item 이 클릭될 시 해당 프로젝트의 상세 정보 액티비티(지도 및 기기 리스트)인 ProjectDetailActivity 로 이동함
-*
-* Floating Action Button 을 이용하여 프로젝트를 추가할 수 있으며 과정은 다음과 같음
-* - SAF(Storage Access Framework)를 이용하여 엑셀 파일을 불러옴
-* - Dialog 를 띄워 프로젝트명을 입력받음
-* - 불러온 엑셀 파일의 파일명을 입력받은 프로젝트명으로 Rename 하여 앱 내부 저장공간인 /Android/data/com.mevius.kepcocal/files 에 복사
-* - 파일명 = 프로젝트명 이므로 프로젝트 리스트를 띄울 때는 파일명 리스트만 읽으면 됨
-*
-*
-* ListView 프로젝트 리스트 갱신
-* 파일 목록 상의 파일명과 수정 날짜를 읽어서 ArrayList 에 갱신... 따로 클래스화하여 FAB onClick 이벤트에 추가
+* 길게 클릭 시 프로젝트 삭제 가능 ( with Dialog)
 */
 
 class ProjectListActivity : AppCompatActivity() {
@@ -54,7 +45,6 @@ class ProjectListActivity : AppCompatActivity() {
         setContentView(R.layout.activity_project_list)
 
         // Database 선언
-        // 나중에 ViewModel...
         appDatabase = AppDatabase.getDatabase(this)
 
         /*
@@ -119,7 +109,7 @@ class ProjectListActivity : AppCompatActivity() {
                 if (projectLiveDataSize != -1 && projectLiveDataSize < it.size) {   // 초기 로드가 아니고, 프로젝트가 추가되었을 때
                     projectListViewModel.insertMachinesFromExcel(it.last())
                 }
-                projectLiveDataSize = projects.size
+                projectLiveDataSize = projects.size // 초기 데이터 로드 완료 후
             }
         })
 
@@ -150,7 +140,7 @@ class ProjectListActivity : AppCompatActivity() {
         }
     }
 
-    /*
+    /**
      * [onActivityResult Method]
      * When SAF Intent Activity is terminated (Copy(Rename) File to App File Path)
      * 엑셀 파일 선택 후 원래 Activity 로 결과를 들고 돌아오며 onActivityResult 가 호출됨
