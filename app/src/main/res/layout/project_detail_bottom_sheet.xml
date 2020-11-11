@@ -70,13 +70,15 @@
         android:layout_height="wrap_content"
         android:text="평창군 대관령면 수하리 166-18" />
 
-    <Button
+    <ToggleButton
+        android:id="@+id/btn_project_detail_bs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         android:background="@color/colorPrimaryDark"
         android:foreground="?attr/selectableItemBackground"
-        android:text="@string/bottom_sheet_button_text"
+        android:textOff="@string/bottom_sheet_button_text_off"
+        android:textOn="@string/bottom_sheet_button_text_on"
         android:textColor="#fff" />
 
 </LinearLayout>

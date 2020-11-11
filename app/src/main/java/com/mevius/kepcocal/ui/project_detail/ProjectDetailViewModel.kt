@@ -20,6 +20,9 @@ class ProjectDetailViewModel constructor(
     fun insert(machine: Machine) =
         viewModelScope.launch(Dispatchers.IO) { machineRepository.insert(machine) }
 
+    fun update(machine: Machine) =
+        viewModelScope.launch(Dispatchers.IO) { machineRepository.update(machine) }
+
     fun delete(machine: Machine) =
         viewModelScope.launch(Dispatchers.IO) { machineRepository.delete(machine) }
 }

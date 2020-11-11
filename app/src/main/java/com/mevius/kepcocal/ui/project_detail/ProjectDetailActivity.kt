@@ -10,7 +10,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
@@ -26,21 +25,17 @@ import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.mevius.kepcocal.R
-import com.mevius.kepcocal.data.MachineData
 import com.mevius.kepcocal.data.db.AppDatabase
+import com.mevius.kepcocal.data.db.entity.Machine
 import com.mevius.kepcocal.data.repository.MachineRepository
 import com.mevius.kepcocal.ui.project_detail.data.FSVDataHelper
 import com.mevius.kepcocal.ui.project_detail.data.MachineSuggestion
 import com.mevius.kepcocal.ui.project_detail.data.MachineWrapper
 import kotlinx.android.synthetic.main.activity_project_detail.*
 import kotlinx.android.synthetic.main.project_detail_bottom_sheet.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
-import kotlin.coroutines.CoroutineContext
 
 /**
  * [ProjectDetailActivity]
@@ -49,18 +44,16 @@ import kotlin.coroutines.CoroutineContext
  */
 
 class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
-    MapView.POIItemEventListener, CoroutineScope {
+    MapView.POIItemEventListener {
     private val permissionRequestCode = 1001
     private val isLocationApiOnRequestCode = 1002
-    private val validMachineCode = 0
-    private val invalidMachineCode = 1
+    private var viewModelInitFlag = true
     private val findSuggestionSimulatedDelay = 250L
-    private val machineList = arrayListOf<MachineData>()    // 기기 정보 리스트 생성 (생성만 함)
+    private var machineList = listOf<Machine>()    // 기기 정보 리스트 생성 (생성만 함)
 
     private var mLastQuery = ""
 
     private lateinit var mapView: MapView
-    private lateinit var job: Job
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
     private lateinit var layoutBottomSheet: LinearLayout
     private lateinit var appDatabase: AppDatabase
@@ -69,21 +62,9 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     private lateinit var searchResultsList: RecyclerView
     private lateinit var searchResultAdapter: SearchResultsListAdapter
 
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + job
-
-    // Activity와 Coroutine 생성주기를 맞춰주기 위해 onDestroy()에 job.cancel()
-    override fun onDestroy() {
-        super.onDestroy()
-        job.cancel()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_project_detail)
-
-        // 1. Coroutine job 선언
-        job = Job()
 
         appDatabase = AppDatabase.getDatabase(this)
 
@@ -118,23 +99,21 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
 
         projectDetailViewModel.getMachinesWithProjectId(projectId).observe(this, { machines ->
             machines?.let {
-                it.forEach { machine ->
-                    val marker = MapPOIItem().apply {
-                        setMarkerProperty(validMachineCode)
-                        itemName = machine.computerizedNumber
-                        mapPoint = MapPoint.mapPointWithGeoCoord(
-                            machine.coordinateLat.toDouble(),
-                            machine.coordinateLng.toDouble()
-                        )
+                if (viewModelInitFlag){
+                    it.forEach { machine ->
+                        val marker = MapPOIItem().setMarkerProperty(machine)
+                        mapView.apply {
+                            addPOIItem(marker)
+                            setMapCenterPoint(
+                                marker.mapPoint, true
+                            )
+                            setZoomLevel(7, true)
+                        }
                     }
-                    mapView.addPOIItem(marker)
-                    mapView.setMapCenterPoint(
-                        marker.mapPoint, true
-                    )
-                    mapView.setZoomLevel(7, true)
                 }
             }
             FSVDataHelper.liveMachineData = machines
+            machineList = machines
         })
 
         // 5. Floating Search View 설정 및 Listener Binding
@@ -142,6 +121,16 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         searchResultsList = search_results_list
         setupFloatingSearch()
         setupResultList()
+
+        btn_project_detail_bs.setOnClickListener {
+            viewModelInitFlag = false
+            val selectedMachine = machineList.find { it.machineIdInExcel == bs_tv_index.text }
+            val selectedPOIItem = mapView.findPOIItemByTag(selectedMachine?.machineIdInExcel?.toInt()!!)
+            selectedMachine.isDone = !selectedMachine.isDone    // toggle
+            mapView.removePOIItem(selectedPOIItem)
+            mapView.addPOIItem(MapPOIItem().setMarkerProperty(selectedMachine))
+            projectDetailViewModel.update(selectedMachine)
+        }
     }
 
     /**
@@ -149,7 +138,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
      * FloatingSearchView에 각종 이벤트 연결
      */
     private fun setupFloatingSearch() {
-        // SearchView 에 입력중인 문자열 변경 시마다.
+        // SearchView에 입력중인 문자열 변경 이벤트
         floatingSearchView.setOnQueryChangeListener { oldQuery, newQuery ->
             if (oldQuery != "" && newQuery == "") {
                 floatingSearchView.clearSuggestions()
@@ -169,9 +158,10 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
             }
         }
 
-        // 검색 결과 액션
+        // 검색 결과 이벤트
         floatingSearchView.setOnSearchListener(
             object : FloatingSearchView.OnSearchListener {
+                // 방식 1 : Suggestion 중 하나 클릭
                 override fun onSuggestionClicked(searchSuggestion: SearchSuggestion?) {
                     val machineSuggestion = searchSuggestion as MachineSuggestion
                     FSVDataHelper.findMachines(
@@ -184,6 +174,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
                     mLastQuery = searchSuggestion.body.toString()
                 }
 
+                // 방식 2 : 텍스트 입력 후 정직하게 검색 버튼 클릭
                 override fun onSearchAction(currentQuery: String?) {
                     if (currentQuery != null) {
                         mLastQuery = currentQuery
@@ -199,7 +190,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
             }
         )
 
-        // FloatingSearchView 우측 버튼 중 무언가가 눌렸을 때
+        // FloatingSearchView 우측 메뉴 아이콘 이벤트
         floatingSearchView.setOnMenuItemClickListener { menuItem ->
             if (menuItem.itemId == R.id.action_location) {  // 근데 그 중 위치 버튼이 눌렸을 때
                 // 위치 권한 및 기능 on/off 확인 후 현위치 Tracking
@@ -213,7 +204,6 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         searchResultsList.adapter = searchResultAdapter
         searchResultsList.layoutManager = LinearLayoutManager(this)
     }
-
 
     /**
      * [checkSettingAndTracking]
@@ -355,31 +345,44 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     /**
      * [MapPOIItem.setMarkerProperty] function
      * 마커 속성 설정 확장함수
-     * 인자로 마커 타입이 들어오면 그에 맞는 마커 속성 설정
+     * 인자로 기기 엔티티가 들어오면 그에 맞는 마커 속성 설정
      */
-    private fun MapPOIItem.setMarkerProperty(machineType: Int) {
-        this.showAnimationType = MapPOIItem.ShowAnimationType.DropFromHeaven  // 생성 시 애니메이션
-        this.tag = 0  // 태그?
-        when (machineType) {
-            0 -> {
-                this.markerType = MapPOIItem.MarkerType.BluePin
-            }  // VALID_MACHINE
-            1 -> {
-                this.markerType = MapPOIItem.MarkerType.RedPin
-            }  // INVALID_MACHINE
-            else -> {
-                this.markerType = MapPOIItem.MarkerType.BluePin
-            }   // DEFAULT
-        }
+    private fun MapPOIItem.setMarkerProperty(machine: Machine): MapPOIItem {
+        showAnimationType = MapPOIItem.ShowAnimationType.SpringFromGround  // 생성 시 애니메이션
+        tag = machine.machineIdInExcel.toInt()  // 각 마커의 태그는 엑셀에서의 연번
+        markerType = if (machine.isDone) MapPOIItem.MarkerType.BluePin else MapPOIItem.MarkerType.RedPin
+        itemName = machine.computerizedNumber
+        mapPoint = MapPoint.mapPointWithGeoCoord(
+            machine.coordinateLat.toDouble(),
+            machine.coordinateLng.toDouble()
+        )
+        return this
     }
 
     /**
      * [onPOIItemSelected] function
      * 마커 클릭 시 호출되는 함수.
-     * 무슨 기능 넣을지는 일단 생각중...
+     * 마커 클릭 시마다 마커에 해당되는 기기의 정보를 Bottom Sheet에 매핑
      */
-    override fun onPOIItemSelected(p0: MapView?, p1: MapPOIItem?) {
-        Log.d("###########################################", "마커 클릭")
+    @SuppressLint("SetTextI18n")
+    override fun onPOIItemSelected(mMapView: MapView?, mMapPOIItem: MapPOIItem?) {
+        val onClickedPOIItemTag = mMapPOIItem?.tag
+        val onClickedMachine: Machine?
+
+        // 선택된 마커에 대한 기기 찾기
+        onClickedMachine = machineList.find { it.machineIdInExcel.toInt() == onClickedPOIItemTag }
+
+        // 기기의 데이터를 뷰에 매핑
+        onClickedMachine?.let {
+            btn_project_detail_bs.isChecked = it.isDone
+            bs_tv_line_name_number.text = it.lineName + " " + it.lineNumber
+            bs_tv_index.text = it.machineIdInExcel
+            bs_tv_computerized_number.text = it.computerizedNumber
+            bs_tv_address.text =
+                if (it.isNoCoord) "주소 데이터가 유효하지 않아 계산된 위치에 찍힌 핀입니다." else if (it.address1 != "") it.address1 else it.address2
+            bs_tv_manufacturing_data.text =
+                it.company + " " + it.manufacturingNumber + " (" + it.manufacturingYear + "." + it.manufacturingDate + ")"
+        }
     }
 
     // Deprecated
@@ -389,39 +392,15 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     /**
      * [onCalloutBalloonOfPOIItemTouched] function
      * 마커 터치하면 나오는 말풍선을 터치했을 때 호출되는 함수
-     * 해당 마커에 해당되는 기기의 MachineData Instance를 찾아 BottomSheet 뷰에 정보 매핑
+     * BottomSheet 내려가있으면 올려줌
      */
-    @SuppressLint("SetTextI18n")
     override fun onCalloutBalloonOfPOIItemTouched(
         mMapView: MapView?,
         mMapPOIItem: MapPOIItem?,
         mCalloutBalloonButtonType: MapPOIItem.CalloutBalloonButtonType?
     ) {
-        val onClickedMachineCNum = mMapPOIItem?.itemName ?: ""
-        var onClickedMachineData: MachineData? = null
-
-        // 선택된 마커에 대한 기기 찾기(전산화번호 대조)
-        for (machineData in machineList) {
-            if (onClickedMachineCNum == machineData.computerizedNumber) {
-                onClickedMachineData = machineData
-            }
-        }
-
-        // 기기의 데이터를 뷰에 매핑
-        onClickedMachineData?.let {
-            bs_tv_line_name_number.text = it.lineName + " " + it.lineNumber
-            bs_tv_index.text = it.index
-            bs_tv_computerized_number.text = it.computerizedNumber
-            bs_tv_address.text =
-                if (it.address1 != "") it.address1 else if (it.address2 != "") it.address2 else "주소 데이터가 유효하지 않아 계산된 위치에 찍힌 핀입니다."
-            bs_tv_manufacturing_data.text =
-                it.company + " " + it.manufacturingNumber + " (" + it.manufacturingYear + "." + it.manufacturingDate + ")"
-        }
-
         // BottomSheet 숨겨져있으면 열기
-        if (bottomSheetBehavior.state != BottomSheetBehavior.STATE_EXPANDED) {
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-        }
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
     }
 
     override fun onDraggablePOIItemMoved(p0: MapView?, p1: MapPOIItem?, p2: MapPoint?) {
@@ -443,9 +422,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
      */
     override fun onMapViewSingleTapped(p0: MapView?, p1: MapPoint?) {
         // 맵 클릭 시 BottomSheet 내리기
-        if (bottomSheetBehavior.state != BottomSheetBehavior.STATE_COLLAPSED) {
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-        }
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
     }
 
     override fun onMapViewDoubleTapped(p0: MapView?, p1: MapPoint?) {

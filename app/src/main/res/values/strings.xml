@@ -8,5 +8,6 @@
     <string name="hint_project_name">프로젝트명을 입력해주세요.</string>
     <string name="not_found">파일이 없음</string>
     <string name="bottom_sheet_address">주소</string>
-    <string name="bottom_sheet_button_text">작업 완료</string>
+    <string name="bottom_sheet_button_text_off">작업 완료</string>
+    <string name="bottom_sheet_button_text_on">작업 취소</string>
 </resources>

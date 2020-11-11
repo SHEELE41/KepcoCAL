@@ -34,6 +34,10 @@ class MachineRepository constructor(
         localDataSource.insert(machine)
     }
 
+    suspend fun update(machine: Machine) {
+        localDataSource.update(machine)
+    }
+
     suspend fun delete(machine: Machine) {
         localDataSource.delete(machine)
     }
