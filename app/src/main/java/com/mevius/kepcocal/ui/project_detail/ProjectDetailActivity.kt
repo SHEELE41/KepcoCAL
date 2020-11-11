@@ -66,17 +66,18 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_project_detail)
 
+        // 1. AppDatabase 객체 가져오기
         appDatabase = AppDatabase.getDatabase(this)
 
         // 2. Intent 및 Parsing 작업
-        // Intent 를 이용하여  ProjectListActivity 로부터 넘어온 fileName 을 수신
+        // Intent 를 이용하여  ProjectListActivity 로부터 넘어온 projectId 를 수신
         val projectId: Long = intent.getLongExtra("projectId", 0L)
         if (projectId == 0L) { // 만약 전달받은 fileName 이 Null 이라면 즉시 액티비티 종료
             Toast.makeText(this, "올바르지 않은 프로젝트입니다.", Toast.LENGTH_SHORT).show()
             finish()
         }
 
-        // 3. Layout 작업
+        // 3. Bottom Sheet 작업
         layoutBottomSheet = bottom_sheet
         bottomSheetBehavior = BottomSheetBehavior.from(layoutBottomSheet)
 
@@ -99,7 +100,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
 
         projectDetailViewModel.getMachinesWithProjectId(projectId).observe(this, { machines ->
             machines?.let {
-                if (viewModelInitFlag){
+                if (viewModelInitFlag) {
                     it.forEach { machine ->
                         val marker = MapPOIItem().setMarkerProperty(machine)
                         mapView.apply {
@@ -125,7 +126,8 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         btn_project_detail_bs.setOnClickListener {
             viewModelInitFlag = false
             val selectedMachine = machineList.find { it.machineIdInExcel == bs_tv_index.text }
-            val selectedPOIItem = mapView.findPOIItemByTag(selectedMachine?.machineIdInExcel?.toInt()!!)
+            val selectedPOIItem =
+                mapView.findPOIItemByTag(selectedMachine?.machineIdInExcel?.toInt()!!)
             selectedMachine.isDone = !selectedMachine.isDone    // toggle
             mapView.removePOIItem(selectedPOIItem)
             mapView.addPOIItem(MapPOIItem().setMarkerProperty(selectedMachine))
@@ -199,6 +201,10 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         }
     }
 
+    /**
+     * [setupResultList]
+     * FloatingSearchView에 각종 이벤트 연결
+     */
     private fun setupResultList() {
         searchResultAdapter = SearchResultsListAdapter()
         searchResultsList.adapter = searchResultAdapter
@@ -351,6 +357,11 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         showAnimationType = MapPOIItem.ShowAnimationType.SpringFromGround  // 생성 시 애니메이션
         tag = machine.machineIdInExcel.toInt()  // 각 마커의 태그는 엑셀에서의 연번
         markerType = if (machine.isDone) MapPOIItem.MarkerType.BluePin else MapPOIItem.MarkerType.RedPin
+//         customImageResourceId =
+//             if (machine.isDone) R.drawable.ic_machine_complete else if (machine.isNoCoord) R.drawable.ic_machine_incomplete_no_coord else R.drawable.ic_machine_incomplete
+//        customSelectedImageResourceId =
+//             if (machine.isDone) R.drawable.ic_machine_complete_selected else if (machine.isNoCoord) R.drawable.ic_machine_incompleted_no_coord_selected else R.drawable.ic_machine_incomplete_selected
+//        setCustomImageAnchor(0.5f, 1.0f)
         itemName = machine.computerizedNumber
         mapPoint = MapPoint.mapPointWithGeoCoord(
             machine.coordinateLat.toDouble(),
