@@ -39,8 +39,7 @@ import net.daum.mf.map.api.MapView
 
 /**
  * [ProjectDetailActivity]
- * 한 프로젝트(엑셀파일)에 해당되는 상세 정보가 담긴 액티비티
- * 구현 계획중인 기능
+ * 한 프로젝트에 해당되는 상세 정보가 담긴 액티비티
  */
 
 class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
@@ -50,6 +49,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     private var viewModelInitFlag = true
     private val findSuggestionSimulatedDelay = 250L
     private var machineList = listOf<Machine>()    // 기기 정보 리스트 생성 (생성만 함)
+    private var projectId: Long = 0L
 
     private var mLastQuery = ""
 
@@ -66,30 +66,82 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_project_detail)
 
-        // 1. AppDatabase 객체 가져오기
-        appDatabase = AppDatabase.getDatabase(this)
+        initDatabase()
+        getProjectIdFromIntent()
+        setupUI()
+        setupViewModel()
+    }
 
-        // 2. Intent 및 Parsing 작업
-        // Intent 를 이용하여  ProjectListActivity 로부터 넘어온 projectId 를 수신
-        val projectId: Long = intent.getLongExtra("projectId", 0L)
+    /**
+     * [initDatabase]
+     * 데이터베이스 객체 세팅
+     */
+    private fun initDatabase(){
+        appDatabase = AppDatabase.getDatabase(this)
+    }
+
+    /**
+     * [getProjectIdFromIntent]
+     * Intent Extra 로부터 클릭된 ProjectId 가져오기
+     */
+    private fun getProjectIdFromIntent(){
+        projectId = intent.getLongExtra("projectId", 0L)
         if (projectId == 0L) { // 만약 전달받은 fileName 이 Null 이라면 즉시 액티비티 종료
             Toast.makeText(this, "올바르지 않은 프로젝트입니다.", Toast.LENGTH_SHORT).show()
             finish()
         }
+    }
 
-        // 3. Bottom Sheet 작업
+    /**
+     * [setupUI]
+     * UI 종합 설정
+     */
+    private fun setupUI(){
+        setupMapView()
+        setupBottomSheet()
+        setupFloatingSearch()
+        setupResultList()
+    }
+
+    /**
+     * [setupBottomSheet]
+     * BottomSheet 설정
+     */
+    private fun setupBottomSheet(){
         layoutBottomSheet = bottom_sheet
         bottomSheetBehavior = BottomSheetBehavior.from(layoutBottomSheet)
 
-        // 4. MapView 설정 및 띄우기
+        // BottomSheet 내부 버튼 설정
+        btn_project_detail_bs.setOnClickListener {
+            viewModelInitFlag = false
+            val selectedMachine = machineList.find { it.machineIdInExcel == bs_tv_index.text }
+            val selectedPOIItem =
+                mapView.findPOIItemByTag(selectedMachine?.machineIdInExcel?.toInt()!!)
+            selectedMachine.isDone = !selectedMachine.isDone    // toggle
+            mapView.removePOIItem(selectedPOIItem)
+            mapView.addPOIItem(MapPOIItem().setMarkerProperty(selectedMachine))
+            projectDetailViewModel.update(selectedMachine)
+        }
+    }
+
+    /**
+     * [setupMapView]
+     * MapView 설정
+     */
+    private fun setupMapView(){
         mapView = MapView(this)
         mapView.setMapViewEventListener(this)   // MapViewEventListener Binding
         mapView.setPOIItemEventListener(this)   // POIItemEventListener Binding
         MapView.setMapTilePersistentCacheEnabled(true)  // Use MapView Cache
         val mapViewContainer = mapViewProjectDetail as ViewGroup
         mapViewContainer.addView(mapView)
+    }
 
-
+    /**
+     * [setupViewModel]
+     * ViewModel 및 Observer 설정
+     */
+    private fun setupViewModel(){
         val dao = appDatabase.machineDao()
         val repository = MachineRepository.getInstance(dao)
         val factory = ProjectDetailViewModelFactory(repository)
@@ -116,23 +168,6 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
             FSVDataHelper.liveMachineData = machines
             machineList = machines
         })
-
-        // 5. Floating Search View 설정 및 Listener Binding
-        floatingSearchView = floating_search_view
-        searchResultsList = search_results_list
-        setupFloatingSearch()
-        setupResultList()
-
-        btn_project_detail_bs.setOnClickListener {
-            viewModelInitFlag = false
-            val selectedMachine = machineList.find { it.machineIdInExcel == bs_tv_index.text }
-            val selectedPOIItem =
-                mapView.findPOIItemByTag(selectedMachine?.machineIdInExcel?.toInt()!!)
-            selectedMachine.isDone = !selectedMachine.isDone    // toggle
-            mapView.removePOIItem(selectedPOIItem)
-            mapView.addPOIItem(MapPOIItem().setMarkerProperty(selectedMachine))
-            projectDetailViewModel.update(selectedMachine)
-        }
     }
 
     /**
@@ -140,6 +175,8 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
      * FloatingSearchView에 각종 이벤트 연결
      */
     private fun setupFloatingSearch() {
+        floatingSearchView = floating_search_view
+
         // SearchView에 입력중인 문자열 변경 이벤트
         floatingSearchView.setOnQueryChangeListener { oldQuery, newQuery ->
             if (oldQuery != "" && newQuery == "") {
@@ -203,9 +240,10 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
 
     /**
      * [setupResultList]
-     * FloatingSearchView에 각종 이벤트 연결
+     * FloatingSearchView 결과 RecyclerView 설정
      */
     private fun setupResultList() {
+        searchResultsList = search_results_list
         searchResultAdapter = SearchResultsListAdapter()
         searchResultsList.adapter = searchResultAdapter
         searchResultsList.layoutManager = LinearLayoutManager(this)

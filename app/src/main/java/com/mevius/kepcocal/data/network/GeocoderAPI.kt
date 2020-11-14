@@ -31,7 +31,6 @@ interface GeocoderAPI {
     companion object {
         // Header에 들어갈 정보 설정
         private const val BASE_URL_KAKAO_API = "https://dapi.kakao.com/"    // API 기본 경로
-        // TODO String 매크로로 바꾸기
         private const val AUTHORIZATION_KEY = "KakaoAK 7f560ef33db63b7dec4f618dbd696f67"    // Auth Key
 
         fun create(): GeocoderAPI {
