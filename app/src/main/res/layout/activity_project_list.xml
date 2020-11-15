@@ -6,26 +6,6 @@
     android:layout_height="match_parent"
     android:id="@+id/project_list_layout">
 
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_project_list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbars="vertical"
-            android:divider="#00FFFFFF"
-            android:dividerHeight="0dp"
-            android:paddingTop="5dp"
-            android:paddingBottom="5dp"
-            android:clipToPadding="false" />
-
-    </androidx.core.widget.NestedScrollView>
-
-
-
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="250dp"
@@ -60,6 +40,24 @@
         </com.google.android.material.appbar.CollapsingToolbarLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_project_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical"
+            android:divider="#00FFFFFF"
+            android:dividerHeight="0dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:clipToPadding="false" />
+
+    </androidx.core.widget.NestedScrollView>
 
     <ImageView
         android:id="@+id/iv_isEmpty"

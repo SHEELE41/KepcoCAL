@@ -140,13 +140,13 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
                 if (viewModelInitFlag) {
                     it.forEach { machine ->
                         val marker = MapPOIItem().setMarkerProperty(machine)
-                        mapView.apply {
-                            addPOIItem(marker)
-                            setMapCenterPoint(
-                                marker.mapPoint, true
-                            )
-                            setZoomLevel(7, true)
-                        }
+                        mapView.addPOIItem(marker)
+                    }
+                    mapView.apply {
+                        setMapCenterPoint(
+                            poiItems.last().mapPoint, true
+                        )
+                        setZoomLevel(7, true)
                     }
                 }
             }
@@ -195,15 +195,18 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
                                 // 검색 창 닫기
                                 floatingSearchView.clearSearchFocus()
                                 if (!results.isNullOrEmpty()) {
-                                    mapView.apply {
-                                        val resultMarker =
-                                            this.findPOIItemByTag(results[0]?.machineIdInExcel?.toInt()!!)
-                                        this.selectPOIItem(resultMarker, true)
-                                        expandBottomSheet()
-                                        this.setMapCenterPoint(
-                                            resultMarker.mapPoint, true
-                                        )
-                                        this.setZoomLevel(2, true)
+                                    results[0]?.let {
+                                        mapView.apply {
+                                            val resultMarker =
+                                                findPOIItemByTag(it.machineIdInExcel.toInt())
+                                            setBottomSheetData(it)
+                                            expandBottomSheet()
+                                            setMapCenterPoint(
+                                                resultMarker.mapPoint, true
+                                            )
+                                            setZoomLevel(2, true)
+                                            selectPOIItem(resultMarker, true)
+                                        }
                                     }
                                 }
                             }
@@ -266,14 +269,37 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         searchResultsList.layoutManager = LinearLayoutManager(this)
     }
 
-    // BottomSheet 펼치기
+    /**
+     * [expandBottomSheet]
+     * BottomSheet 펼치기
+     */
     private fun expandBottomSheet() {
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
     }
 
-    // BottomSheet 내리기
+    /**
+     * [collapseBottomSheet]
+     * BottomSheet 내리기
+     */
     private fun collapseBottomSheet() {
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+    }
+
+    /**
+     * [setBottomSheetData]
+     * BottomSheet DataMapping
+     * TODO : 후에 DataBinding 사용 예정
+     */
+    @SuppressLint("SetTextI18n")
+    private fun setBottomSheetData(machine: Machine) {
+        btn_project_detail_bs.isChecked = machine.isDone
+        bs_tv_line_name_number.text = machine.lineName + " " + machine.lineNumber
+        bs_tv_index.text = machine.machineIdInExcel
+        bs_tv_computerized_number.text = machine.computerizedNumber
+        bs_tv_address.text =
+            if (machine.isNoCoord) "주소 데이터가 유효하지 않아 계산된 위치에 찍힌 핀입니다." else if (machine.address1 != "") machine.address1 else machine.address2
+        bs_tv_manufacturing_data.text =
+            machine.company + " " + machine.manufacturingNumber + " (" + machine.manufacturingYear + "." + machine.manufacturingDate + ")"
     }
 
     /**
@@ -441,7 +467,6 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
      * 마커 클릭 시 호출되는 함수.
      * 마커 클릭 시마다 마커에 해당되는 기기의 정보를 BottomSheet 에 매핑
      */
-    @SuppressLint("SetTextI18n")
     override fun onPOIItemSelected(mMapView: MapView?, mMapPOIItem: MapPOIItem?) {
         val onClickedPOIItemTag = mMapPOIItem?.tag
         val onClickedMachine: Machine?
@@ -451,14 +476,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
 
         // 기기의 데이터를 뷰에 매핑
         onClickedMachine?.let {
-            btn_project_detail_bs.isChecked = it.isDone
-            bs_tv_line_name_number.text = it.lineName + " " + it.lineNumber
-            bs_tv_index.text = it.machineIdInExcel
-            bs_tv_computerized_number.text = it.computerizedNumber
-            bs_tv_address.text =
-                if (it.isNoCoord) "주소 데이터가 유효하지 않아 계산된 위치에 찍힌 핀입니다." else if (it.address1 != "") it.address1 else it.address2
-            bs_tv_manufacturing_data.text =
-                it.company + " " + it.manufacturingNumber + " (" + it.manufacturingYear + "." + it.manufacturingDate + ")"
+            setBottomSheetData(it)
         }
     }
 

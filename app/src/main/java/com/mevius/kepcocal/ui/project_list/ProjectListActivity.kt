@@ -89,7 +89,7 @@ class ProjectListActivity : AppCompatActivity() {
         // RecyclerView 설정
         recyclerViewAdapter = ProjectRVAdapter(this, itemClick, itemLongClick)
         recyclerViewLayoutManager = LinearLayoutManager(this)
-        rv_project_list.adapter = recyclerViewAdapter   // Set Apapter to RecyclerView in xml
+        rv_project_list.adapter = recyclerViewAdapter   // Set Adapter to RecyclerView in xml
         rv_project_list.layoutManager = recyclerViewLayoutManager
 
         val projectDao = appDatabase.projectDao()
