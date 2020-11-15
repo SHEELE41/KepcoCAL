@@ -29,7 +29,6 @@ import com.mevius.kepcocal.data.db.entity.Machine
 import com.mevius.kepcocal.data.repository.MachineRepository
 import com.mevius.kepcocal.ui.project_detail.data.FSVDataHelper
 import com.mevius.kepcocal.ui.project_detail.data.MachineSuggestion
-import com.mevius.kepcocal.ui.project_detail.data.MachineWrapper
 import kotlinx.android.synthetic.main.activity_project_detail.*
 import kotlinx.android.synthetic.main.project_detail_bottom_sheet.*
 import net.daum.mf.map.api.MapPOIItem
@@ -192,28 +191,24 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
                     FSVDataHelper.findMachines(
                         machineSuggestion.body,
                         object : FSVDataHelper.OnFindMachinesListener {
-                            override fun onResults(results: List<MachineWrapper?>?) {
-                                searchResultAdapter.swapData(results)
-                                mapView.apply {
-                                    setMapCenterPoint(
-                                        machineList.find {
-                                            it.computerizedNumber == results?.get(
-                                                0
-                                            )?.indexInExcel ?: ""
-                                        }?.coordinateLng?.toDouble()?.let {
-                                            MapPoint.mapPointWithGeoCoord(
-                                                (machineList.find {
-                                                    it.computerizedNumber == results?.get(
-                                                        0
-                                                    )?.indexInExcel ?: ""
-                                                }?.coordinateLat?.toDouble()!!),
-                                                it
-                                            )
-                                        }, true
-                                    )
+                            override fun onResults(results: List<Machine?>?) {
+                                // 검색 창 닫기
+                                floatingSearchView.clearSearchFocus()
+                                if (!results.isNullOrEmpty()) {
+                                    mapView.apply {
+                                        val resultMarker =
+                                            this.findPOIItemByTag(results[0]?.machineIdInExcel?.toInt()!!)
+                                        this.selectPOIItem(resultMarker, true)
+                                        expandBottomSheet()
+                                        this.setMapCenterPoint(
+                                            resultMarker.mapPoint, true
+                                        )
+                                        this.setZoomLevel(2, true)
+                                    }
                                 }
                             }
                         })
+                    // 검색 창에 남아있을 마지막 쿼리 문자열
                     mLastQuery = searchSuggestion.body.toString()
                 }
 
@@ -225,7 +220,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
                     FSVDataHelper.findMachines(
                         currentQuery,
                         object : FSVDataHelper.OnFindMachinesListener {
-                            override fun onResults(results: List<MachineWrapper?>?) {
+                            override fun onResults(results: List<Machine?>?) {
                                 searchResultAdapter.swapData(results)
                             }
                         })
@@ -240,6 +235,24 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
                 checkSettingAndTracking()
             }
         }
+
+        // onFocus 이벤트
+        floatingSearchView.setOnFocusChangeListener(
+            object : FloatingSearchView.OnFocusChangeListener {
+                override fun onFocus() {
+                    floatingSearchView.swapSuggestions(
+                        FSVDataHelper.getHistory(
+                            this@ProjectDetailActivity,
+                            3
+                        )
+                    )
+                }
+
+                override fun onFocusCleared() {
+                    floatingSearchView.setSearchBarTitle(mLastQuery)
+                }
+            }
+        )
     }
 
     /**
@@ -251,6 +264,16 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         searchResultAdapter = SearchResultsListAdapter()
         searchResultsList.adapter = searchResultAdapter
         searchResultsList.layoutManager = LinearLayoutManager(this)
+    }
+
+    // BottomSheet 펼치기
+    private fun expandBottomSheet() {
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+    }
+
+    // BottomSheet 내리기
+    private fun collapseBottomSheet() {
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
     }
 
     /**
@@ -454,7 +477,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         mCalloutBalloonButtonType: MapPOIItem.CalloutBalloonButtonType?
     ) {
         // BottomSheet 숨겨져있으면 열기
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        expandBottomSheet()
     }
 
     override fun onDraggablePOIItemMoved(p0: MapView?, p1: MapPOIItem?, p2: MapPoint?) {
@@ -476,7 +499,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
      */
     override fun onMapViewSingleTapped(p0: MapView?, p1: MapPoint?) {
         // 맵 클릭 시 BottomSheet 내리기
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        collapseBottomSheet()
     }
 
     override fun onMapViewDoubleTapped(p0: MapView?, p1: MapPoint?) {

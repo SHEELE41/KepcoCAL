@@ -10,7 +10,7 @@ import kotlin.collections.ArrayList
 
 class FSVDataHelper {
     interface OnFindMachinesListener {
-        fun onResults(results: List<MachineWrapper?>?)
+        fun onResults(results: List<Machine?>?)
     }
 
     interface OnFindSuggestionsListener {
@@ -100,7 +100,7 @@ class FSVDataHelper {
                 }
 
                 override fun publishResults(constraint: CharSequence?, results: FilterResults) {
-                    listener?.onResults(results.values as List<MachineWrapper?>)
+                    listener?.onResults(results.values as List<Machine?>)
                 }
             }.filter(query)
         }

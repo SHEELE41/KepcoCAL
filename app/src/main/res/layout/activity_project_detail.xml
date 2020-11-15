@@ -25,6 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:clipToPadding="false"
+            android:visibility="gone"
             />
         <com.arlib.floatingsearchview.FloatingSearchView
             android:id="@+id/floating_search_view"

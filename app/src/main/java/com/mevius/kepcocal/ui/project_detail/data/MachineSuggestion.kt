@@ -5,15 +5,15 @@ import android.os.Parcelable
 import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion
 
 class MachineSuggestion : SearchSuggestion {
-    private var mMachineName: String? = null
+    private var mMachineCNum: String? = null
     private var mIsHistory = false
 
     constructor(suggestion: String) {
-        mMachineName = suggestion
+        mMachineCNum = suggestion
     }
 
     constructor(source: Parcel) {
-        mMachineName = source.readString()
+        mMachineCNum = source.readString()
         mIsHistory = source.readInt() != 0
     }
 
@@ -26,7 +26,7 @@ class MachineSuggestion : SearchSuggestion {
     }
 
     override fun getBody(): String? {
-        return mMachineName
+        return mMachineCNum
     }
 
     override fun describeContents(): Int {
@@ -34,7 +34,7 @@ class MachineSuggestion : SearchSuggestion {
     }
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
-        dest.writeString(mMachineName)
+        dest.writeString(mMachineCNum)
         dest.writeInt(if (mIsHistory) 1 else 0)
     }
 

@@ -9,28 +9,29 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.arlib.floatingsearchview.util.Util
 import com.mevius.kepcocal.R
+import com.mevius.kepcocal.data.db.entity.Machine
 import com.mevius.kepcocal.ui.project_detail.data.MachineWrapper
 
 
 class SearchResultsListAdapter : RecyclerView.Adapter<SearchResultsListAdapter.ViewHolder>() {
-    private var mDataSet: List<MachineWrapper> = ArrayList()
+    private var mDataSet: List<Machine?> = ArrayList()
     private var mLastAnimatedItemPosition = -1
 
     interface OnItemClickListener {
-        fun onClick(colorWrapper: MachineWrapper?)
+        fun onClick(onClickMachine: Machine?)
     }
 
     private var mItemsOnClickListener: OnItemClickListener? = null
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val mColorName: TextView = view.findViewById(R.id.color_name)
-        val mColorValue: TextView = view.findViewById(R.id.color_value)
+        val mMachineCNum: TextView = view.findViewById(R.id.color_name)
+        val mMachineName: TextView = view.findViewById(R.id.color_value)
         val mTextContainer: View = view.findViewById(R.id.text_container)
 
     }
 
-    fun swapData(mNewDataSet: List<MachineWrapper?>?) {
-        mDataSet = mNewDataSet as List<MachineWrapper>
+    fun swapData(mNewDataSet: List<Machine?>?) {
+        mDataSet = mNewDataSet as List<Machine?>
         notifyDataSetChanged()
     }
 
@@ -45,9 +46,13 @@ class SearchResultsListAdapter : RecyclerView.Adapter<SearchResultsListAdapter.V
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val machineSuggestion: MachineWrapper = mDataSet[position]
-        holder.mColorName.setText(machineSuggestion.cnum)
-        holder.mColorValue.setText(machineSuggestion.name)
+        val machineSuggestion: Machine? = mDataSet[position]
+        if (machineSuggestion != null) {
+            holder.mMachineCNum.text = machineSuggestion.computerizedNumber
+        }
+        if (machineSuggestion != null) {
+            holder.mMachineName.text = machineSuggestion.lineName
+        }
         if (mLastAnimatedItemPosition < position) {
             animateItem(holder.itemView)
             mLastAnimatedItemPosition = position
