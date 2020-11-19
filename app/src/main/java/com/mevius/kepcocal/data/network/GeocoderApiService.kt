@@ -15,7 +15,7 @@ import retrofit2.http.Query
  * 주소-좌표 변환 Kakao REST API 사용을 위한 Interface
  * Http 통신을 위한 헤더 정보 설정, 쿼리 함수 설정 등...
  */
-interface GeocoderAPI {
+interface GeocoderApiService {
     @GET("v2/local/search/address.json")   // API 상세 경로, format : json
     suspend fun getCoordinate(
         @Query("query") query: String,
@@ -33,7 +33,7 @@ interface GeocoderAPI {
         private const val BASE_URL_KAKAO_API = "https://dapi.kakao.com/"    // API 기본 경로
         private const val AUTHORIZATION_KEY = "KakaoAK 7f560ef33db63b7dec4f618dbd696f67"    // Auth Key
 
-        fun create(): GeocoderAPI {
+        fun create(): GeocoderApiService {
             val httpLoggingInterceptor = HttpLoggingInterceptor()
             httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
 
@@ -55,7 +55,7 @@ interface GeocoderAPI {
                 .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
-                .create(GeocoderAPI::class.java)
+                .create(GeocoderApiService::class.java)
         }
     }
 }

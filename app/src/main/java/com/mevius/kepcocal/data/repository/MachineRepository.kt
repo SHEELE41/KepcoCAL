@@ -3,10 +3,9 @@ package com.mevius.kepcocal.data.repository
 import android.net.Uri
 import androidx.lifecycle.LiveData
 import com.mevius.kepcocal.data.db.dao.MachineDao
-import com.mevius.kepcocal.data.db.dao.ProjectDao
 import com.mevius.kepcocal.data.db.entity.Machine
 import com.mevius.kepcocal.data.db.entity.Project
-import com.mevius.kepcocal.data.network.GeocoderAPI
+import com.mevius.kepcocal.data.network.GeocoderApiService
 import com.mevius.kepcocal.data.network.model.ResultGetCoordinate
 import com.mevius.kepcocal.util.ComputerizedNumberCalculator
 import com.mevius.kepcocal.util.ExcelParser
@@ -60,7 +59,7 @@ class MachineRepository constructor(
         // api 객체 생성.
         // 어차피 같은 KakaoAPI, 그 중 Geocode API를 사용하므로 for 문 밖에 한번 선언해주는걸로 여러번 재활용 가능.
         // 함수 내부의 지역 변수이므로 함수 끝나면 싹 정리됨.
-        val api = GeocoderAPI.create()
+        val api = GeocoderApiService.create()
 
         /*
         * [Coroutine]

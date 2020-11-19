@@ -16,6 +16,9 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField "String", "BASE_URL", "\"https://dapi.kakao.com/\""
+        buildConfigField "String", "AUTHORIZATION_KEY", "\"KakaoAK 7f560ef33db63b7dec4f618dbd696f67\""
     }
 
     buildTypes {
