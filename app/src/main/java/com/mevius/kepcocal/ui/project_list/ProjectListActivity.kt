@@ -7,17 +7,16 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import androidx.activity.viewModels
 import android.widget.AutoCompleteTextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.mevius.kepcocal.R
 import com.mevius.kepcocal.data.db.AppDatabase
 import com.mevius.kepcocal.data.db.entity.Project
-import com.mevius.kepcocal.data.repository.MachineRepository
-import com.mevius.kepcocal.data.repository.ProjectRepository
 import com.mevius.kepcocal.ui.project_detail.ProjectDetailActivity
 import com.mevius.kepcocal.ui.project_list.adapter.ProjectRVAdapter
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_project_list.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -30,6 +29,7 @@ import java.util.*
 * 길게 클릭 시 프로젝트 삭제 가능 ( with Dialog)
 */
 
+@AndroidEntryPoint
 class ProjectListActivity : AppCompatActivity() {
     private var projectLiveDataSize: Int = -1
     private val safRequestCode: Int = 42     // Request Code for SAF
@@ -37,7 +37,7 @@ class ProjectListActivity : AppCompatActivity() {
 
     private lateinit var recyclerViewAdapter: ProjectRVAdapter
     private lateinit var recyclerViewLayoutManager: LinearLayoutManager
-    private lateinit var projectListViewModel: ProjectListViewModel
+    private val projectListViewModel: ProjectListViewModel by viewModels()
     private lateinit var appDatabase: AppDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -91,15 +91,6 @@ class ProjectListActivity : AppCompatActivity() {
         recyclerViewLayoutManager = LinearLayoutManager(this)
         rv_project_list.adapter = recyclerViewAdapter   // Set Adapter to RecyclerView in xml
         rv_project_list.layoutManager = recyclerViewLayoutManager
-
-        val projectDao = appDatabase.projectDao()
-        val machineDao = appDatabase.machineDao()
-        val projectRepository = ProjectRepository.getInstance(projectDao)
-        val machineRepository = MachineRepository.getInstance(machineDao)
-        val factory = ProjectListViewModelFactory(projectRepository,machineRepository)
-        // ViewModel 선언
-        projectListViewModel =
-            ViewModelProvider(this, factory).get(ProjectListViewModel::class.java)
 
         // ViewModel observe
         projectListViewModel.allProjects.observe(this, { projects ->    // 초기 데이터 로드시에도 호출됨

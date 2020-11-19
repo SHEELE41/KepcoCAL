@@ -13,6 +13,7 @@ import android.provider.Settings
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -52,7 +53,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     private lateinit var mapView: MapView
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
     private lateinit var appDatabase: AppDatabase
-    private lateinit var projectDetailViewModel: ProjectDetailViewModel
+    private val projectDetailViewModel: ProjectDetailViewModel by viewModels()
     private lateinit var searchResultsList: RecyclerView
     private lateinit var searchResultAdapter: SearchResultsListAdapter
 
@@ -126,15 +127,6 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
      * ViewModel 및 Observer 설정
      */
     private fun setupViewModel() {
-        appDatabase = AppDatabase.getDatabase(this)
-        val dao = appDatabase.machineDao()
-        val repository = MachineRepository.getInstance(dao)
-        val factory = ProjectDetailViewModelFactory(repository)
-
-        // ViewModel 선언
-        projectDetailViewModel =
-            ViewModelProvider(this, factory).get(ProjectDetailViewModel::class.java)
-
         projectDetailViewModel.getMachinesWithProjectId(projectId).observe(this, { machines ->
             machines?.let {
                 if (viewModelInitFlag) {

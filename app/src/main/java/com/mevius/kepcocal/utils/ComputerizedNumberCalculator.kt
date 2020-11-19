@@ -1,4 +1,4 @@
-package com.mevius.kepcocal.util
+package com.mevius.kepcocal.utils
 
 import kotlin.math.pow
 

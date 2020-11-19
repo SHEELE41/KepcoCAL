@@ -1,4 +1,4 @@
-package com.mevius.kepcocal.util
+package com.mevius.kepcocal.utils
 
 import android.net.Uri
 import android.os.ParcelFileDescriptor

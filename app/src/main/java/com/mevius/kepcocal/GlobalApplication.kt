@@ -3,7 +3,9 @@ package com.mevius.kepcocal
 import android.app.Application
 import android.content.Context
 import com.kakao.sdk.common.KakaoSdk
+import dagger.hilt.android.HiltAndroidApp
 
+@HiltAndroidApp
 class GlobalApplication : Application() {
     companion object {
         lateinit var instance: GlobalApplication

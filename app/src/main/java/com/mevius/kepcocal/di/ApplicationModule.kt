@@ -1,9 +1,9 @@
 package com.mevius.kepcocal.di
 
 import com.mevius.kepcocal.BuildConfig
-import com.mevius.kepcocal.data.network.GeocoderApiService
-import com.mevius.kepcocal.data.network.GeocoderApiHelper
-import com.mevius.kepcocal.data.network.GeocoderApiHelperImpl
+import com.mevius.kepcocal.data.network.GeocodeApiHelper
+import com.mevius.kepcocal.data.network.GeocodeApiHelperImpl
+import com.mevius.kepcocal.data.network.GeocodeApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,21 +19,18 @@ import javax.inject.Singleton
 @InstallIn(ApplicationComponent::class)
 class ApplicationModule {
     @Provides
-    fun provideAuthorizationKey() = BuildConfig.AUTHORIZATION_KEY
-
-    @Provides
-    fun provideBaseUrl() = BuildConfig.BASE_URL
+    fun provideBaseUrl(): String = BuildConfig.BASE_URL
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(AUTHORIZATION_KEY: String): OkHttpClient = if (BuildConfig.DEBUG) {
+    fun provideOkHttpClient(): OkHttpClient = if (BuildConfig.DEBUG) {
         val loggingInterceptor = HttpLoggingInterceptor()
         loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
 
         val headerInterceptor = Interceptor {
             val request = it.request()
                 .newBuilder()
-                .addHeader("Authorization", AUTHORIZATION_KEY)
+                .addHeader("Authorization", "KakaoAK 7f560ef33db63b7dec4f618dbd696f67")
                 .build()
             return@Interceptor it.proceed(request)
         }
@@ -57,9 +54,9 @@ class ApplicationModule {
 
     @Provides
     @Singleton
-    fun provideApiService(retrofit: Retrofit) = retrofit.create(GeocoderApiService::class.java)
+    fun provideApiService(retrofit: Retrofit): GeocodeApiService = retrofit.create(GeocodeApiService::class.java)
 
     @Provides
     @Singleton
-    fun provideApiHelper(geocoderApiHelper : GeocoderApiHelperImpl): GeocoderApiHelper = geocoderApiHelper
+    fun provideApiHelper(geocodeApiHelper : GeocodeApiHelperImpl): GeocodeApiHelper = geocodeApiHelper
 }

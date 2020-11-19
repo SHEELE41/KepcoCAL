@@ -5,24 +5,29 @@ import androidx.lifecycle.LiveData
 import com.mevius.kepcocal.data.db.dao.MachineDao
 import com.mevius.kepcocal.data.db.entity.Machine
 import com.mevius.kepcocal.data.db.entity.Project
-import com.mevius.kepcocal.data.network.GeocoderApiService
+import com.mevius.kepcocal.data.network.GeocodeApiHelper
 import com.mevius.kepcocal.data.network.model.ResultGetCoordinate
-import com.mevius.kepcocal.util.ComputerizedNumberCalculator
-import com.mevius.kepcocal.util.ExcelParser
+import com.mevius.kepcocal.utils.ComputerizedNumberCalculator
+import com.mevius.kepcocal.utils.ExcelParser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MachineRepository constructor(
-    private val localDataSource: MachineDao
+class MachineRepository @Inject constructor(
+    private val localDataSource: MachineDao,
+    private val remoteDataSource: GeocodeApiHelper
 ) {
     // Singleton Pattern
     companion object {
         @Volatile
         private var instance: MachineRepository? = null
 
-        fun getInstance(machineDao: MachineDao): MachineRepository {
+        fun getInstance(
+            machineDao: MachineDao,
+            geocodeApiHelper: GeocodeApiHelper
+        ): MachineRepository {
             return instance ?: synchronized(this) {
-                instance ?: MachineRepository(machineDao).also { instance = it }
+                instance ?: MachineRepository(machineDao, geocodeApiHelper).also { instance = it }
             }
         }
     }
@@ -56,10 +61,6 @@ class MachineRepository constructor(
         machineList: List<Machine>
     ) = scope.launch {
         // Log.d("##################################Launch2", this.coroutineContext[Job].toString())
-        // api 객체 생성.
-        // 어차피 같은 KakaoAPI, 그 중 Geocode API를 사용하므로 for 문 밖에 한번 선언해주는걸로 여러번 재활용 가능.
-        // 함수 내부의 지역 변수이므로 함수 끝나면 싹 정리됨.
-        val api = GeocoderApiService.create()
 
         /*
         * [Coroutine]
@@ -92,7 +93,7 @@ class MachineRepository constructor(
                 // Import 는 다 Retrofit2로 (Not OkHttp3!)
                 launch {
                     // Log.d("##################################Launch4", this.coroutineContext[Job].toString())
-                    val response = api.getCoordinate(machineAddr)
+                    val response = remoteDataSource.getCoordinate(machineAddr)
                     if (response.isSuccessful) {
                         /*
                         * >> machineData에 좌표 데이터 넣어주기 전에 고려해야 할 것

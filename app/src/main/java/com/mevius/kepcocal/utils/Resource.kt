@@ -1,4 +1,4 @@
-package com.mevius.kepcocal.util
+package com.mevius.kepcocal.utils
 
 data class Resource<out T>(val status: Status, val data: T?, val message: String?) {
 

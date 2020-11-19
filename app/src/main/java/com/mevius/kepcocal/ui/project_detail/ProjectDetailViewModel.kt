@@ -1,5 +1,6 @@
 package com.mevius.kepcocal.ui.project_detail
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,7 +9,7 @@ import com.mevius.kepcocal.data.repository.MachineRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class ProjectDetailViewModel constructor(
+class ProjectDetailViewModel @ViewModelInject constructor(
     private val machineRepository: MachineRepository
 ) : ViewModel() {
     val allMachines: LiveData<List<Machine>> = machineRepository.allMachines
