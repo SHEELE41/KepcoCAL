@@ -18,19 +18,24 @@ import javax.inject.Singleton
 @Module
 @InstallIn(ApplicationComponent::class)
 class NetworkModule {
+    @BaseUrl
     @Provides
     fun provideBaseUrl(): String = BuildConfig.BASE_URL
 
+    @AuthorizationKey
+    @Provides
+    fun provideAuthorizationKey(): String = BuildConfig.AUTHORIZATION_KEY
+
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient = if (BuildConfig.DEBUG) {
+    fun provideOkHttpClient(@AuthorizationKey AUTHORIZATION_KEY: String): OkHttpClient = if (BuildConfig.DEBUG) {
         val loggingInterceptor = HttpLoggingInterceptor()
         loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
 
         val headerInterceptor = Interceptor {
             val request = it.request()
                 .newBuilder()
-                .addHeader("Authorization", "KakaoAK 7f560ef33db63b7dec4f618dbd696f67")
+                .addHeader("Authorization", AUTHORIZATION_KEY)
                 .build()
             return@Interceptor it.proceed(request)
         }
@@ -45,7 +50,7 @@ class NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient, BASE_URL: String): Retrofit =
+    fun provideRetrofit(okHttpClient: OkHttpClient, @BaseUrl BASE_URL: String): Retrofit =
         Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
             .baseUrl(BASE_URL)

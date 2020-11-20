@@ -3,6 +3,7 @@ package com.mevius.kepcocal.ui.project_list
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -43,6 +44,59 @@ class ProjectListActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_project_list)
 
+        setupUI()
+        setupViewModel()
+    }
+
+    /**
+     * [onActivityResult Method]
+     * When SAF Intent Activity is terminated (Copy(Rename) File to App File Path)
+     * 엑셀 파일 선택 후 원래 Activity 로 결과를 들고 돌아오며 onActivityResult 가 호출됨
+     * 이때 Text Input 이 있는 Dialog 를 띄워 프로젝트명을 물어보고, 그걸 파일명으로 하여 앱 내부 저장공간에 저장
+     * 저장은 OK 눌렀을 때만 이루어짐.
+     * Cancel 누를 경우 아무것도 안함.
+     */
+    @SuppressLint("InflateParams")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == safRequestCode && resultCode == Activity.RESULT_OK) {     // When is SAF Request & Result is successful
+            var projectNameInput: String
+            val viewInflated: View = LayoutInflater.from(this)
+                .inflate(R.layout.dialog_with_edit_text, null)
+
+            AlertDialog.Builder(this).apply {
+                setTitle("프로젝트 추가")
+                setView(viewInflated)
+                setPositiveButton(
+                    android.R.string.ok
+                ) { dialog, _ ->
+                    projectNameInput =
+                        viewInflated.findViewById<AutoCompleteTextView>(R.id.input).text.toString()
+                    data?.data?.also { uri ->
+                        val project = Project(
+                            null,
+                            projectNameInput,
+                            todayDateFormat,
+                            uri.toString()
+                        )
+                        projectListViewModel.insertProject(project)
+                        dialog.dismiss()
+                    }
+                }
+                setNegativeButton(
+                    android.R.string.cancel
+                ) { dialog, _ -> dialog.cancel() }      // If Click Cancel, Do Nothing
+                show()
+            }
+        }
+    }
+
+    private fun setupUI() {
+        setupRecyclerView()
+        setupFloatingActivityButton()
+    }
+
+    private fun setupRecyclerView() {
         /*
          * [RecyclerView Project Item onClick]
          * 아이템 클릭시 프로젝트 상세 액티비티로 넘어가기 위한 코드
@@ -87,19 +141,9 @@ class ProjectListActivity : AppCompatActivity() {
         recyclerViewLayoutManager = LinearLayoutManager(this)
         rv_project_list.adapter = recyclerViewAdapter   // Set Adapter to RecyclerView in xml
         rv_project_list.layoutManager = recyclerViewLayoutManager
+    }
 
-        // ViewModel observe
-        projectListViewModel.allProjects.observe(this, { projects ->    // 초기 데이터 로드시에도 호출됨
-            projects?.let {
-                recyclerViewAdapter.setProjects(it)
-                iv_isEmpty.visibility = if (it.isEmpty()) View.VISIBLE else View.INVISIBLE
-                if (projectLiveDataSize != -1 && projectLiveDataSize < it.size) {   // 초기 로드가 아니고, 프로젝트가 추가되었을 때
-                    projectListViewModel.insertMachinesFromExcel(it.last())
-                }
-                projectLiveDataSize = projects.size // 초기 데이터 로드 완료 후
-            }
-        })
-
+    private fun setupFloatingActivityButton() {
         /*
          * [Floating Action Button onClickListener ]
          * 프로젝트(엑셀 파일) 추가를 위한 버튼
@@ -127,46 +171,24 @@ class ProjectListActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * [onActivityResult Method]
-     * When SAF Intent Activity is terminated (Copy(Rename) File to App File Path)
-     * 엑셀 파일 선택 후 원래 Activity 로 결과를 들고 돌아오며 onActivityResult 가 호출됨
-     * 이때 Text Input 이 있는 Dialog 를 띄워 프로젝트명을 물어보고, 그걸 파일명으로 하여 앱 내부 저장공간에 저장
-     * 저장은 OK 눌렀을 때만 이루어짐.
-     * Cancel 누를 경우 아무것도 안함.
-     */
-    @SuppressLint("InflateParams")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == safRequestCode && resultCode == Activity.RESULT_OK) {     // When is SAF Request & Result is successful
-            var projectNameInput: String
-            val viewInflated: View = LayoutInflater.from(this)
-                .inflate(R.layout.dialog_with_edit_text, null)
-
-            AlertDialog.Builder(this).apply {
-                setTitle("프로젝트 추가")
-                setView(viewInflated)
-                setPositiveButton(
-                    android.R.string.ok
-                ) { dialog, _ ->
-                    projectNameInput =
-                        viewInflated.findViewById<AutoCompleteTextView>(R.id.input).text.toString()
-                    data?.data?.also { uri ->
-                        val project = Project(
-                            null,
-                            projectNameInput,
-                            todayDateFormat,
-                            uri.toString()
-                        )
-                        projectListViewModel.insertProject(project)
-                        dialog.dismiss()
-                    }
+    private fun setupViewModel() {
+        // ViewModel observe
+        projectListViewModel.allProjects.observe(this, { projects ->    // 초기 데이터 로드시에도 호출됨
+            projects?.let {
+                recyclerViewAdapter.setProjects(it)
+                iv_isEmpty.visibility = if (it.isEmpty()) View.VISIBLE else View.INVISIBLE
+                if (projectLiveDataSize != -1 && projectLiveDataSize < it.size) {   // 초기 로드가 아니고, 프로젝트가 추가되었을 때
+                    projectListViewModel.insertMachinesFromExcel(it.last())
+//                    val mIntent = Intent(this, ProjectDetailActivity::class.java).apply {
+//                        putExtra(
+//                            "projectId",
+//                            it.lastIndex.toLong()
+//                        )
+//                    }
+//                    startActivity(mIntent)
                 }
-                setNegativeButton(
-                    android.R.string.cancel
-                ) { dialog, _ -> dialog.cancel() }      // If Click Cancel, Do Nothing
-                show()
+                projectLiveDataSize = projects.size // 초기 데이터 로드 완료 후
             }
-        }
+        })
     }
 }
