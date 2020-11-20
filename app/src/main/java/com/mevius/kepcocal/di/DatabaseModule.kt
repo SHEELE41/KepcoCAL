@@ -3,6 +3,8 @@ package com.mevius.kepcocal.di
 import android.content.Context
 import androidx.room.Room
 import com.mevius.kepcocal.data.db.AppDatabase
+import com.mevius.kepcocal.data.repository.MachineRepository
+import com.mevius.kepcocal.data.repository.MachineRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,4 +32,8 @@ class DatabaseModule {
     @Provides
     @Singleton
     fun provideProjectDao(db: AppDatabase) = db.projectDao()
+
+    @Provides
+    @Singleton
+    fun provideMachineRepository(machineRepository: MachineRepositoryImpl): MachineRepository = machineRepository
 }
