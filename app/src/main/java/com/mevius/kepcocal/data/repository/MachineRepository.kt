@@ -17,21 +17,6 @@ class MachineRepository @Inject constructor(
     private val localDataSource: MachineDao,
     private val remoteDataSource: GeocodeApiHelper
 ) {
-    // Singleton Pattern
-    companion object {
-        @Volatile
-        private var instance: MachineRepository? = null
-
-        fun getInstance(
-            machineDao: MachineDao,
-            geocodeApiHelper: GeocodeApiHelper
-        ): MachineRepository {
-            return instance ?: synchronized(this) {
-                instance ?: MachineRepository(machineDao, geocodeApiHelper).also { instance = it }
-            }
-        }
-    }
-
     val allMachines: LiveData<List<Machine>> = localDataSource.getAll()
 
     suspend fun insert(machine: Machine) {
