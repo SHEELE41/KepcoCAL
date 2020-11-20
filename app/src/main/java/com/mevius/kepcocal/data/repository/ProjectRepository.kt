@@ -3,8 +3,9 @@ package com.mevius.kepcocal.data.repository
 import androidx.lifecycle.LiveData
 import com.mevius.kepcocal.data.db.dao.ProjectDao
 import com.mevius.kepcocal.data.db.entity.Project
+import javax.inject.Inject
 
-class ProjectRepository constructor(
+class ProjectRepository @Inject constructor(
     private val localDataSource: ProjectDao  // Room Dao for access Local Data Source
 ) {
     // Singleton Pattern

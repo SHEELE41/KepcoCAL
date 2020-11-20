@@ -38,14 +38,10 @@ class ProjectListActivity : AppCompatActivity() {
     private lateinit var recyclerViewAdapter: ProjectRVAdapter
     private lateinit var recyclerViewLayoutManager: LinearLayoutManager
     private val projectListViewModel: ProjectListViewModel by viewModels()
-    private lateinit var appDatabase: AppDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_project_list)
-
-        // Database 선언
-        appDatabase = AppDatabase.getDatabase(this)
 
         /*
          * [RecyclerView Project Item onClick]

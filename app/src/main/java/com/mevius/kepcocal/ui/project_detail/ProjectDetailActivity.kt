@@ -30,6 +30,7 @@ import com.mevius.kepcocal.data.db.entity.Machine
 import com.mevius.kepcocal.data.repository.MachineRepository
 import com.mevius.kepcocal.ui.project_detail.data.FSVDataHelper
 import com.mevius.kepcocal.ui.project_detail.data.MachineSuggestion
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_project_detail.*
 import kotlinx.android.synthetic.main.project_detail_bottom_sheet.*
 import net.daum.mf.map.api.MapPOIItem
@@ -41,6 +42,7 @@ import net.daum.mf.map.api.MapView
  * 한 프로젝트에 해당되는 상세 정보가 담긴 액티비티
  */
 
+@AndroidEntryPoint
 class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     MapView.POIItemEventListener {
     private val permissionRequestCode = 1001
@@ -52,7 +54,6 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     private var machineList = listOf<Machine>()
     private lateinit var mapView: MapView
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
-    private lateinit var appDatabase: AppDatabase
     private val projectDetailViewModel: ProjectDetailViewModel by viewModels()
     private lateinit var searchResultsList: RecyclerView
     private lateinit var searchResultAdapter: SearchResultsListAdapter
