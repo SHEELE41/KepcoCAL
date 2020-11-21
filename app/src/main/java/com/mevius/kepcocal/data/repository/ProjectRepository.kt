@@ -5,29 +5,12 @@ import com.mevius.kepcocal.data.db.dao.ProjectDao
 import com.mevius.kepcocal.data.db.entity.Project
 import javax.inject.Inject
 
-class ProjectRepository @Inject constructor(
-    private val localDataSource: ProjectDao  // Room Dao for access Local Data Source
-) {
-    // Singleton Pattern
-    companion object {
-        @Volatile
-        private var instance: ProjectRepository? = null
+interface ProjectRepository {
+    val allProjects: LiveData<List<Project>>
 
-        fun getInstance(projectDao: ProjectDao): ProjectRepository {
-            return instance ?: synchronized(this) {
-                instance ?: ProjectRepository(projectDao).also { instance = it }
-            }
-        }
-    }
+    val lastProject: LiveData<Project>
 
-    val allProjects: LiveData<List<Project>> = localDataSource.getAll()
-    val lastProject: LiveData<Project> = localDataSource.getLastProjectLive()
+    suspend fun insert(project: Project)
 
-    suspend fun insert(project: Project) {
-        localDataSource.insert(project)
-    }
-
-    suspend fun delete(project: Project) {
-        localDataSource.delete(project)
-    }
+    suspend fun delete(project: Project)
 }
