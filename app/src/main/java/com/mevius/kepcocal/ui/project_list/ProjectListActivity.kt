@@ -3,17 +3,15 @@ package com.mevius.kepcocal.ui.project_list
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
-import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import androidx.activity.viewModels
 import android.widget.AutoCompleteTextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.mevius.kepcocal.R
-import com.mevius.kepcocal.data.db.AppDatabase
 import com.mevius.kepcocal.data.db.entity.Project
 import com.mevius.kepcocal.ui.project_detail.ProjectDetailActivity
 import com.mevius.kepcocal.ui.project_list.adapter.ProjectRVAdapter
@@ -27,7 +25,7 @@ import java.util.*
 * [ProjectListActivity]
 * 프로젝트(엑셀 파일) 리스트를 띄우고 리스트의 아이템을 추가 / 삭제할 수 있는 기능을 하는 Activity
 * ListView Item 이 클릭될 시 해당 프로젝트의 상세 정보 액티비티(지도 및 기기 리스트)인 ProjectDetailActivity 로 이동함
-* 길게 클릭 시 프로젝트 삭제 가능 ( with Dialog)
+* 길게 클릭 시 프로젝트 삭제 가능 ( with Dialog )
 */
 
 @AndroidEntryPoint

@@ -133,15 +133,18 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
                         mapView.addPOIItem(marker)
                     }
                     mapView.apply {
-                        setMapCenterPoint(
-                            poiItems.last().mapPoint, true
-                        )
-                        setZoomLevel(7, true)
+                        if (poiItems.isNotEmpty()) {
+                            setMapCenterPoint(
+                                poiItems.last().mapPoint, true
+                            )
+                            setZoomLevel(7, true)
+                        }
                     }
                 }
             }
             FSVDataHelper.sLiveMachineData = machines
             machineList = machines
+            viewModelInitFlag = false
         })
     }
 
