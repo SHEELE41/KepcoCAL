@@ -75,10 +75,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:background="@color/colorPrimaryDark"
+        android:background="@color/colorAccent"
         android:foreground="?attr/selectableItemBackground"
         android:textOff="@string/bottom_sheet_button_text_off"
         android:textOn="@string/bottom_sheet_button_text_on"
+        android:fontFamily="@font/sc_dream4"
         android:textColor="#fff" />
 
 </LinearLayout>

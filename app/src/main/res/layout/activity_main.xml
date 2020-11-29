@@ -29,31 +29,21 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <TextView
-                android:id="@+id/tv_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-medium"
-                android:shadowColor="#59000000"
-                android:shadowDx="5"
-                android:shadowDy="5"
-                android:shadowRadius="5"
-                android:text="@string/app_main_title"
-                android:textColor="#CBFFFFFF"
+                android:fontFamily="@font/sc_dream5"
+                android:text="KepcoCAL"
+                android:textColor="@color/white"
                 android:textSize="60sp" />
 
             <TextView
-                android:id="@+id/tv_subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:fontFamily="sans-serif-light"
-                android:shadowColor="#59000000"
-                android:shadowDx="5"
-                android:shadowDy="5"
-                android:shadowRadius="5"
-                android:text="@string/app_main_subtitle"
-                android:textColor="#CBFFFFFF"
-                android:textSize="18sp" />
+                android:fontFamily="@font/sc_dream3"
+                android:text="내 손 안의 NDIS"
+                android:textColor="@color/white"
+                android:textSize="24sp" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -72,11 +62,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/main_button_height"
                 android:layout_marginHorizontal="@dimen/main_button_margin_horizontal"
+                android:layout_marginTop="5dp"
                 android:background="@xml/button_radius"
-                android:fontFamily="sans-serif"
+                android:fontFamily="@font/sc_dream4"
+                android:stateListAnimator="@null"
                 android:text="@string/main_button_menu1"
-                android:textColor="@color/dark_gray"
-                android:textSize="@dimen/main_button_text_size"/>
+                android:textColor="@color/colorPrimary"
+                android:textSize="@dimen/main_button_text_size" />
 
             <Button
                 android:id="@+id/btn_menu2"
@@ -85,9 +77,10 @@
                 android:layout_marginHorizontal="@dimen/main_button_margin_horizontal"
                 android:layout_marginVertical="10dp"
                 android:background="@xml/button_radius"
-                android:fontFamily="sans-serif"
-                android:text="맵 이동"
-                android:textColor="@color/dark_gray"
+                android:fontFamily="@font/sc_dream4"
+                android:stateListAnimator="@null"
+                android:text="보고서 양식 관리"
+                android:textColor="@color/colorPrimary"
                 android:textSize="@dimen/main_button_text_size" />
 
             <Button
@@ -95,10 +88,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/main_button_height"
                 android:layout_marginHorizontal="@dimen/main_button_margin_horizontal"
+                android:layout_marginBottom="5dp"
                 android:background="@xml/button_radius"
-                android:fontFamily="sans-serif"
-                android:text="Menu3"
-                android:textColor="@color/dark_gray"
+                android:fontFamily="@font/sc_dream4"
+                android:stateListAnimator="@null"
+                android:text="환경설정"
+                android:textColor="@color/colorPrimary"
                 android:textSize="@dimen/main_button_text_size" />
 
         </LinearLayout>

@@ -3,6 +3,7 @@ package com.mevius.kepcocal.ui.main
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.WindowManager
 import kotlinx.android.synthetic.main.activity_main.*
 
 import com.mevius.kepcocal.ui.project_detail.ProjectDetailActivity
