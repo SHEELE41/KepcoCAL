@@ -350,7 +350,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
 
     /**
      * [onRequestPermissionsResult]
-     * 위치 기능 켜짐 요청 Dialog 선택 결과에 따른 루틴들이 모여있는 함수
+     * 위치 기능 켜짐 요청 Dialog 선택 결과에 따른 루틴들이 모여있는 함수 (Only ViewLogic!!)
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)

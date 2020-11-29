@@ -2,6 +2,7 @@ package com.mevius.kepcocal.ui.project_detail
 
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mevius.kepcocal.data.db.entity.Machine

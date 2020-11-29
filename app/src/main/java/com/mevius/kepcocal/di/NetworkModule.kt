@@ -28,25 +28,26 @@ class NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(@AuthorizationKey AUTHORIZATION_KEY: String): OkHttpClient = if (BuildConfig.DEBUG) {
-        val loggingInterceptor = HttpLoggingInterceptor()
-        loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
+    fun provideOkHttpClient(@AuthorizationKey AUTHORIZATION_KEY: String): OkHttpClient =
+        if (BuildConfig.DEBUG) {
+            val loggingInterceptor = HttpLoggingInterceptor()
+            loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
 
-        val headerInterceptor = Interceptor {
-            val request = it.request()
-                .newBuilder()
-                .addHeader("Authorization", AUTHORIZATION_KEY)
+            val headerInterceptor = Interceptor {
+                val request = it.request()
+                    .newBuilder()
+                    .addHeader("Authorization", AUTHORIZATION_KEY)
+                    .build()
+                return@Interceptor it.proceed(request)
+            }
+
+            OkHttpClient.Builder()
+                .addInterceptor(headerInterceptor)
+                .addInterceptor(loggingInterceptor)
                 .build()
-            return@Interceptor it.proceed(request)
-        }
-
-        OkHttpClient.Builder()
-            .addInterceptor(headerInterceptor)
-            .addInterceptor(loggingInterceptor)
+        } else OkHttpClient
+            .Builder()
             .build()
-    } else OkHttpClient
-        .Builder()
-        .build()
 
     @Provides
     @Singleton
@@ -59,9 +60,11 @@ class NetworkModule {
 
     @Provides
     @Singleton
-    fun provideApiService(retrofit: Retrofit): GeocodeApiService = retrofit.create(GeocodeApiService::class.java)
+    fun provideApiService(retrofit: Retrofit): GeocodeApiService =
+        retrofit.create(GeocodeApiService::class.java)
 
     @Provides
     @Singleton
-    fun provideApiHelper(geocodeApiHelper : GeocodeApiHelperImpl): GeocodeApiHelper = geocodeApiHelper
+    fun provideApiHelper(geocodeApiHelper: GeocodeApiHelperImpl): GeocodeApiHelper =
+        geocodeApiHelper
 }

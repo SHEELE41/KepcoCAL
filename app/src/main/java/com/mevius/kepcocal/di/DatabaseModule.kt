@@ -37,9 +37,11 @@ class DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideMachineRepository(machineRepository: MachineRepositoryImpl): MachineRepository = machineRepository
+    fun provideMachineRepository(machineRepository: MachineRepositoryImpl): MachineRepository =
+        machineRepository
 
     @Provides
     @Singleton
-    fun provideProjectRepository(projectRepository: ProjectRepositoryImpl): ProjectRepository = projectRepository
+    fun provideProjectRepository(projectRepository: ProjectRepositoryImpl): ProjectRepository =
+        projectRepository
 }

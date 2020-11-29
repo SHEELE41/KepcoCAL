@@ -1,16 +1,21 @@
 <resources>
+    <!-- Splash theme -->
+    <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash</item>
+    </style>
+
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">#65FFFFFF</item>
         <item name="colorAccent">@color/colorAccent</item>
-
         <!--Status Bar 배경색-->
-        <item name="android:statusBarColor">#00FFFFFF</item>
+        <item name="android:statusBarColor">@color/transparent</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:windowTranslucentStatus">true</item>
         <!--Status Bar 글자색깔-->
         <item name="android:windowLightStatusBar">true</item>
-
     </style>
 
     <style name="AppTheme.PopupOverlay" parent="Theme.AppCompat.Light.NoActionBar">
@@ -18,12 +23,10 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">#65FFFFFF</item>
         <item name="colorAccent">@color/colorAccent</item>
-
         <!--Status Bar 배경색-->
         <item name="android:statusBarColor">#00FFFFFF</item>
         <!--Status Bar 글자색깔-->
         <item name="android:windowLightStatusBar">true</item>
-
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="Theme.AppCompat.Light.NoActionBar">
@@ -31,12 +34,10 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">#65FFFFFF</item>
         <item name="colorAccent">@color/colorAccent</item>
-
         <!--Status Bar 배경색-->
         <item name="android:statusBarColor">#00FFFFFF</item>
         <!--Status Bar 글자색깔-->
         <item name="android:windowLightStatusBar">true</item>
-
     </style>
 
 
