@@ -25,7 +25,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.main.MainActivity" />
-        <activity android:name=".ui.project_list.ProjectListActivity" />
+        <activity
+            android:name=".ui.project_list.ProjectListActivity" />
         <activity
             android:name=".ui.project_detail.ProjectDetailActivity"
             android:theme="@style/AppTheme.ProjectDetailLayout" />
