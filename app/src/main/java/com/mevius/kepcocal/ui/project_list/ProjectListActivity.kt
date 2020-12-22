@@ -7,7 +7,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.WindowManager
 import android.widget.AutoCompleteTextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +15,7 @@ import com.mevius.kepcocal.R
 import com.mevius.kepcocal.data.db.entity.Project
 import com.mevius.kepcocal.ui.project_detail.ProjectDetailActivity
 import com.mevius.kepcocal.ui.project_list.adapter.ProjectRVAdapter
+import com.mevius.kepcocal.utils.AndroidBug5497Workaround
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_project_list.*
 import java.text.SimpleDateFormat
@@ -46,6 +46,16 @@ class ProjectListActivity : AppCompatActivity() {
         setupUI()
         setupViewModel()
     }
+
+
+    /**
+     * NestedScrollView Height Test Code
+    @RequiresApi(Build.VERSION_CODES.R)
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        Toast.makeText(this, scroll_view.height.toString(), Toast.LENGTH_SHORT).show()
+    }
+    */
 
     /**
      * [onActivityResult Method]
@@ -91,6 +101,7 @@ class ProjectListActivity : AppCompatActivity() {
     }
 
     private fun setupUI() {
+        AndroidBug5497Workaround.assistActivity(this)   // https://issuetracker.google.com/issues/36911528
         setupRecyclerView()
         setupFloatingActivityButton()
     }
@@ -136,6 +147,7 @@ class ProjectListActivity : AppCompatActivity() {
         }
 
         // RecyclerView 설정
+        // rv_project_list.setHasFixedSize(true)
         recyclerViewAdapter = ProjectRVAdapter(this, itemClick, itemLongClick)
         recyclerViewLayoutManager = LinearLayoutManager(this)
         rv_project_list.adapter = recyclerViewAdapter   // Set Adapter to RecyclerView in xml

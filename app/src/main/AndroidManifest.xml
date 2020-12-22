@@ -26,10 +26,12 @@
         </activity>
         <activity android:name=".ui.main.MainActivity" />
         <activity
-            android:name=".ui.project_list.ProjectListActivity" />
+            android:name=".ui.project_list.ProjectListActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
             android:name=".ui.project_detail.ProjectDetailActivity"
             android:theme="@style/AppTheme.ProjectDetailLayout" />
+
         <!--meta-data tag must be in application tag-->
         <meta-data
             android:name="com.kakao.sdk.AppKey"

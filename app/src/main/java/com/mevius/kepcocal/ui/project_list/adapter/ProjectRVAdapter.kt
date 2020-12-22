@@ -48,8 +48,8 @@ class ProjectRVAdapter(
         itemView: View
     ) :
         RecyclerView.ViewHolder(itemView) {
-        var tvProjectName: TextView? = itemView.tv_project_name
-        var tvDate: TextView? = itemView.tv_date
+        private var tvProjectName: TextView? = itemView.tv_project_name
+        private var tvDate: TextView? = itemView.tv_date
 
         fun bind(project: Project) {
             tvProjectName?.text = project.projectName
