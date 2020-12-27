@@ -49,11 +49,13 @@ class ReportRVAdapter(
     ) :
         RecyclerView.ViewHolder(itemView) {
         private var tvReportTitle: TextView? = itemView.tv_report_title
-        private var tvId: TextView? = itemView.tv_id
+        private var tvExtension: TextView? = itemView.tv_extension
+        private var tvInterval: TextView? = itemView.tv_interval
 
         fun bind(report: Report) {
             tvReportTitle?.text = report.title
-            tvId?.text = report.id.toString()
+            tvExtension?.text = if (report.isXls) "xls" else "xlsx"
+            tvInterval?.text = report.interval.toString()
 
             itemView.setOnClickListener { itemClick(report.id) }
             itemView.setOnLongClickListener { itemLongClick(report) }

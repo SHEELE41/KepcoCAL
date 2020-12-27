@@ -24,16 +24,18 @@ class FileManager {
     private var pfd: ParcelFileDescriptor? = null
     private var fileInputStream: FileInputStream? = null
     private var globalApplicationContext = GlobalApplication.instance.applicationContext()
-    private var mOutputDir = globalApplicationContext.getExternalFilesDir(null)     // /Android/data/com.mevius.kepcocal/files
+    private var mOutputDir =
+        globalApplicationContext.getExternalFilesDir(null)     // /Android/data/com.mevius.kepcocal/files
 
     /**
      * [saveFileAs function]
      * SAF를 통해 선택한 파일 정보를 받은 뒤 앱 전용 디렉토리로 복사 및 Rename 해주는 함수
      * 엑셀 파일은 xls, xlsx 두 개의 확장자를 가지고 있으므로 이 부분 고려
      * 애초에 SAF를 통해 선택해준 파일이기 때문에 파일 자체가 null일리는 없겠지만 파일명은 null이 될 수 있으므로 주의
+     * 반환은 xls 파일일 경우 true, xlsx 파일일 경우 false
      */
     // 앱 내부 디렉토리에 파일 복사 + Rename
-    fun saveFileAs(uri: Uri, newFileName: String){
+    fun saveFileAs(uri: Uri, newFileName: String): Boolean {
         val fileName = getFileName(uri)
         try {
             pfd = uri.let { globalApplicationContext.contentResolver?.openFileDescriptor(it, "r") }
@@ -43,12 +45,13 @@ class FileManager {
         }
 
         var newFile: File? = null
+        var isXls = true
 
-        if(fileName!=null) {
-            newFile = when(fileName.substringAfterLast(".")){
-                "xls" -> File(mOutputDir, "/$newFileName.xls")
-                "xlsx" -> File(mOutputDir, "/$newFileName.xlsx")
-                else -> return      // 엑셀 파일이 아닌 경우
+        when (fileName.substringAfterLast(".")) {
+            "xls" -> newFile = File(mOutputDir, "/$newFileName.xls")
+            "xlsx" -> {
+                newFile = File(mOutputDir, "/$newFileName.xlsx")
+                isXls = false
             }
         }
 
@@ -70,6 +73,7 @@ class FileManager {
             fileInputStream?.close()
             pfd?.close()
         }
+        return isXls
     }
 
     /**
@@ -77,20 +81,8 @@ class FileManager {
      * 단순히 파일명(리스트 아이템의 ProjectName)을 파라미터로 받아 앱 전용 디렉토리에서 삭제하는 메소드
      * 굳이 외부 다른 디렉토리로 나갈 필요 없으므로 어려운 작업 필요 없음
      */
-    fun removeFile(targetFileName : String) {
+    fun removeFile(targetFileName: String) {
         File(mOutputDir, "/$targetFileName").delete()
-    }
-
-    /**
-     * [isExcelFile function]
-     * 말 그대로 엑셀 파일인지 아닌지를 판단해주는 함수이지만 아직 안씀.
-     * saveFileAs에서 쓸지도?
-     */
-    fun isExcelFile(fileName : String) : Boolean {
-        return when(fileName.substringAfterLast(".")){
-            "xls", "xlsx" -> true
-            else -> false
-        }
     }
 
     /**
@@ -101,12 +93,15 @@ class FileManager {
      * 갱신된 ArrayList size를 반환하므로 0일 경우 이미지가 뜨게 하는 것 가능
      */
     @SuppressLint("SimpleDateFormat")
-    fun syncList (itemDataList : ArrayList<ProjectRVItemData>) : Int {
+    fun syncList(itemDataList: ArrayList<ProjectRVItemData>): Int {
         itemDataList.clear()    // Clear Existing ArrayList items. (이거 안하면 리스트에 같은게 두번 들어감, 즉 정말로 현재 존재하는 것만 보겠다는 것)
 
         File(mOutputDir.toString()).walk().forEach {
-            if(it.extension == "xls" || it.extension == "xlsx"){    // Add excel files only
-                val projectListViewItemData = ProjectRVItemData(it.name, SimpleDateFormat("yyyy-MM-dd").format(it.lastModified()))
+            if (it.extension == "xls" || it.extension == "xlsx") {    // Add excel files only
+                val projectListViewItemData = ProjectRVItemData(
+                    it.name,
+                    SimpleDateFormat("yyyy-MM-dd").format(it.lastModified())
+                )
                 itemDataList.add(projectListViewItemData)
             }
         }
@@ -118,10 +113,11 @@ class FileManager {
      * [getFileName function]
      * SAF에서 선택된 파일의 파일명을 반환함
      */
-    private fun getFileName(uri: Uri): String? {
+    private fun getFileName(uri: Uri): String {
         var result: String? = null
         if (uri.scheme == "content") {
-            val cursor: Cursor? = globalApplicationContext.contentResolver?.query(uri, null, null, null, null)
+            val cursor: Cursor? =
+                globalApplicationContext.contentResolver?.query(uri, null, null, null, null)
             try {
                 if (cursor != null && cursor.moveToFirst()) {
                     result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
