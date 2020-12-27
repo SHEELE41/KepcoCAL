@@ -3,10 +3,7 @@ package com.mevius.kepcocal.di
 import android.content.Context
 import androidx.room.Room
 import com.mevius.kepcocal.data.db.AppDatabase
-import com.mevius.kepcocal.data.repository.MachineRepository
-import com.mevius.kepcocal.data.repository.MachineRepositoryImpl
-import com.mevius.kepcocal.data.repository.ProjectRepository
-import com.mevius.kepcocal.data.repository.ProjectRepositoryImpl
+import com.mevius.kepcocal.data.repository.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -37,6 +34,18 @@ class DatabaseModule {
 
     @Provides
     @Singleton
+    fun provideReportDao(db: AppDatabase) = db.reportDao()
+
+    @Provides
+    @Singleton
+    fun provideCellFormDao(db: AppDatabase) = db.cellFormDao()
+
+    @Provides
+    @Singleton
+    fun provideCellDataDao(db: AppDatabase) = db.cellDataDao()
+
+    @Provides
+    @Singleton
     fun provideMachineRepository(machineRepository: MachineRepositoryImpl): MachineRepository =
         machineRepository
 
@@ -44,4 +53,19 @@ class DatabaseModule {
     @Singleton
     fun provideProjectRepository(projectRepository: ProjectRepositoryImpl): ProjectRepository =
         projectRepository
+
+    @Provides
+    @Singleton
+    fun provideReportRepository(reportRepository: ReportRepositoryImpl): ReportRepository =
+        reportRepository
+
+    @Provides
+    @Singleton
+    fun provideCellFormRepository(cellFormRepository: CellFormRepositoryImpl): CellFormRepository =
+        cellFormRepository
+
+    @Provides
+    @Singleton
+    fun provideCellDataRepository(cellDataRepository: CellDataRepositoryImpl): CellDataRepository =
+        cellDataRepository
 }

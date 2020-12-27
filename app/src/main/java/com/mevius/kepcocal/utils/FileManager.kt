@@ -20,7 +20,7 @@ import java.text.SimpleDateFormat
  * 일단은 엑셀 파일 관련 작업(생성, 삭제, 복사 등)을 위해 만들었지만 일반적인 파일 작업에도 적용 가능하도록 작성함.
  * 다만 대부분의 함수들이 SAF(Storage Access Framework) 반환 결과값을 파라미터로 받기 때문에 SAF에 한정적으로 유용할듯
  */
-class ProjectFileManager {
+class FileManager {
     private var pfd: ParcelFileDescriptor? = null
     private var fileInputStream: FileInputStream? = null
     private var globalApplicationContext = GlobalApplication.instance.applicationContext()

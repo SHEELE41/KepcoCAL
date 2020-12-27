@@ -6,16 +6,16 @@ import com.mevius.kepcocal.data.db.entity.Project
 import javax.inject.Inject
 
 class ProjectRepositoryImpl @Inject constructor(
-    private val localDataSource: ProjectDao  // Room Dao for access Local Data Source
+    private val projectDao: ProjectDao  // Room Dao for access Local Data Source
 ): ProjectRepository {
-    override val allProjects: LiveData<List<Project>> = localDataSource.getAll()
-    override val lastProject: LiveData<Project> = localDataSource.getLastProjectLive()
+    override val allProjects: LiveData<List<Project>> = projectDao.getAll()
+    override val lastProject: LiveData<Project> = projectDao.getLastProjectLive()
 
     override suspend fun insert(project: Project) {
-        localDataSource.insert(project)
+        projectDao.insert(project)
     }
 
     override suspend fun delete(project: Project) {
-        localDataSource.delete(project)
+        projectDao.delete(project)
     }
 }

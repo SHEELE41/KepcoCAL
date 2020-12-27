@@ -79,7 +79,7 @@
                 android:background="@xml/button_radius"
                 android:fontFamily="@font/sc_dream4"
                 android:stateListAnimator="@null"
-                android:text="보고서 양식 관리"
+                android:text="@string/main_button_menu2"
                 android:textColor="@color/colorPrimary"
                 android:textSize="@dimen/main_button_text_size" />
 
