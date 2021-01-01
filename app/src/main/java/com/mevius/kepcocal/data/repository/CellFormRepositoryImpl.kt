@@ -8,7 +8,15 @@ import javax.inject.Inject
 class CellFormRepositoryImpl @Inject constructor(
     private val cellFormDao: CellFormDao
 ): CellFormRepository {
-    override val allCellForm: LiveData<List<CellForm>> = cellFormDao.getAll()
+    override val allCellForms: LiveData<List<CellForm>> = cellFormDao.getAll()
+
+    override fun getCellFormsWithReportId(reportId: Long): LiveData<List<CellForm>> {
+        return cellFormDao.getCellFormsWithReportId(reportId)
+    }
+
+    override fun getCellFormWithId(cellFormId: Long): LiveData<CellForm> {
+        return cellFormDao.getCellFormWithId(cellFormId)
+    }
 
     override suspend fun insert(cellForm: CellForm) {
         cellFormDao.insert(cellForm)

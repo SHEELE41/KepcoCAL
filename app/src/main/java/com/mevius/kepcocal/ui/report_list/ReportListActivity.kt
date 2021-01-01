@@ -13,20 +13,19 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.mevius.kepcocal.R
 import com.mevius.kepcocal.data.db.entity.Report
-import com.mevius.kepcocal.ui.report_form_edit.ReportFormEditActivity
+import com.mevius.kepcocal.ui.report_cell_form_list.ReportCellFormListActivity
 import com.mevius.kepcocal.ui.report_list.adapter.ReportRVAdapter
 import com.mevius.kepcocal.utils.AndroidBug5497Workaround
 import com.mevius.kepcocal.utils.FileManager
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.activity_project_list.iv_isEmpty
 import kotlinx.android.synthetic.main.activity_report_list.*
 
 
 /**
  * [ReportListActivity]
- * 프로젝트(엑셀 파일) 리스트를 띄우고 리스트의 아이템을 추가 / 삭제할 수 있는 기능을 하는 Activity
- * ListView Item 이 클릭될 시 해당 프로젝트의 상세 정보 액티비티(지도 및 기기 리스트)인 ProjectDetailActivity 로 이동함
- * 길게 클릭 시 프로젝트 삭제 가능 ( with Dialog )
+ * 보고서(엑셀 파일) 리스트를 띄우고 리스트의 아이템을 추가 / 삭제할 수 있는 기능을 하는 Activity
+ * ListView Item 이 클릭될 시 해당 보고서의 상세 정보 액티비티(지도 및 기기 리스트)인 ReportFormEditActivity 로 이동함
+ * 길게 클릭 시 보고서 삭제 가능 ( with Dialog )
  */
 
 @AndroidEntryPoint
@@ -114,12 +113,12 @@ class ReportListActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         /*
-         * [RecyclerView Project Item onClick]
+         * [RecyclerView Report Item onClick]
          * 아이템 클릭시 보고서 수정 액티비티로 넘어가기 위한 코드
          * 아이템을 선택하면 해당 보고서의 ReportFormEditActivity 로 넘어감.
          */
         val itemClick: (Long?) -> Unit = {
-            val intent = Intent(this, ReportFormEditActivity::class.java).apply {
+            val intent = Intent(this, ReportCellFormListActivity::class.java).apply {
                 putExtra(
                     "reportId",
                     it
@@ -129,7 +128,7 @@ class ReportListActivity : AppCompatActivity() {
         }
 
         /*
-         * [RecyclerView Project Item onLongClick]
+         * [RecyclerView Report Item onLongClick]
          * 보고서 및 엑셀 파일 삭제를 위한 코드
          * 길게 눌러서 프로젝트 삭제 확인 다이얼로그 띄움
          */
@@ -161,7 +160,6 @@ class ReportListActivity : AppCompatActivity() {
         }
 
         // RecyclerView 설정
-        // rv_project_list.setHasFixedSize(true)
         recyclerViewAdapter = ReportRVAdapter(this, itemClick, itemLongClick)
         recyclerViewLayoutManager = LinearLayoutManager(this)
         rv_report_list.adapter = recyclerViewAdapter   // Set Adapter to RecyclerView in xml

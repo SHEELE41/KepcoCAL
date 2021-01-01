@@ -31,6 +31,8 @@
         <activity
             android:name=".ui.project_detail.ProjectDetailActivity"
             android:theme="@style/AppTheme.ProjectDetailLayout" />
+        <activity
+            android:name=".ui.report_list.ReportListActivity" />
 
         <!--meta-data tag must be in application tag-->
         <meta-data

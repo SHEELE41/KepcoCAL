@@ -46,6 +46,10 @@ class DatabaseModule {
 
     @Provides
     @Singleton
+    fun provideSelectOptionDataDao(db: AppDatabase) = db.selectOptionDataDao()
+
+    @Provides
+    @Singleton
     fun provideMachineRepository(machineRepository: MachineRepositoryImpl): MachineRepository =
         machineRepository
 
@@ -68,4 +72,9 @@ class DatabaseModule {
     @Singleton
     fun provideCellDataRepository(cellDataRepository: CellDataRepositoryImpl): CellDataRepository =
         cellDataRepository
+
+    @Provides
+    @Singleton
+    fun provideSelectOptionDataRepository(selectOptionDataRepository: SelectOptionDataRepositoryImpl): SelectOptionDataRepository =
+        selectOptionDataRepository
 }

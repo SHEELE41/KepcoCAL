@@ -12,6 +12,9 @@ interface CellFormDao {
     @Query("SELECT * FROM CellForm WHERE report_id = :reportId")
     fun getCellFormsWithReportId(reportId: Long): LiveData<List<CellForm>>
 
+    @Query("SELECT * FROM CellForm WHERE id = :cellFormId")
+    fun getCellFormWithId(cellFormId: Long): LiveData<CellForm>
+
     @Insert
     suspend fun insert(cellForm: CellForm)
 

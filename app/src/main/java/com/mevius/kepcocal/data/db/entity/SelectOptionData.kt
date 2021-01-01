@@ -7,16 +7,14 @@ import androidx.room.PrimaryKey
 
 @Entity(
     foreignKeys = [ForeignKey(
-        entity = Report::class,
+        entity = CellForm::class,
         parentColumns = ["id"],
-        childColumns = ["report_id"],
+        childColumns = ["cell_form_id"],
         onDelete = ForeignKey.CASCADE
     )]
 )
-data class CellForm (
+data class SelectOptionData (
     @PrimaryKey(autoGenerate = true) var id: Long?,   // 데이터베이스에서 사용할 자동 생성 프로젝트 인덱스
-    @ColumnInfo(name = "report_id") var reportId: Long?,
-    @ColumnInfo(name = "name") var name: String,
-    @ColumnInfo(name = "type") var type: Int,
-    @ColumnInfo(name = "first_cell") var firstCell: String
+    @ColumnInfo(name = "cell_form_id") var cellFormId: Long?,
+    @ColumnInfo(name = "content") var content: String
 )

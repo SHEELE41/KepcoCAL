@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="spinner_labels_array">
+        <item>전산화번호</item>
+        <item>선로명 + 선로번호</item>
+        <item>제조일자</item>
+        <item>제조사</item>
+        <item>연번</item>
+        <item>오늘 날짜</item>
+    </string-array>
+</resources>
