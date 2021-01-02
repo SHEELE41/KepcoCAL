@@ -51,7 +51,6 @@ class ReportCellFormListActivity : AppCompatActivity() {
     }
 
     private fun setupUI() {
-        AndroidBug5497Workaround.assistActivity(this)   // https://issuetracker.google.com/issues/36911528
         setupRecyclerView()
         setupFloatingActivityButton()
     }

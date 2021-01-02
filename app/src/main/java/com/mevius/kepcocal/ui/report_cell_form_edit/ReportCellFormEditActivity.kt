@@ -3,6 +3,7 @@ package com.mevius.kepcocal.ui.report_cell_form_edit
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.widget.ArrayAdapter
+import android.widget.Button
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -49,7 +50,9 @@ class ReportCellFormEditActivity : AppCompatActivity() {
         cellFormId = intent.getLongExtra("cellFormId", 0L)
     }
 
+
     private fun setupUI() {
+        setupFragments()
         type2_btn_add.setOnClickListener {
             val selectOptionData = SelectOptionData(
                 null,
@@ -79,8 +82,6 @@ class ReportCellFormEditActivity : AppCompatActivity() {
 
             finish()
         }
-
-        setupFragments()
         setupRecyclerView()
         setupSpinner()
     }
@@ -172,7 +173,7 @@ class ReportCellFormEditActivity : AppCompatActivity() {
         } else {
             // TODO 단순히 마지막 인덱스를 가져오는 것이므로 Count 이용...
             cellFormId = 1L // 첫 번째 양식 추가일 때
-            reportCellFormEditViewModel.allCellForms.observe(this, { cellForms ->
+            reportCellFormEditViewModel.getCellFormsWithReportId(reportId).observe(this, { cellForms ->
                 cellForms?.let {
                     cellFormId = (it.lastIndex + 2).toLong()
                 }

@@ -85,6 +85,17 @@ dependencies {
 }
 
 dependencies {
+    def fragment_version = "1.2.5"
+
+    // Java language implementation
+    implementation "androidx.fragment:fragment:$fragment_version"
+    // Kotlin
+    implementation "androidx.fragment:fragment-ktx:$fragment_version"
+    // Testing Fragments in Isolation
+    debugImplementation "androidx.fragment:fragment-testing:$fragment_version"
+}
+
+dependencies {
     def room_version = "2.2.5"
 
     implementation "androidx.room:room-runtime:$room_version"
