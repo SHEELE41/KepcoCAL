@@ -10,6 +10,8 @@ class CellFormRepositoryImpl @Inject constructor(
 ): CellFormRepository {
     override val allCellForms: LiveData<List<CellForm>> = cellFormDao.getAll()
 
+    override val lastCellForm: LiveData<CellForm> = cellFormDao.getLast()
+
     override fun getCellFormsWithReportId(reportId: Long): LiveData<List<CellForm>> {
         return cellFormDao.getCellFormsWithReportId(reportId)
     }

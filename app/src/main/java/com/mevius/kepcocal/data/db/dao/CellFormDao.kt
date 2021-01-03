@@ -9,6 +9,9 @@ interface CellFormDao {
     @Query("SELECT * FROM CellForm")
     fun getAll(): LiveData<List<CellForm>>
 
+    @Query("SELECT * FROM CellForm ORDER BY id DESC LIMIT 1")
+    fun getLast(): LiveData<CellForm>
+
     @Query("SELECT * FROM CellForm WHERE report_id = :reportId")
     fun getCellFormsWithReportId(reportId: Long): LiveData<List<CellForm>>
 

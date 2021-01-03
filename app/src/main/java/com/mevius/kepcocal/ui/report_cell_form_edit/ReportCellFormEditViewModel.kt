@@ -15,7 +15,11 @@ class ReportCellFormEditViewModel @ViewModelInject constructor(
     private val cellFormRepository: CellFormRepository,
     private val selectOptionDataRepository: SelectOptionDataRepository
 ): ViewModel() {
+    var reportId = 0L
+    var cellFormId = 0L
+
     val allCellForms: LiveData<List<CellForm>> = cellFormRepository.allCellForms
+    val lastCellForm: LiveData<CellForm> = cellFormRepository.lastCellForm
     val allSelectOptionData: LiveData<List<SelectOptionData>> = selectOptionDataRepository.allSelectOptionData
 
     fun getCellFormsWithReportId(reportId: Long): LiveData<List<CellForm>> {

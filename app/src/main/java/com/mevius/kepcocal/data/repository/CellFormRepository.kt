@@ -6,6 +6,8 @@ import com.mevius.kepcocal.data.db.entity.CellForm
 interface CellFormRepository {
     val allCellForms: LiveData<List<CellForm>>
 
+    val lastCellForm: LiveData<CellForm>
+
     fun getCellFormsWithReportId(reportId: Long): LiveData<List<CellForm>>
 
     fun getCellFormWithId(cellFormId: Long): LiveData<CellForm>
