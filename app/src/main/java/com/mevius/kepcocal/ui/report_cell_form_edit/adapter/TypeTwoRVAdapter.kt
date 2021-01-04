@@ -12,11 +12,9 @@ import kotlinx.android.synthetic.main.report_cell_form_edit_type2_rv_item.view.*
 
 class TypeTwoRVAdapter(
     private val context: Context,
-    private val itemBtnClick: (SelectOptionData) -> Unit
+    private val selectOptionDataList: ArrayList<SelectOptionData>
 ) :
     RecyclerView.Adapter<TypeTwoRVAdapter.Holder>() {
-    private var selectOptionDataList = emptyList<SelectOptionData>()
-
     override fun getItemId(position: Int): Long {
         return position.toLong()
     }
@@ -39,11 +37,6 @@ class TypeTwoRVAdapter(
         holder.bind(selectOptionDataList[position])
     }
 
-    internal fun setSelectOptionData(selectOptionDataList: List<SelectOptionData>) {
-        this.selectOptionDataList = selectOptionDataList
-        notifyDataSetChanged()
-    }
-
     inner class Holder(
         itemView: View
     ) :
@@ -53,7 +46,10 @@ class TypeTwoRVAdapter(
         fun bind(selectOptionData: SelectOptionData) {
             tvSelectOptionData?.text = selectOptionData.content
 
-            itemView.type2_btn_del.setOnClickListener { itemBtnClick(selectOptionData) }
+            itemView.type2_btn_del.setOnClickListener {
+                selectOptionDataList.remove(selectOptionData)
+                notifyDataSetChanged()
+            }
         }
     }
 }

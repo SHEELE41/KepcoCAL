@@ -16,7 +16,7 @@ import com.mevius.kepcocal.ui.report_cell_form_edit.ReportCellFormEditViewModel
 import com.mevius.kepcocal.ui.report_cell_form_edit.adapter.TypeTwoRVAdapter
 import kotlinx.android.synthetic.main.report_cell_form_edit_type2.*
 
-class FragmentTypeTwo: Fragment() {
+class FragmentTypeTwo : Fragment() {
     private lateinit var mContext: Context
     private val reportCellFormEditViewModel: ReportCellFormEditViewModel by activityViewModels()
 
@@ -31,35 +31,38 @@ class FragmentTypeTwo: Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.report_cell_form_edit_type2, container, false)
-
-        val button = view.findViewById<Button>(R.id.type2_btn_add)
-
-        button.setOnClickListener {
-            val selectOptionData = SelectOptionData(
-                null,
-                reportCellFormEditViewModel.cellFormId,
-                type2_select_option_data_input.text.toString()
-            )
-            reportCellFormEditViewModel.insertSelectOptionData(selectOptionData)
-        }
-
-        // RecyclerView Btn Onclick
-        val itemBtnClick: (SelectOptionData) -> Unit = {
-            reportCellFormEditViewModel.deleteSelectOptionData(it)
-        }
+        val btnAddSOD = view.findViewById<Button>(R.id.type2_btn_add)
 
         // RecyclerView 설정
-        val recyclerViewAdapter = TypeTwoRVAdapter(mContext, itemBtnClick)
+        val recyclerViewAdapter =
+            TypeTwoRVAdapter(mContext, reportCellFormEditViewModel.selectOptionDataCacheList)
         val recyclerViewLayoutManager = LinearLayoutManager(mContext)
         val recyclerView = view.findViewById<RecyclerView>(R.id.rv_type2)
 
         recyclerView.adapter = recyclerViewAdapter   // Set Adapter to RecyclerView in xml
         recyclerView.layoutManager = recyclerViewLayoutManager
 
-        if (reportCellFormEditViewModel.cellFormId != 0L)
-        reportCellFormEditViewModel.getSelectOptionDataWithCellFormId(reportCellFormEditViewModel.cellFormId)
+        // 추가 버튼 onClickListener
+        btnAddSOD.setOnClickListener {
+            val selectOptionData = SelectOptionData(
+                null,
+                reportCellFormEditViewModel.cellFormId,
+                type2_select_option_data_input.text.toString()
+            )
+            reportCellFormEditViewModel.selectOptionDataCacheList.add(selectOptionData)
+            recyclerViewAdapter.notifyDataSetChanged()
+        }
+
+        //
+        reportCellFormEditViewModel.getSelectOptionDataWithCellFormId(
+            reportCellFormEditViewModel.cellFormId
+        )
             .observe(viewLifecycleOwner, { selectOptionData ->
-                recyclerViewAdapter.setSelectOptionData(selectOptionData)
+                selectOptionData?.let {
+                    reportCellFormEditViewModel.selectOptionDataCacheList.clear()
+                    reportCellFormEditViewModel.selectOptionDataCacheList.addAll(it)    // 깊은 복사
+                    recyclerViewAdapter.notifyDataSetChanged()
+                }
             })
 
         return view

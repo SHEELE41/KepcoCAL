@@ -17,6 +17,7 @@ class ReportCellFormEditViewModel @ViewModelInject constructor(
 ): ViewModel() {
     var reportId = 0L
     var cellFormId = 0L
+    var selectOptionDataCacheList = ArrayList<SelectOptionData>()
 
     val allCellForms: LiveData<List<CellForm>> = cellFormRepository.allCellForms
     val lastCellForm: LiveData<CellForm> = cellFormRepository.lastCellForm
@@ -48,5 +49,14 @@ class ReportCellFormEditViewModel @ViewModelInject constructor(
 
     fun deleteSelectOptionData(selectOptionData: SelectOptionData) = viewModelScope.launch(Dispatchers.IO) {
         selectOptionDataRepository.delete(selectOptionData)
+    }
+
+    // TODO 나중에 DAO 단에서 Transaction 으로 구현하기
+    fun updateTransaction(cellForm: CellForm) = viewModelScope.launch(Dispatchers.IO) {
+        deleteCellForm(cellForm).join()
+        insertCellForm(cellForm).join()
+        for (sod in selectOptionDataCacheList) {
+            insertSelectOptionData(sod)
+        }
     }
 }

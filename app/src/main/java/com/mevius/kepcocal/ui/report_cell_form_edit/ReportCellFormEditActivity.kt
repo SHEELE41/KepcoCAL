@@ -58,7 +58,7 @@ class ReportCellFormEditActivity : AppCompatActivity() {
                 input_first_cell.text.toString()
             )
 
-            reportCellFormEditViewModel.insertCellForm(cellForm)
+            reportCellFormEditViewModel.updateTransaction(cellForm)
 
             finish()
         }
@@ -67,19 +67,13 @@ class ReportCellFormEditActivity : AppCompatActivity() {
     private fun setupFragments() {
         showTypeOneFragment()   // Default
         radio_btn1.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                showTypeOneFragment()
-            }
+            if (isChecked) { showTypeOneFragment() }
         }
         radio_btn2.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                showTypeTwoFragment()
-            }
+            if (isChecked) { showTypeTwoFragment() }
         }
         radio_btn3.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                showTypeThreeFragment()
-            }
+            if (isChecked) { showTypeThreeFragment() }
         }
     }
 
@@ -99,20 +93,19 @@ class ReportCellFormEditActivity : AppCompatActivity() {
     }
 
     private fun setupViewModel() {
-        if (reportCellFormEditViewModel.cellFormId != 0L) {
+        if (reportCellFormEditViewModel.cellFormId != 0L) { // 기존 데이터를 수정하는 경우
             reportCellFormEditViewModel.getCellFormWithId(reportCellFormEditViewModel.cellFormId).observe(this, { cellForm ->
                 cellForm?.let {
                     input_cell_form_name.setText(it.name)
                     input_first_cell.setText(it.firstCell)
                     when (it.type) {
-                        // 중복 체크가 가능한가?
                         1 -> radio_btn1.isChecked = true
                         2 -> radio_btn2.isChecked = true
                         3 -> radio_btn3.isChecked = true
                     }
                 }
             })
-        } else {
+        } else { // 새 데이터를 추가할 경우
             // TODO 단순히 마지막 인덱스를 가져오는 것이므로 Count 이용...
             reportCellFormEditViewModel.cellFormId = 1L // 첫 번째 양식 추가일 때
 
