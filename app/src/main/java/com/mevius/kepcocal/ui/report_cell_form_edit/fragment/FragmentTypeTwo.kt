@@ -18,6 +18,8 @@ import kotlinx.android.synthetic.main.report_cell_form_edit_type2.*
 
 class FragmentTypeTwo : Fragment() {
     private lateinit var mContext: Context
+    // Activity - Fragment 동일한 ViewModel 공유. (KTX 방식)
+    // 기준이 되는 LifecycleOwner 는 Activity
     private val reportCellFormEditViewModel: ReportCellFormEditViewModel by activityViewModels()
 
     override fun onAttach(context: Context) {
@@ -31,11 +33,11 @@ class FragmentTypeTwo : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.report_cell_form_edit_type2, container, false)
-        val btnAddSOD = view.findViewById<Button>(R.id.type2_btn_add)
+        val btnAddSOD = view.findViewById<Button>(R.id.type2_btn_add)   // 버튼 변수 초기화 (안하면 NPE 발생)
 
         // RecyclerView 설정
         val recyclerViewAdapter =
-            TypeTwoRVAdapter(mContext, reportCellFormEditViewModel.selectOptionDataCacheList)
+            TypeTwoRVAdapter(mContext, reportCellFormEditViewModel.typeTwoSelectOptionDataCacheList)
         val recyclerViewLayoutManager = LinearLayoutManager(mContext)
         val recyclerView = view.findViewById<RecyclerView>(R.id.rv_type2)
 
@@ -47,20 +49,22 @@ class FragmentTypeTwo : Fragment() {
             val selectOptionData = SelectOptionData(
                 null,
                 reportCellFormEditViewModel.cellFormId,
+                false,
                 type2_select_option_data_input.text.toString()
             )
-            reportCellFormEditViewModel.selectOptionDataCacheList.add(selectOptionData)
+            reportCellFormEditViewModel.typeTwoSelectOptionDataCacheList.add(selectOptionData)
             recyclerViewAdapter.notifyDataSetChanged()
         }
 
-        //
-        reportCellFormEditViewModel.getSelectOptionDataWithCellFormId(
-            reportCellFormEditViewModel.cellFormId
+        // TODO LiveData 말고 초기에 딱 한번 불러오도록 변경하기
+        reportCellFormEditViewModel.getSelectOptionDataWithCellFormIdAndAutoFlag(
+            reportCellFormEditViewModel.cellFormId,
+            false   // 자동 입력 데이터가 아닌 선택 입력 데이터이므로
         )
             .observe(viewLifecycleOwner, { selectOptionData ->
                 selectOptionData?.let {
-                    reportCellFormEditViewModel.selectOptionDataCacheList.clear()
-                    reportCellFormEditViewModel.selectOptionDataCacheList.addAll(it)    // 깊은 복사
+                    reportCellFormEditViewModel.typeTwoSelectOptionDataCacheList.clear()
+                    reportCellFormEditViewModel.typeTwoSelectOptionDataCacheList.addAll(it)    // 깊은 복사
                     recyclerViewAdapter.notifyDataSetChanged()
                 }
             })

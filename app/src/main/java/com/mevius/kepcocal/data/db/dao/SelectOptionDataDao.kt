@@ -12,6 +12,9 @@ interface SelectOptionDataDao {
     @Query("SELECT * FROM SelectOptionData WHERE cell_form_id = :cellFormId")
     fun getSelectOptionDataWithCellFormId(cellFormId: Long): LiveData<List<SelectOptionData>>
 
+    @Query("SELECT * FROM SelectOptionData WHERE cell_form_id = :cellFormId AND is_auto = :isAuto")
+    fun getSelectOptionDataWithCellFormIdAndAutoFlag(cellFormId: Long, isAuto: Boolean): LiveData<List<SelectOptionData>>
+
     @Insert
     suspend fun insert(selectOptionData: SelectOptionData)
 

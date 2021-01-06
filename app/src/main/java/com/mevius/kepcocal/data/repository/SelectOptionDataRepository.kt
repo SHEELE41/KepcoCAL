@@ -8,6 +8,8 @@ interface SelectOptionDataRepository {
 
     fun getSelectOptionDataWithCellFormId(cellFormId: Long): LiveData<List<SelectOptionData>>
 
+    fun getSelectOptionDataWithCellFormIdAndAutoFlag(cellFormId: Long, isAuto: Boolean): LiveData<List<SelectOptionData>>
+
     suspend fun insert(selectOptionData: SelectOptionData)
 
     suspend fun update(selectOptionData: SelectOptionData)

@@ -16,5 +16,6 @@ import androidx.room.PrimaryKey
 data class SelectOptionData (
     @PrimaryKey(autoGenerate = true) var id: Long?,   // 데이터베이스에서 사용할 자동 생성 프로젝트 인덱스
     @ColumnInfo(name = "cell_form_id") var cellFormId: Long?,
+    @ColumnInfo(name = "is_auto") var type: Boolean,
     @ColumnInfo(name = "content") var content: String
 )

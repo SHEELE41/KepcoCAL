@@ -15,6 +15,13 @@ class SelectOptionDataRepositoryImpl @Inject constructor(
         return selectOptionDataDao.getSelectOptionDataWithCellFormId(cellFormId)
     }
 
+    override fun getSelectOptionDataWithCellFormIdAndAutoFlag(
+        cellFormId: Long,
+        isAuto: Boolean
+    ): LiveData<List<SelectOptionData>> {
+        return selectOptionDataDao.getSelectOptionDataWithCellFormIdAndAutoFlag(cellFormId, isAuto)
+    }
+
     override suspend fun insert(selectOptionData: SelectOptionData) {
         selectOptionDataDao.insert(selectOptionData)
     }

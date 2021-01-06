@@ -1,19 +1,23 @@
 package com.mevius.kepcocal.ui.report_cell_form_edit.fragment
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import com.mevius.kepcocal.R
-import kotlinx.android.synthetic.main.report_cell_form_edit_type3.*
+import com.mevius.kepcocal.data.db.entity.SelectOptionData
+import com.mevius.kepcocal.ui.report_cell_form_edit.ReportCellFormEditViewModel
+import java.lang.Exception
 
-class FragmentTypeThree: Fragment() {
+class FragmentTypeThree : Fragment() {
     private lateinit var mContext: Context
+    private val reportCellFormEditViewModel: ReportCellFormEditViewModel by activityViewModels()
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -26,22 +30,44 @@ class FragmentTypeThree: Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.report_cell_form_edit_type3, container, false)
+        val spinner = view.findViewById<Spinner>(R.id.type3_spinner)
 
-        // 저장되어있는 값에 따라 스피너 체크된 것 달라지도록
+        // Spinner 설정
         ArrayAdapter.createFromResource(
             mContext,
             R.array.spinner_labels_array,
             android.R.layout.simple_spinner_item
         ).also { adapter ->
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            val spinner = view.findViewById<Spinner>(R.id.type3_spinner)
             spinner.adapter = adapter
         }
 
-        return view
-    }
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) { // bounded index 어쩌구 에러 발생 가능
+                reportCellFormEditViewModel.typeThreeSelectOptionDataPosition = position
+            }
 
-    fun getSpinnerSelected(): String {
-        return type3_spinner.selectedItem.toString()
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        reportCellFormEditViewModel.getSelectOptionDataWithCellFormIdAndAutoFlag(
+            reportCellFormEditViewModel.cellFormId,
+            true
+        )
+            .observe(viewLifecycleOwner, { selectOptionData ->
+                selectOptionData?.let {
+                    if (selectOptionData.isNotEmpty()) {
+                        reportCellFormEditViewModel.typeThreeSelectOptionDataPosition =
+                            selectOptionData[0].content.toInt()
+                    }
+                }
+            })
+
+        return view
     }
 }

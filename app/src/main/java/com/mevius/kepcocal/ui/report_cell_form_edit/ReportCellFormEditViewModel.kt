@@ -15,10 +15,13 @@ class ReportCellFormEditViewModel @ViewModelInject constructor(
     private val cellFormRepository: CellFormRepository,
     private val selectOptionDataRepository: SelectOptionDataRepository
 ): ViewModel() {
+    // Activity - Fragment 데이터 공유를 위한 공용 변수 선언
     var reportId = 0L
     var cellFormId = 0L
-    var selectOptionDataCacheList = ArrayList<SelectOptionData>()
+    var typeTwoSelectOptionDataCacheList = ArrayList<SelectOptionData>()
+    var typeThreeSelectOptionDataPosition = 1
 
+    // TODO 안쓰는 것 정리하기
     val allCellForms: LiveData<List<CellForm>> = cellFormRepository.allCellForms
     val lastCellForm: LiveData<CellForm> = cellFormRepository.lastCellForm
     val allSelectOptionData: LiveData<List<SelectOptionData>> = selectOptionDataRepository.allSelectOptionData
@@ -31,19 +34,23 @@ class ReportCellFormEditViewModel @ViewModelInject constructor(
         return selectOptionDataRepository.getSelectOptionDataWithCellFormId(cellFormId)
     }
 
+    fun getSelectOptionDataWithCellFormIdAndAutoFlag(cellFormId: Long, isAuto: Boolean): LiveData<List<SelectOptionData>> {
+        return selectOptionDataRepository.getSelectOptionDataWithCellFormIdAndAutoFlag(cellFormId, isAuto)
+    }
+
     fun getCellFormWithId(cellFormId: Long): LiveData<CellForm> {
         return cellFormRepository.getCellFormWithId(cellFormId)
     }
 
-    fun insertCellForm(cellForm: CellForm) = viewModelScope.launch(Dispatchers.IO) {
+    private fun insertCellForm(cellForm: CellForm) = viewModelScope.launch(Dispatchers.IO) {
         cellFormRepository.insert(cellForm)
     }
 
-    fun insertSelectOptionData(selectOptionData: SelectOptionData) = viewModelScope.launch(Dispatchers.IO) {
+    private fun insertSelectOptionData(selectOptionData: SelectOptionData) = viewModelScope.launch(Dispatchers.IO) {
         selectOptionDataRepository.insert(selectOptionData)
     }
 
-    fun deleteCellForm(cellForm: CellForm) = viewModelScope.launch(Dispatchers.IO) {
+    private fun deleteCellForm(cellForm: CellForm) = viewModelScope.launch(Dispatchers.IO) {
         cellFormRepository.delete(cellForm)
     }
 
@@ -53,10 +60,20 @@ class ReportCellFormEditViewModel @ViewModelInject constructor(
 
     // TODO 나중에 DAO 단에서 Transaction 으로 구현하기
     fun updateTransaction(cellForm: CellForm) = viewModelScope.launch(Dispatchers.IO) {
-        deleteCellForm(cellForm).join()
+        deleteCellForm(cellForm).join()     // SelectOptionData CASCADE
         insertCellForm(cellForm).join()
-        for (sod in selectOptionDataCacheList) {
+        // Type2 작업
+        for (sod in typeTwoSelectOptionDataCacheList) {
             insertSelectOptionData(sod)
         }
+        // Type3 작업
+        insertSelectOptionData(
+            SelectOptionData(
+                null,
+                cellFormId,
+                true,
+                typeThreeSelectOptionDataPosition.toString()
+            )
+        )
     }
 }
