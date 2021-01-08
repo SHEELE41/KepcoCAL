@@ -48,7 +48,7 @@ class FragmentTypeThree : Fragment() {
                 view: View?,
                 position: Int,
                 id: Long
-            ) { // bounded index 어쩌구 에러 발생 가능
+            ) {
                 reportCellFormEditViewModel.typeThreeSelectOptionDataPosition = position
             }
 
@@ -61,9 +61,11 @@ class FragmentTypeThree : Fragment() {
         )
             .observe(viewLifecycleOwner, { selectOptionData ->
                 selectOptionData?.let {
-                    if (selectOptionData.isNotEmpty()) {
+                    if (it.isNotEmpty()) {
+                        val selectedPosition = it[0].content.toInt()
                         reportCellFormEditViewModel.typeThreeSelectOptionDataPosition =
-                            selectOptionData[0].content.toInt()
+                            selectedPosition
+                        spinner.setSelection(selectedPosition)
                     }
                 }
             })

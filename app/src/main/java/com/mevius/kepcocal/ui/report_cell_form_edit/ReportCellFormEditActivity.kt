@@ -42,6 +42,8 @@ class ReportCellFormEditActivity : AppCompatActivity() {
     private fun setupUI() {
         setupFragments()
 
+        // 저장 버튼 눌렀을 때
+        // TODO 레이아웃 수정
         btn_report_cell_form_save.setOnClickListener {
             val checkedRadioButtonIndex = when(rg_report_cell_form_edit.checkedRadioButtonId){
                 R.id.radio_btn1 -> 1
