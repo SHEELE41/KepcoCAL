@@ -22,7 +22,6 @@ class ReportCellFormEditViewModel @ViewModelInject constructor(
     var typeThreeSelectOptionDataPosition = 1
 
     // TODO 안쓰는 것 정리하기
-    val allCellForms: LiveData<List<CellForm>> = cellFormRepository.allCellForms
     val lastCellForm: LiveData<CellForm> = cellFormRepository.lastCellForm
     val allSelectOptionData: LiveData<List<SelectOptionData>> = selectOptionDataRepository.allSelectOptionData
 
