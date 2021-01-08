@@ -41,14 +41,26 @@
             app:floatingSearch_suggestionsListAnimDuration="250"
             app:layout_constraintTop_toTopOf="parent" />
     </RelativeLayout>
-    
+
     <com.leinardi.android.speeddial.SpeedDialView
         android:id="@+id/speedDial_project_detail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="1dp"
+        app:layout_anchor="@id/speedDial_anchor"
+        app:layout_anchorGravity="end"
+        app:layout_dodgeInsetEdges="bottom"
         app:sdMainFabClosedSrc="@drawable/ic_baseline_assignment_24" />
 
-    <include layout="@layout/project_detail_bottom_sheet" />
+    <View
+        android:id="@+id/speedDial_anchor"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        app:layout_anchor="@id/bottom_sheet"
+        app:layout_insetEdge="bottom" />
+
+    <include
+        android:id="@+id/bottom_sheet"
+        layout="@layout/project_detail_bottom_sheet" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

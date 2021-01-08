@@ -23,6 +23,8 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.leinardi.android.speeddial.SpeedDialActionItem
+import com.leinardi.android.speeddial.SpeedDialView
 import com.mevius.kepcocal.R
 import com.mevius.kepcocal.data.db.entity.Machine
 import com.mevius.kepcocal.ui.project_detail.data.FSVDataHelper
@@ -83,6 +85,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     private fun setupUI() {
         setupMapView()
         setupBottomSheet()
+        setupSpeedDial()
         setupFloatingSearch()
         setupResultList()
     }
@@ -105,6 +108,18 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
             mapView.addPOIItem(MapPOIItem().setMarkerProperty(selectedMachine))
             projectDetailViewModel.update(selectedMachine)
         }
+    }
+
+    /**
+     * [setupSpeedDial]
+     * SpeedDial 설정
+     */
+    private fun setupSpeedDial() {
+        val speedDialView = findViewById<SpeedDialView>(R.id.speedDial_project_detail)
+        speedDialView.addActionItem(
+            SpeedDialActionItem.Builder(R.id.fab_no_label, R.drawable.ic_baseline_add_24)
+                .create()
+        )
     }
 
     /**

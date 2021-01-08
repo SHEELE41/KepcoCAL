@@ -55,6 +55,7 @@ class FragmentTypeThree : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
+        // TODO Observe 없이 구현
         reportCellFormEditViewModel.getSelectOptionDataWithCellFormIdAndAutoFlag(
             reportCellFormEditViewModel.cellFormId,
             true
