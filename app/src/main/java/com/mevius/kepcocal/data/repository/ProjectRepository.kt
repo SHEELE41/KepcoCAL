@@ -10,7 +10,11 @@ interface ProjectRepository {
 
     val lastProject: LiveData<Project>
 
+    fun getProjectWithId(projectId: Long): LiveData<Project>
+
     suspend fun insert(project: Project)
+
+    suspend fun update(project: Project)
 
     suspend fun delete(project: Project)
 }

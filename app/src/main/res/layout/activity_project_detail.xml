@@ -42,15 +42,37 @@
             app:layout_constraintTop_toTopOf="parent" />
     </RelativeLayout>
 
-    <com.leinardi.android.speeddial.SpeedDialView
-        android:id="@+id/speedDial_project_detail"
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_project_detail_sub1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="1dp"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/ic_baseline_insert_link_24"
+        app:fabSize="mini"
+        app:layout_anchor="@id/fab_project_detail_main"
+        app:layout_anchorGravity="center" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_project_detail_sub2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/ic_baseline_save_alt_24"
+        app:fabSize="mini"
+        app:layout_anchor="@id/fab_project_detail_main"
+        app:layout_anchorGravity="center" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_project_detail_main"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="29dp"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/ic_baseline_assignment_24"
         app:layout_anchor="@id/speedDial_anchor"
         app:layout_anchorGravity="end"
-        app:layout_dodgeInsetEdges="bottom"
-        app:sdMainFabClosedSrc="@drawable/ic_baseline_assignment_24" />
+        app:layout_dodgeInsetEdges="bottom" />
 
     <View
         android:id="@+id/speedDial_anchor"

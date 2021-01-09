@@ -23,11 +23,11 @@ import java.util.*
 
 
 /**
-* [ProjectListActivity]
-* 프로젝트(엑셀 파일) 리스트를 띄우고 리스트의 아이템을 추가 / 삭제할 수 있는 기능을 하는 Activity
-* ListView Item 이 클릭될 시 해당 프로젝트의 상세 정보 액티비티(지도 및 기기 리스트)인 ProjectDetailActivity 로 이동함
-* 길게 클릭 시 프로젝트 삭제 가능 ( with Dialog )
-*/
+ * [ProjectListActivity]
+ * 프로젝트(엑셀 파일) 리스트를 띄우고 리스트의 아이템을 추가 / 삭제할 수 있는 기능을 하는 Activity
+ * ListView Item 이 클릭될 시 해당 프로젝트의 상세 정보 액티비티(지도 및 기기 리스트)인 ProjectDetailActivity 로 이동함
+ * 길게 클릭 시 프로젝트 삭제 가능 ( with Dialog )
+ */
 
 @AndroidEntryPoint
 class ProjectListActivity : AppCompatActivity() {
@@ -52,10 +52,10 @@ class ProjectListActivity : AppCompatActivity() {
      * NestedScrollView Height Test Code
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        Toast.makeText(this, scroll_view.height.toString(), Toast.LENGTH_SHORT).show()
+    super.onWindowFocusChanged(hasFocus)
+    Toast.makeText(this, scroll_view.height.toString(), Toast.LENGTH_SHORT).show()
     }
-    */
+     */
 
     /**
      * [onActivityResult Method]
@@ -112,11 +112,15 @@ class ProjectListActivity : AppCompatActivity() {
          * 아이템 클릭시 프로젝트 상세 액티비티로 넘어가기 위한 코드
          * 아이템을 선택하면 해당 프로젝트의 ProjectDetailActivity 로 넘어감.
          */
-        val itemClick: (Long?) -> Unit = {
+        val itemClick: (Project) -> Unit = {
             val intent = Intent(this, ProjectDetailActivity::class.java).apply {
                 putExtra(
                     "projectId",
-                    it
+                    it.id
+                )
+                putExtra(
+                    "reportId",
+                    it.reportId
                 )
             }
             startActivity(intent)

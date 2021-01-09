@@ -12,7 +12,7 @@ import kotlinx.android.synthetic.main.project_list_rv_item.view.*
 
 class ProjectRVAdapter(
     private val context: Context,
-    private val itemClick: (Long?) -> Unit,
+    private val itemClick: (Project) -> Unit,
     private val itemLongClick: (Project) -> Boolean
 ) :
     RecyclerView.Adapter<ProjectRVAdapter.Holder>() {
@@ -55,7 +55,7 @@ class ProjectRVAdapter(
             tvProjectName?.text = project.projectName
             tvDate?.text = project.modifiedDate
 
-            itemView.setOnClickListener { itemClick(project.id) }
+            itemView.setOnClickListener { itemClick(project) }
             itemView.setOnLongClickListener { itemLongClick(project) }
         }
     }

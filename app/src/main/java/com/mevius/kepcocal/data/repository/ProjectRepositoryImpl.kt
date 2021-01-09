@@ -10,9 +10,16 @@ class ProjectRepositoryImpl @Inject constructor(
 ): ProjectRepository {
     override val allProjects: LiveData<List<Project>> = projectDao.getAll()
     override val lastProject: LiveData<Project> = projectDao.getLastProjectLive()
+    override fun getProjectWithId(projectId: Long): LiveData<Project> {
+        return projectDao.getProjectWithId(projectId)
+    }
 
     override suspend fun insert(project: Project) {
         projectDao.insert(project)
+    }
+
+    override suspend fun update(project: Project) {
+        projectDao.update(project)
     }
 
     override suspend fun delete(project: Project) {

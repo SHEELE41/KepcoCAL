@@ -42,18 +42,30 @@
             tools:ignore="RtlHardcoded" />
     </LinearLayout>
 
-
-    <TextView
-        android:id="@+id/bs_tv_computerized_number"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="8673B1938" />
+        android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/bs_tv_manufacturing_data"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="보성하이텍 2508052 (2005.08)" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/bs_tv_computerized_number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="8673B1938" />
+
+            <TextView
+                android:id="@+id/bs_tv_manufacturing_data"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="보성하이텍 2508052 (2005.08)" />
+        </LinearLayout>
+        <!--나중에 여기 Button 추가-->
+    </LinearLayout>
 
     <TextView
         android:layout_width="wrap_content"
@@ -69,16 +81,34 @@
         android:layout_height="wrap_content"
         android:text="평창군 대관령면 수하리 166-18" />
 
-    <ToggleButton
-        android:id="@+id/btn_project_detail_bs"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:background="@color/colorAccent"
-        android:foreground="?attr/selectableItemBackground"
-        android:textOff="@string/bottom_sheet_button_text_off"
-        android:textOn="@string/bottom_sheet_button_text_on"
-        android:fontFamily="@font/sc_dream4"
-        android:textColor="#fff" />
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_write_report"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:layout_weight="1"
+            android:background="@color/colorAccent"
+            android:text="보고서 작성"
+            android:textColor="@color/white" />
+
+        <ToggleButton
+            android:id="@+id/btn_project_detail_bs"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_weight="1"
+            android:background="@color/colorAccent"
+            android:fontFamily="@font/sc_dream4"
+            android:foreground="?attr/selectableItemBackground"
+            android:textColor="#fff"
+            android:textOff="@string/bottom_sheet_button_text_off"
+            android:textOn="@string/bottom_sheet_button_text_on" />
+    </LinearLayout>
 
 </LinearLayout>

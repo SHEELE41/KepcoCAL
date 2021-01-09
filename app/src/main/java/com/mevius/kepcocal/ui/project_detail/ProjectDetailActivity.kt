@@ -23,12 +23,11 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.leinardi.android.speeddial.SpeedDialActionItem
-import com.leinardi.android.speeddial.SpeedDialView
 import com.mevius.kepcocal.R
 import com.mevius.kepcocal.data.db.entity.Machine
 import com.mevius.kepcocal.ui.project_detail.data.FSVDataHelper
 import com.mevius.kepcocal.ui.project_detail.data.MachineSuggestion
+import com.mevius.kepcocal.ui.report_cell_data_edit.ReportCellDataEditActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_project_detail.*
 import kotlinx.android.synthetic.main.project_detail_bottom_sheet.*
@@ -48,7 +47,9 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     private val isLocationApiOnRequestCode = 1002
     private val findSuggestionSimulatedDelay = 250L
     private var mLastQuery = ""
+    private var reportId: Long = 0L
     private var projectId: Long = 0L
+    private var isFABOpen = false
     private var viewModelInitFlag = true
     private var machineList = listOf<Machine>()
     private lateinit var mapView: MapView
@@ -61,17 +62,18 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_project_detail)
 
-        getProjectIdFromIntent()
+        getExtraFromIntent()
         setupUI()
         setupViewModel()
     }
 
     /**
-     * [getProjectIdFromIntent]
-     * Intent Extra 로부터 클릭된 ProjectId 가져오기
+     * [getExtraFromIntent]
+     * Intent Extra 로부터 클릭된 ProjectId, ReportId 가져오기
      */
-    private fun getProjectIdFromIntent() {
-        projectId = intent.getLongExtra("projectId", 0L)
+    private fun getExtraFromIntent() {
+        projectId = intent.getLongExtra("projectId", 0L)    // null -> 0L
+        reportId = intent.getLongExtra("reportId", 0L)  // null -> 0L
         if (projectId == 0L) { // 만약 전달받은 fileName 이 Null 이라면 즉시 액티비티 종료
             Toast.makeText(this, "올바르지 않은 프로젝트입니다.", Toast.LENGTH_SHORT).show()
             finish()
@@ -85,7 +87,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     private fun setupUI() {
         setupMapView()
         setupBottomSheet()
-        setupSpeedDial()
+        setupFloatingActionButton()
         setupFloatingSearch()
         setupResultList()
     }
@@ -98,6 +100,20 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         bottomSheetBehavior = BottomSheetBehavior.from(bottom_sheet)
 
         // BottomSheet 내부 버튼 설정
+        btn_write_report.setOnClickListener {
+            // TODO 보고서 파일 연동 안되어 있으면 뷰 없어지거나 클릭 안 되도록
+            if (reportId == 0L){    // reportId is null
+                Toast.makeText(this, "리포트 연동이 되어있지 않습니다!", Toast.LENGTH_SHORT).show()
+            } else {
+                val selectedMachine = machineList.find { it.machineIdInExcel == bs_tv_index.text }
+                val mIntent = Intent(this, ReportCellDataEditActivity::class.java).apply {
+                    putExtra("reportId", reportId)
+                    putExtra("machineId", selectedMachine?.id)
+                }
+                startActivity(mIntent)
+            }
+        }
+
         btn_project_detail_bs.setOnClickListener {
             viewModelInitFlag = false
             val selectedMachine = machineList.find { it.machineIdInExcel == bs_tv_index.text }
@@ -111,15 +127,60 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     }
 
     /**
-     * [setupSpeedDial]
-     * SpeedDial 설정
+     * [setupFloatingActionButton]
+     * FloatingActionButton 설정
+     * SpeedDial 라이브러리 사용하면 HTTP 에러 남 (Daum Map API 충돌)
+     * TODO 후에 서브 버튼 옆에 Label 추가하기
      */
-    private fun setupSpeedDial() {
-        val speedDialView = findViewById<SpeedDialView>(R.id.speedDial_project_detail)
-        speedDialView.addActionItem(
-            SpeedDialActionItem.Builder(R.id.fab_no_label, R.drawable.ic_baseline_add_24)
-                .create()
-        )
+    private fun setupFloatingActionButton() {
+        fab_project_detail_main.setOnClickListener {
+            if (!isFABOpen){
+                showFABMenu()
+            } else {
+                closeFABMenu()
+            }
+        }
+
+        fab_project_detail_sub1.setOnClickListener {
+            Toast.makeText(this, "Sub1 Clicked", Toast.LENGTH_SHORT).show()
+        }
+
+        fab_project_detail_sub2.setOnClickListener {
+            Toast.makeText(this, "Sub2 Clicked", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * [showFABMenu]
+     * FAB Menu 펼치기
+     * */
+    private fun showFABMenu() {
+        isFABOpen = true
+        fab_project_detail_sub1.animate().translationY(-resources.getDimension(R.dimen.standard_110))
+        fab_project_detail_sub2.animate().translationY(-resources.getDimension(R.dimen.standard_60))
+    }
+
+    /**
+     * [closeFABMenu]
+     * FAB Menu 숨기기
+     * */
+    private fun closeFABMenu() {
+        isFABOpen = false
+        fab_project_detail_main.bringToFront()  // Sub 버튼 클릭 후 닫으면 Sub 버튼이 위로 올라오는 현상 방지
+        fab_project_detail_sub1.animate().translationY(0F)
+        fab_project_detail_sub2.animate().translationY(0F)
+    }
+
+    /**
+     * [onBackPressed]
+     * Back 키 눌렀을 때 FAB Menu 닫을 수 있도록 override
+     * */
+    override fun onBackPressed() {
+        if(!isFABOpen){
+            super.onBackPressed()
+        }else{
+            closeFABMenu()
+        }
     }
 
     /**
@@ -160,6 +221,13 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
             FSVDataHelper.sLiveMachineData = machines
             machineList = machines
             viewModelInitFlag = false
+        })
+
+        // ReportId 연동
+        projectDetailViewModel.getProjectWithId(projectId).observe(this, { project ->
+            project?.let {
+                reportId = it.reportId ?: 0L
+            }
         })
     }
 
