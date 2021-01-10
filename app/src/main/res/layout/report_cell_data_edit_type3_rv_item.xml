@@ -30,7 +30,7 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/tv_cell_form_name"
+                    android:id="@+id/tv_cell_form_name_t3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="start"
@@ -46,7 +46,7 @@
                     android:gravity="end">
 
                     <TextView
-                        android:id="@+id/tv_cell_form_type"
+                        android:id="@+id/tv_cell_form_type_t3"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@xml/report_edit_list_rv_item_type_style"
@@ -60,12 +60,13 @@
 
             </LinearLayout>
 
-            <FrameLayout
-                android:id="@+id/cde_inflate_parent_layout"
+            <TextView
+                android:id="@+id/tv_cde_autoFill_data_t3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:orientation="vertical" />
+                android:text="@string/app_name"
+                android:textSize="18sp"
+                android:layout_marginStart="5dp"/>
 
         </LinearLayout>
 

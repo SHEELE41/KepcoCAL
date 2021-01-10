@@ -39,6 +39,9 @@
         <activity
             android:name=".ui.report_cell_form_edit.ReportCellFormEditActivity"
             android:theme="@style/AppThemeWithActionBar"/>
+        <activity
+            android:name=".ui.report_cell_data_edit.ReportCellDataEditActivity"
+            android:theme="@style/AppThemeWithActionBar"/>
 
         <!--meta-data tag must be in application tag-->
         <meta-data

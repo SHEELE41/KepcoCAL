@@ -7,16 +7,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mevius.kepcocal.data.db.entity.Machine
 import com.mevius.kepcocal.data.db.entity.Project
+import com.mevius.kepcocal.data.db.entity.Report
 import com.mevius.kepcocal.data.repository.MachineRepository
 import com.mevius.kepcocal.data.repository.ProjectRepository
+import com.mevius.kepcocal.data.repository.ReportRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class ProjectDetailViewModel @ViewModelInject constructor(
     private val machineRepository: MachineRepository,
-    private val projectRepository: ProjectRepository
+    private val projectRepository: ProjectRepository,
+    private val reportRepository: ReportRepository
 ) : ViewModel() {
     val allMachines: LiveData<List<Machine>> = machineRepository.allMachines
+    val allReports: LiveData<List<Report>> = reportRepository.allReports
 
     fun getMachinesWithProjectId(projectId: Long): LiveData<List<Machine>>{
         return machineRepository.getMachinesWithProjectId(projectId)

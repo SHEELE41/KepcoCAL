@@ -2,6 +2,7 @@ package com.mevius.kepcocal.ui.report_cell_data_edit
 
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
 import com.mevius.kepcocal.data.db.entity.CellForm
 import com.mevius.kepcocal.data.db.entity.SelectOptionData
 import com.mevius.kepcocal.data.repository.CellDataRepository
@@ -12,7 +13,8 @@ class ReportCellDataEditViewModel @ViewModelInject constructor(
     private val cellFormRepository: CellFormRepository,
     private val selectOptionDataRepository: SelectOptionDataRepository,
     private val cellDataRepository: CellDataRepository
-){
+): ViewModel() {
+    val allSelectOptionData = selectOptionDataRepository.allSelectOptionData
     fun getCellFormsWithReportId(reportId: Long): LiveData<List<CellForm>> {
         return cellFormRepository.getCellFormsWithReportId(reportId)
     }

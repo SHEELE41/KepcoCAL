@@ -115,8 +115,8 @@ class ProjectListActivity : AppCompatActivity() {
         val itemClick: (Project) -> Unit = {
             val intent = Intent(this, ProjectDetailActivity::class.java).apply {
                 putExtra(
-                    "projectId",
-                    it.id
+                    "project",
+                    it
                 )
                 putExtra(
                     "reportId",
@@ -145,7 +145,7 @@ class ProjectListActivity : AppCompatActivity() {
                 setNegativeButton(
                     android.R.string.cancel
                 ) { dialog, _ -> dialog.cancel() }
-                this.show()
+                show()
             }
             true
         }

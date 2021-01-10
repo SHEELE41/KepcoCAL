@@ -1,11 +1,15 @@
 package com.mevius.kepcocal.data.db.entity
 
+import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.CASCADE
 import androidx.room.PrimaryKey
+import kotlinx.android.parcel.Parcelize
+import java.io.Serializable
 
+@Parcelize
 @Entity(
     foreignKeys = [ForeignKey(
         entity = Project::class,
@@ -34,7 +38,7 @@ data class Machine(
     @ColumnInfo(name = "coordinate_lat") var coordinateLat: String,
     @ColumnInfo(name = "is_done") var isDone: Boolean,
     @ColumnInfo(name = "is_no_coord") var isNoCoord: Boolean
-) {
+): Parcelable {
     constructor() : this(null,
         null,
         "",

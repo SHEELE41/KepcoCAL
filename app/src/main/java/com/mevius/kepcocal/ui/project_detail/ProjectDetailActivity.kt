@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -25,6 +26,8 @@ import com.google.android.gms.tasks.Task
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.mevius.kepcocal.R
 import com.mevius.kepcocal.data.db.entity.Machine
+import com.mevius.kepcocal.data.db.entity.Project
+import com.mevius.kepcocal.data.db.entity.Report
 import com.mevius.kepcocal.ui.project_detail.data.FSVDataHelper
 import com.mevius.kepcocal.ui.project_detail.data.MachineSuggestion
 import com.mevius.kepcocal.ui.report_cell_data_edit.ReportCellDataEditActivity
@@ -49,8 +52,10 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     private var mLastQuery = ""
     private var reportId: Long = 0L
     private var projectId: Long = 0L
+    private var project: Project? = null
     private var isFABOpen = false
     private var viewModelInitFlag = true
+    private var reportList = listOf<Report>()
     private var machineList = listOf<Machine>()
     private lateinit var mapView: MapView
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
@@ -72,12 +77,15 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
      * Intent Extra 로부터 클릭된 ProjectId, ReportId 가져오기
      */
     private fun getExtraFromIntent() {
-        projectId = intent.getLongExtra("projectId", 0L)    // null -> 0L
-        reportId = intent.getLongExtra("reportId", 0L)  // null -> 0L
-        if (projectId == 0L) { // 만약 전달받은 fileName 이 Null 이라면 즉시 액티비티 종료
+        intent.getParcelableExtra<Project>("project")?.let {
+            project = it
+            projectId = it.id!!
+        }
+        if (project == null) { // 만약 전달받은 객체가 Null 이라면 즉시 액티비티 종료
             Toast.makeText(this, "올바르지 않은 프로젝트입니다.", Toast.LENGTH_SHORT).show()
             finish()
         }
+        reportId = intent.getLongExtra("reportId", 0L)  // null -> 0L
     }
 
     /**
@@ -102,13 +110,17 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         // BottomSheet 내부 버튼 설정
         btn_write_report.setOnClickListener {
             // TODO 보고서 파일 연동 안되어 있으면 뷰 없어지거나 클릭 안 되도록
-            if (reportId == 0L){    // reportId is null
+
+            // Test
+            reportId = 1L
+
+            if (reportId == 0L) {    // reportId is null
                 Toast.makeText(this, "리포트 연동이 되어있지 않습니다!", Toast.LENGTH_SHORT).show()
             } else {
                 val selectedMachine = machineList.find { it.machineIdInExcel == bs_tv_index.text }
                 val mIntent = Intent(this, ReportCellDataEditActivity::class.java).apply {
                     putExtra("reportId", reportId)
-                    putExtra("machineId", selectedMachine?.id)
+                    putExtra("machine", selectedMachine)
                 }
                 startActivity(mIntent)
             }
@@ -134,7 +146,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
      */
     private fun setupFloatingActionButton() {
         fab_project_detail_main.setOnClickListener {
-            if (!isFABOpen){
+            if (!isFABOpen) {
                 showFABMenu()
             } else {
                 closeFABMenu()
@@ -143,6 +155,29 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
 
         fab_project_detail_sub1.setOnClickListener {
             Toast.makeText(this, "Sub1 Clicked", Toast.LENGTH_SHORT).show()
+
+            // TODO 매번 ArrayAdapter 새로 만드는게 부하를 주진 않을까? 차라리 전역변수로 돌리고 재활용?
+            // TODO AlertDialog Title Margin 너무 거슬리는데...
+            val adapter = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1)
+            for (report in reportList) {
+                adapter.add(report.title)
+            }    // addAll String
+
+            AlertDialog.Builder(this).apply {
+                setTitle("보고서 연동")
+                setAdapter(adapter) { _, which ->
+                    project?.let {
+                        it.reportId = reportList[which].id
+                        projectDetailViewModel.update(it)
+                        Toast.makeText(
+                            this@ProjectDetailActivity,
+                            "which : " + which.toString() + ", id : " + it.reportId.toString() + " 보고서가 연동되었습니다.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+                show()
+            }
         }
 
         fab_project_detail_sub2.setOnClickListener {
@@ -156,7 +191,8 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
      * */
     private fun showFABMenu() {
         isFABOpen = true
-        fab_project_detail_sub1.animate().translationY(-resources.getDimension(R.dimen.standard_110))
+        fab_project_detail_sub1.animate()
+            .translationY(-resources.getDimension(R.dimen.standard_110))
         fab_project_detail_sub2.animate().translationY(-resources.getDimension(R.dimen.standard_60))
     }
 
@@ -176,9 +212,9 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
      * Back 키 눌렀을 때 FAB Menu 닫을 수 있도록 override
      * */
     override fun onBackPressed() {
-        if(!isFABOpen){
+        if (!isFABOpen) {
             super.onBackPressed()
-        }else{
+        } else {
             closeFABMenu()
         }
     }
@@ -227,6 +263,12 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         projectDetailViewModel.getProjectWithId(projectId).observe(this, { project ->
             project?.let {
                 reportId = it.reportId ?: 0L
+            }
+        })
+
+        projectDetailViewModel.allReports.observe(this, { reports ->
+            reports?.let {
+                reportList = reports
             }
         })
     }
