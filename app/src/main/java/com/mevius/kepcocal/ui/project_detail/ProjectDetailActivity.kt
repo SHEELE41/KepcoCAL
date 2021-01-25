@@ -111,9 +111,6 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         btn_write_report.setOnClickListener {
             // TODO 보고서 파일 연동 안되어 있으면 뷰 없어지거나 클릭 안 되도록
 
-            // Test
-            reportId = 1L
-
             if (reportId == 0L) {    // reportId is null
                 Toast.makeText(this, "리포트 연동이 되어있지 않습니다!", Toast.LENGTH_SHORT).show()
             } else {
@@ -166,6 +163,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
             AlertDialog.Builder(this).apply {
                 setTitle("보고서 연동")
                 setAdapter(adapter) { _, which ->
+                    reportList[which].id?.let { reportId = it }     // 현재 액티비티에서 사용할 reportId 변경
                     project?.let {
                         it.reportId = reportList[which].id
                         projectDetailViewModel.update(it)
