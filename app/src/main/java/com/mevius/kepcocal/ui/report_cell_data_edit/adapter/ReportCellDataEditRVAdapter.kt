@@ -20,7 +20,7 @@ import kotlinx.android.synthetic.main.report_cell_data_edit_type3_rv_item.view.*
 import java.text.SimpleDateFormat
 import java.util.*
 
-class ActivityRVAdapter(
+class ReportCellDataEditRVAdapter(
     private val context: Context,
     private val machine: Machine
 ) :
@@ -154,13 +154,13 @@ class ActivityRVAdapter(
                 sodList.find { (it.cellFormId == cellForm.id) && it.isAuto }?.content?.toInt()
             Log.d("########################################", spinnerPosition.toString())
             when (spinnerPosition) {
-                1 -> tvAutoFillData?.text = machine.computerizedNumber
-                2 -> tvAutoFillData?.text = machine.lineName.plus(machine.lineNumber)
-                3 -> tvAutoFillData?.text =
+                0 -> tvAutoFillData?.text = machine.computerizedNumber
+                1 -> tvAutoFillData?.text = machine.lineName.plus(machine.lineNumber)
+                2 -> tvAutoFillData?.text =
                     machine.manufacturingYear + "." + machine.manufacturingDate
-                4 -> tvAutoFillData?.text = machine.company
-                5 -> tvAutoFillData?.text = machine.machineIdInExcel
-                6 -> tvAutoFillData?.text = todayDateFormat
+                3 -> tvAutoFillData?.text = machine.company
+                4 -> tvAutoFillData?.text = machine.machineIdInExcel
+                5 -> tvAutoFillData?.text = todayDateFormat
             }
         }
     }

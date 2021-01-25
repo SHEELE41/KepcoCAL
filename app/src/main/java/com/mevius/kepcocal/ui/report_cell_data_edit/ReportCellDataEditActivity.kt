@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.mevius.kepcocal.R
 import com.mevius.kepcocal.data.db.entity.Machine
-import com.mevius.kepcocal.ui.report_cell_data_edit.adapter.ActivityRVAdapter
+import com.mevius.kepcocal.ui.report_cell_data_edit.adapter.ReportCellDataEditRVAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_report_cell_data_edit.*
 
@@ -15,7 +15,7 @@ class ReportCellDataEditActivity : AppCompatActivity() {
     private val reportCellDataEditViewModel: ReportCellDataEditViewModel by viewModels()
     private var reportId = 0L
     private var machine: Machine? = null
-    private lateinit var recyclerViewAdapter: ActivityRVAdapter
+    private lateinit var recyclerViewAdapter: ReportCellDataEditRVAdapter
     private lateinit var recyclerViewLayoutManager: LinearLayoutManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,7 +45,7 @@ class ReportCellDataEditActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         machine?.let {
-            recyclerViewAdapter = ActivityRVAdapter(this, it)
+            recyclerViewAdapter = ReportCellDataEditRVAdapter(this, it)
             recyclerViewLayoutManager = LinearLayoutManager(this)
             rv_cell_data_edit.adapter = recyclerViewAdapter   // Set Adapter to RecyclerView in xml
             rv_cell_data_edit.layoutManager = recyclerViewLayoutManager

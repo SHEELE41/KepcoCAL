@@ -115,7 +115,7 @@ class ReportCellFormListActivity : AppCompatActivity() {
 
     private fun setupViewModel() {
         // ViewModel observe
-        reportCellFormListViewModel.allCellForms.observe(this, { cellForms ->    // 초기 데이터 로드시에도 호출됨
+        reportCellFormListViewModel.getCellFormsWithReportId(reportId).observe(this, { cellForms ->    // 초기 데이터 로드시에도 호출됨
             cellForms?.let {
                 recyclerViewAdapter.setCellForms(it)
                 // iv_isEmpty.visibility = if (it.isEmpty()) View.VISIBLE else View.INVISIBLE
