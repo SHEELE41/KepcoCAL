@@ -118,10 +118,6 @@ class ProjectListActivity : AppCompatActivity() {
                     "project",
                     it
                 )
-                putExtra(
-                    "reportId",
-                    it.reportId
-                )
             }
             startActivity(intent)
         }

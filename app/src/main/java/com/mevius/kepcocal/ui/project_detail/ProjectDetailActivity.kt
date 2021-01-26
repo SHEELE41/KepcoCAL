@@ -79,13 +79,13 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     private fun getExtraFromIntent() {
         intent.getParcelableExtra<Project>("project")?.let {
             project = it
-            projectId = it.id!!
+            projectId = it.id ?: 0L
+            reportId = it.reportId ?: 0L
         }
         if (project == null) { // 만약 전달받은 객체가 Null 이라면 즉시 액티비티 종료
             Toast.makeText(this, "올바르지 않은 프로젝트입니다.", Toast.LENGTH_SHORT).show()
             finish()
         }
-        reportId = intent.getLongExtra("reportId", 0L)  // null -> 0L
     }
 
     /**
@@ -116,6 +116,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
             } else {
                 val selectedMachine = machineList.find { it.machineIdInExcel == bs_tv_index.text }
                 val mIntent = Intent(this, ReportCellDataEditActivity::class.java).apply {
+                    putExtra("projectId", projectId)
                     putExtra("reportId", reportId)
                     putExtra("machine", selectedMachine)
                 }

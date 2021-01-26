@@ -11,4 +11,6 @@ interface ReportRepository {
     suspend fun insert(report: Report)
 
     suspend fun delete(report: Report)
+
+    fun getReportWithId(reportId: Long): LiveData<Report>
 }

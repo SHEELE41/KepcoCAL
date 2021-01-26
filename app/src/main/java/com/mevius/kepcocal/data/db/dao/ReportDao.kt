@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import com.mevius.kepcocal.data.db.entity.Machine
 import com.mevius.kepcocal.data.db.entity.Report
 
 @Dao
@@ -14,6 +15,9 @@ interface ReportDao {
 
     @Query("SELECT * FROM Report ORDER BY id DESC LIMIT 1")
     fun getLastReportLive(): LiveData<Report>
+
+    @Query("SELECT * FROM Report WHERE id = :reportId")
+    fun getReportWithId(reportId: Long): LiveData<Report>
 
     @Insert
     suspend fun insert(report: Report)

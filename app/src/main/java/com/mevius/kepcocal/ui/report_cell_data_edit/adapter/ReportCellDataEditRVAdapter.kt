@@ -2,15 +2,19 @@ package com.mevius.kepcocal.ui.report_cell_data_edit.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AutoCompleteTextView
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.mevius.kepcocal.R
+import com.mevius.kepcocal.data.db.entity.CellData
 import com.mevius.kepcocal.data.db.entity.CellForm
 import com.mevius.kepcocal.data.db.entity.Machine
 import com.mevius.kepcocal.data.db.entity.SelectOptionData
@@ -19,10 +23,15 @@ import kotlinx.android.synthetic.main.report_cell_data_edit_type2_rv_item.view.*
 import kotlinx.android.synthetic.main.report_cell_data_edit_type3_rv_item.view.*
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.HashMap
 
 class ReportCellDataEditRVAdapter(
     private val context: Context,
-    private val machine: Machine
+    private val machine: Machine,
+    private val dataSet: HashMap<Int, CellData>,
+    private val machineId: Long,
+    private val projectId: Long,
+    private val interval: Int
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var cellFormList = emptyList<CellForm>()
@@ -47,7 +56,7 @@ class ReportCellDataEditRVAdapter(
                 val itemView =
                     LayoutInflater.from(context)
                         .inflate(R.layout.report_cell_data_edit_type1_rv_item, parent, false)
-                holder = Holder1(itemView)
+                holder = Holder1(itemView, CustomEditTextListener())
             }
             2 -> {
                 val itemView =
@@ -74,6 +83,7 @@ class ReportCellDataEditRVAdapter(
         when (holder.itemViewType) {
             1 -> {
                 val viewHolder0 = holder as Holder1
+                viewHolder0.mCustomEditTextListener.updatePosition(holder.adapterPosition)
                 viewHolder0.bind(cellFormList[position])
             }
             2 -> {
@@ -99,15 +109,29 @@ class ReportCellDataEditRVAdapter(
 
     // Type1. 직접 입력
     inner class Holder1(
-        itemView: View
+        itemView: View,
+        customEditTextListener: CustomEditTextListener
     ) :
         RecyclerView.ViewHolder(itemView) {
         private var tvCellFormName: TextView? = itemView.tv_cell_form_name_t1
         private var tvCellFormType: TextView? = itemView.tv_cell_form_type_t1
+        private var editText: AutoCompleteTextView? = itemView.input_cell_data_content_t1
+        val mCustomEditTextListener = customEditTextListener
 
         fun bind(cellForm: CellForm) {
             tvCellFormName?.text = cellForm.name
             tvCellFormType?.text = "직접 입력"
+            editText?.addTextChangedListener(mCustomEditTextListener)
+
+            val cell = calculateCellLocation(cellForm.firstCell)
+
+            dataSet[this.adapterPosition] = CellData(
+                null,
+                projectId,
+                "",
+                cell,
+                machineId!!.toInt()
+            )
         }
     }
 
@@ -130,6 +154,23 @@ class ReportCellDataEditRVAdapter(
                         id = sod.id!!.toInt()
                     }
                     radioGroup?.addView(radioButton)
+                }
+            }
+
+            val cell = calculateCellLocation(cellForm.firstCell)
+
+            radioGroup?.setOnCheckedChangeListener { _, checkedId ->
+                val checkedContent = itemView.findViewById<RadioButton>(checkedId).text.toString()
+                if (dataSet[this.adapterPosition] != null) {
+                    dataSet[this.adapterPosition]!!.content = checkedContent
+                } else {
+                    dataSet[this.adapterPosition] = CellData(
+                        null,
+                        projectId,
+                        checkedContent,
+                        cell,
+                        machineId!!.toInt()
+                    )
                 }
             }
         }
@@ -162,6 +203,50 @@ class ReportCellDataEditRVAdapter(
                 4 -> tvAutoFillData?.text = machine.machineIdInExcel
                 5 -> tvAutoFillData?.text = todayDateFormat
             }
+
+            val cell = calculateCellLocation(cellForm.firstCell)
+
+            dataSet[this.adapterPosition] = CellData(
+                null,
+                projectId,
+                tvAutoFillData?.text.toString(),
+                cell,
+                machineId!!.toInt()
+            )
         }
+    }
+
+    private fun calculateCellLocation(firstCell: String): String {
+        val reNum = Regex("[^0-9]")    // 문자를 제거하기 위한 패턴
+        val reEng = Regex("[^a-zA-Z]")  // 숫자, 특수문자를 제거하기 위한 패턴
+        val number = reNum.replace(firstCell, "").toInt() + (interval * (machine.machineIdInExcel.toInt() - 1))
+        val alpha = reEng.replace(firstCell, "")
+
+        return alpha + number.toString()
+    }
+
+    inner class CustomEditTextListener: TextWatcher {
+        private var mPosition = 0
+
+        fun updatePosition(position: Int) {
+            mPosition = position
+        }
+
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            if (dataSet[mPosition] != null) {
+                dataSet[mPosition]!!.content = s.toString()
+            } else {
+                dataSet[mPosition] = CellData(
+                    null,
+                    projectId,
+                    s.toString(),
+                    "",
+                    machineId!!.toInt()
+                )
+            }
+        }
+
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+        override fun afterTextChanged(s: Editable?) {}
     }
 }

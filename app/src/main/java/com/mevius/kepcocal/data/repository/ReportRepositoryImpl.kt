@@ -18,4 +18,8 @@ class ReportRepositoryImpl @Inject constructor(
     override suspend fun delete(report: Report) {
         reportDao.delete(report)
     }
+
+    override fun getReportWithId(reportId: Long): LiveData<Report> {
+        return reportDao.getReportWithId(reportId)
+    }
 }
