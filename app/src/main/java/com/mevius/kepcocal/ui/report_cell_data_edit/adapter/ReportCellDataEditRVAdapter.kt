@@ -36,6 +36,7 @@ class ReportCellDataEditRVAdapter(
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var cellFormList = emptyList<CellForm>()
     private var sodList = emptyList<SelectOptionData>()
+    private var cellDataList = emptyList<CellData>()
     private val todayDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
     override fun getItemId(position: Int): Long {
@@ -107,6 +108,11 @@ class ReportCellDataEditRVAdapter(
         notifyDataSetChanged()
     }
 
+    internal fun setCellDataList(cellDataList: List<CellData>) {
+        this.cellDataList = cellDataList
+        notifyDataSetChanged()
+    }
+
     // Type1. 직접 입력
     inner class Holder1(
         itemView: View,
@@ -123,14 +129,24 @@ class ReportCellDataEditRVAdapter(
             tvCellFormType?.text = "직접 입력"
             editText?.addTextChangedListener(mCustomEditTextListener)
 
+            var initContent = ""
+
+            for (cellData in cellDataList) {
+                if (cellData.cellFormId == cellForm.id) {
+                    initContent = cellData.content
+                    editText?.setText(cellData.content)
+                }
+            }
+
             val cell = calculateCellLocation(cellForm.firstCell)
 
             dataSet[this.adapterPosition] = CellData(
                 null,
                 projectId,
-                "",
+                cellForm.id,
+                initContent,
                 cell,
-                machineId!!.toInt()
+                machineId.toInt()
             )
         }
     }
@@ -142,18 +158,32 @@ class ReportCellDataEditRVAdapter(
         RecyclerView.ViewHolder(itemView) {
         private var tvCellFormName: TextView? = itemView.tv_cell_form_name_t2
         private var tvCellFormType: TextView? = itemView.tv_cell_form_type_t2
-        private var radioGroup: RadioGroup? = itemView.radio_group_inner_item_type2
 
         fun bind(cellForm: CellForm) {
+            val radioGroup: RadioGroup? = itemView.radio_group_inner_item_type2
             tvCellFormName?.text = cellForm.name
             tvCellFormType?.text = "선택 입력"
+
+            val radioButtonList = mutableListOf<RadioButton>()
+
             for (sod in sodList) {
-                if (sod.cellFormId == cellForm.id && !sod.isAuto){
+                if (sod.cellFormId == cellForm.id && !sod.isAuto) {
                     val radioButton = RadioButton(context).apply {
                         text = sod.content
                         id = sod.id!!.toInt()
                     }
                     radioGroup?.addView(radioButton)
+                    radioButtonList.add(radioButton)
+                }
+            }
+
+            for (cellData in cellDataList) {
+                if (cellData.cellFormId == cellForm.id) {
+                    for (radioButton in radioButtonList) {
+                        if (cellData.content == radioButton.text) {
+                            radioButton.isChecked = true
+                        }
+                    }
                 }
             }
 
@@ -167,9 +197,10 @@ class ReportCellDataEditRVAdapter(
                     dataSet[this.adapterPosition] = CellData(
                         null,
                         projectId,
+                        cellForm.id,
                         checkedContent,
                         cell,
-                        machineId!!.toInt()
+                        machineId.toInt()
                     )
                 }
             }
@@ -209,9 +240,10 @@ class ReportCellDataEditRVAdapter(
             dataSet[this.adapterPosition] = CellData(
                 null,
                 projectId,
+                cellForm.id,
                 tvAutoFillData?.text.toString(),
                 cell,
-                machineId!!.toInt()
+                machineId.toInt()
             )
         }
     }
@@ -219,13 +251,14 @@ class ReportCellDataEditRVAdapter(
     private fun calculateCellLocation(firstCell: String): String {
         val reNum = Regex("[^0-9]")    // 문자를 제거하기 위한 패턴
         val reEng = Regex("[^a-zA-Z]")  // 숫자, 특수문자를 제거하기 위한 패턴
-        val number = reNum.replace(firstCell, "").toInt() + (interval * (machine.machineIdInExcel.toInt() - 1))
+        val number = reNum.replace(firstCell, "")
+            .toInt() + (interval * (machine.machineIdInExcel.toInt() - 1))
         val alpha = reEng.replace(firstCell, "")
 
         return alpha + number.toString()
     }
 
-    inner class CustomEditTextListener: TextWatcher {
+    inner class CustomEditTextListener : TextWatcher {
         private var mPosition = 0
 
         fun updatePosition(position: Int) {
@@ -239,9 +272,10 @@ class ReportCellDataEditRVAdapter(
                 dataSet[mPosition] = CellData(
                     null,
                     projectId,
+                    null,
                     s.toString(),
                     "",
-                    machineId!!.toInt()
+                    machineId.toInt()
                 )
             }
         }

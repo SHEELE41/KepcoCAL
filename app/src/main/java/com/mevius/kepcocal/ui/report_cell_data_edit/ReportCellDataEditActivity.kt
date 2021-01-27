@@ -52,8 +52,9 @@ class ReportCellDataEditActivity : AppCompatActivity() {
 
         btn_report_cell_data_save.setOnClickListener {
             for (key in reportCellDataSet.keys) {
-                reportCellDataEditViewModel.insertCellData(reportCellDataSet[key]!!)
+                reportCellDataEditViewModel.updateTransaction(reportCellDataSet[key]!!)
             }
+            finish()
         }
     }
 
@@ -72,6 +73,9 @@ class ReportCellDataEditActivity : AppCompatActivity() {
         })
         reportCellDataEditViewModel.allSelectOptionData.observe(this, { sodList ->
             sodList?.let { recyclerViewAdapter.setSodList(it) }
+        })
+        reportCellDataEditViewModel.getCellDataWithMachineId(machine!!.id!!).observe(this, { cellDataList ->
+            cellDataList?.let { recyclerViewAdapter.setCellDataList(it) }
         })
         reportCellDataEditViewModel.getReportWithId(reportId).observe(this, { itReport ->
             itReport?.let { report = itReport }

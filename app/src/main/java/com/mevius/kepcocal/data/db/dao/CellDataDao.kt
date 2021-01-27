@@ -12,12 +12,21 @@ interface CellDataDao {
     @Query("SELECT * FROM CellData WHERE project_id = :projectId")
     fun getCellDataWithProjectId(projectId: Long): LiveData<List<CellData>>
 
-    @Insert
+    @Query("SELECT * FROM CellData WHERE machine_id = :machineId")
+    fun getCellDataWithMachineId(machineId: Long): LiveData<List<CellData>>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(cellData: CellData)
 
-    @Update
+    @Update(onConflict = OnConflictStrategy.IGNORE)
     suspend fun update(cellData: CellData)
 
     @Delete
     suspend fun delete(cellData: CellData)
+
+    @Transaction
+    suspend fun upsert(cellData: CellData) {
+        insert(cellData)
+        update(cellData)
+    }
 }
