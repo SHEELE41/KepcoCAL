@@ -130,10 +130,12 @@ class ReportCellDataEditRVAdapter(
             editText?.addTextChangedListener(mCustomEditTextListener)
 
             var initContent = ""
+            var cellDataId: Long? = null
 
             for (cellData in cellDataList) {
                 if (cellData.cellFormId == cellForm.id) {
                     initContent = cellData.content
+                    cellDataId = cellData.id
                     editText?.setText(cellData.content)
                 }
             }
@@ -141,7 +143,7 @@ class ReportCellDataEditRVAdapter(
             val cell = calculateCellLocation(cellForm.firstCell)
 
             dataSet[this.adapterPosition] = CellData(
-                null,
+                cellDataId,
                 projectId,
                 cellForm.id,
                 initContent,
@@ -177,8 +179,11 @@ class ReportCellDataEditRVAdapter(
                 }
             }
 
+            var cellDataId: Long? = null
+
             for (cellData in cellDataList) {
                 if (cellData.cellFormId == cellForm.id) {
+                    cellDataId = cellData.id
                     for (radioButton in radioButtonList) {
                         if (cellData.content == radioButton.text) {
                             radioButton.isChecked = true
@@ -195,7 +200,7 @@ class ReportCellDataEditRVAdapter(
                     dataSet[this.adapterPosition]!!.content = checkedContent
                 } else {
                     dataSet[this.adapterPosition] = CellData(
-                        null,
+                        cellDataId,
                         projectId,
                         cellForm.id,
                         checkedContent,
@@ -235,10 +240,18 @@ class ReportCellDataEditRVAdapter(
                 5 -> tvAutoFillData?.text = todayDateFormat
             }
 
+            var cellDataId: Long? = null
+
+            for (cellData in cellDataList) {
+                if (cellData.cellFormId == cellForm.id) {
+                    cellDataId = cellData.id
+                }
+            }
+
             val cell = calculateCellLocation(cellForm.firstCell)
 
             dataSet[this.adapterPosition] = CellData(
-                null,
+                cellDataId,
                 projectId,
                 cellForm.id,
                 tvAutoFillData?.text.toString(),
