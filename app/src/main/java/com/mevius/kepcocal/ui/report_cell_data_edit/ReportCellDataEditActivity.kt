@@ -15,7 +15,6 @@ import kotlinx.android.synthetic.main.activity_report_cell_data_edit.*
 @AndroidEntryPoint
 class ReportCellDataEditActivity : AppCompatActivity() {
     private val reportCellDataEditViewModel: ReportCellDataEditViewModel by viewModels()
-    private var report: Report? = null
     private var projectId = 0L
     private var reportId = 0L
     private var machine: Machine? = null
@@ -45,11 +44,6 @@ class ReportCellDataEditActivity : AppCompatActivity() {
     private fun setupUI() {
         setupRecyclerView()
 
-        // 저장 버튼 눌렀을 때
-        // TODO 레이아웃 수정
-
-        val interval = report?.interval
-
         btn_report_cell_data_save.setOnClickListener {
             for (key in reportCellDataSet.keys) {
                 reportCellDataEditViewModel.updateTransaction(reportCellDataSet[key]!!)
@@ -60,9 +54,10 @@ class ReportCellDataEditActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         machine?.let {
-            recyclerViewAdapter = ReportCellDataEditRVAdapter(this, it, reportCellDataSet, machine?.id!!, projectId, 40)
+            recyclerViewAdapter =
+                ReportCellDataEditRVAdapter(this, it, projectId, reportCellDataSet)
             recyclerViewLayoutManager = LinearLayoutManager(this)
-            rv_cell_data_edit.adapter = recyclerViewAdapter   // Set Adapter to RecyclerView in xml
+            rv_cell_data_edit.adapter = recyclerViewAdapter
             rv_cell_data_edit.layoutManager = recyclerViewLayoutManager
         }
     }
@@ -71,14 +66,16 @@ class ReportCellDataEditActivity : AppCompatActivity() {
         reportCellDataEditViewModel.getCellFormsWithReportId(reportId).observe(this, { cellForms ->
             cellForms?.let { recyclerViewAdapter.setCellForms(it) }
         })
-        reportCellDataEditViewModel.allSelectOptionData.observe(this, { sodList ->
-            sodList?.let { recyclerViewAdapter.setSodList(it) }
-        })
-        reportCellDataEditViewModel.getCellDataWithMachineId(machine!!.id!!).observe(this, { cellDataList ->
-            cellDataList?.let { recyclerViewAdapter.setCellDataList(it) }
-        })
+        reportCellDataEditViewModel.getSelectOptionDataWithReportId(reportId)
+            .observe(this, { sodList ->
+                sodList?.let { recyclerViewAdapter.setSodList(it) }
+            })
+        reportCellDataEditViewModel.getCellDataWithMachineId(machine!!.id!!)
+            .observe(this, { cellDataList ->
+                cellDataList?.let { recyclerViewAdapter.setCellDataList(it) }
+            })
         reportCellDataEditViewModel.getReportWithId(reportId).observe(this, { itReport ->
-            itReport?.let { report = itReport }
+            itReport?.let { recyclerViewAdapter.setInterval(itReport.interval) }
         })
     }
 }

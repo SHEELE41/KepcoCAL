@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,17 +22,15 @@ import kotlinx.android.synthetic.main.report_cell_data_edit_type2_rv_item.view.*
 import kotlinx.android.synthetic.main.report_cell_data_edit_type3_rv_item.view.*
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.HashMap
 
 class ReportCellDataEditRVAdapter(
     private val context: Context,
     private val machine: Machine,
-    private val dataSet: HashMap<Int, CellData>,
-    private val machineId: Long,
     private val projectId: Long,
-    private val interval: Int
+    private val dataSet: HashMap<Int, CellData>
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    private var interval = 0
     private var cellFormList = emptyList<CellForm>()
     private var sodList = emptyList<SelectOptionData>()
     private var cellDataList = emptyList<CellData>()
@@ -113,6 +110,11 @@ class ReportCellDataEditRVAdapter(
         notifyDataSetChanged()
     }
 
+    internal fun setInterval(interval: Int) {
+        this.interval = interval
+        notifyDataSetChanged()
+    }
+
     // Type1. 직접 입력
     inner class Holder1(
         itemView: View,
@@ -131,7 +133,11 @@ class ReportCellDataEditRVAdapter(
 
             var initContent = ""
             var cellDataId: Long? = null
+            val cell = calculateCellLocation(cellForm.firstCell)
 
+            // 이전에 저장된 값 있다면 editTextView 에 채워넣기
+            // TextWatcher 는 텍스트가 바뀔 때만 반응하므로 수정 없이 저장을 눌렀을 때에 대비하여 initContent 초기화
+            // cellDataId 값으로 Database UPDATE 가능하도록 함.
             for (cellData in cellDataList) {
                 if (cellData.cellFormId == cellForm.id) {
                     initContent = cellData.content
@@ -140,15 +146,14 @@ class ReportCellDataEditRVAdapter(
                 }
             }
 
-            val cell = calculateCellLocation(cellForm.firstCell)
-
+            // bind 될 때 기본적으로 CellData 객체를 position 에 생성
             dataSet[this.adapterPosition] = CellData(
                 cellDataId,
                 projectId,
+                machine.id,
                 cellForm.id,
                 initContent,
-                cell,
-                machineId.toInt()
+                cell
             )
         }
     }
@@ -166,46 +171,44 @@ class ReportCellDataEditRVAdapter(
             tvCellFormName?.text = cellForm.name
             tvCellFormType?.text = "선택 입력"
 
-            val radioButtonList = mutableListOf<RadioButton>()
+            var cellData: CellData? = null
+            val cell = calculateCellLocation(cellForm.firstCell)
 
+            // 저장된 데이터 불러오기
+            // cellDataList 자체가 machineId(primary) 를 기준으로 불러온 데이터라 겹칠 일 없음
+            // ex) 다른 프로젝트 or 같은 프로젝트의 다른 기기가 같은 cellForm 을 공유할 경우
+            for (iCellData in cellDataList) {
+                if (iCellData.cellFormId == cellForm.id) {
+                    cellData = iCellData
+                }
+            }
+
+            // View 작업
+            // 현재 보고서에 해당되는 SelectOptionData 중 CellFormId 일치하고 자동 입력이 아닌 항목을 RadioButton 으로 추가
             for (sod in sodList) {
                 if (sod.cellFormId == cellForm.id && !sod.isAuto) {
                     val radioButton = RadioButton(context).apply {
                         text = sod.content
-                        id = sod.id!!.toInt()
+                        id = sod.id!!.toInt()   // RadioButton ID 는 SelectOptionData 의 ID 로, 고유값임.
+                        isChecked =
+                            cellData?.content == sod.content    // 저장된 데이터와 일치하는 RadioButton 자동 체크
                     }
-                    radioGroup?.addView(radioButton)
-                    radioButtonList.add(radioButton)
+                    radioGroup?.addView(radioButton)    // 현재 RadioGroup 에 추가
                 }
             }
-
-            var cellDataId: Long? = null
-
-            for (cellData in cellDataList) {
-                if (cellData.cellFormId == cellForm.id) {
-                    cellDataId = cellData.id
-                    for (radioButton in radioButtonList) {
-                        if (cellData.content == radioButton.text) {
-                            radioButton.isChecked = true
-                        }
-                    }
-                }
-            }
-
-            val cell = calculateCellLocation(cellForm.firstCell)
 
             radioGroup?.setOnCheckedChangeListener { _, checkedId ->
-                val checkedContent = itemView.findViewById<RadioButton>(checkedId).text.toString()
+                val checkedContent = itemView.findViewById<RadioButton?>(checkedId)?.text?.toString() ?: ""
                 if (dataSet[this.adapterPosition] != null) {
                     dataSet[this.adapterPosition]!!.content = checkedContent
                 } else {
                     dataSet[this.adapterPosition] = CellData(
-                        cellDataId,
+                        cellData?.id,
                         projectId,
+                        machine.id,
                         cellForm.id,
                         checkedContent,
-                        cell,
-                        machineId.toInt()
+                        cell
                     )
                 }
             }
@@ -226,10 +229,8 @@ class ReportCellDataEditRVAdapter(
             tvCellFormName?.text = cellForm.name
             tvCellFormType?.text = "자동 입력"
 
-            // TODO 나중에 DB 최적화 꼭 필요
             val spinnerPosition =
                 sodList.find { (it.cellFormId == cellForm.id) && it.isAuto }?.content?.toInt()
-            Log.d("########################################", spinnerPosition.toString())
             when (spinnerPosition) {
                 0 -> tvAutoFillData?.text = machine.computerizedNumber
                 1 -> tvAutoFillData?.text = machine.lineName.plus(machine.lineNumber)
@@ -241,26 +242,31 @@ class ReportCellDataEditRVAdapter(
             }
 
             var cellDataId: Long? = null
+            val cell = calculateCellLocation(cellForm.firstCell)
 
+            // 데이터를 사용자가 입력하는 것이 아님.
+            // DB UPDATE 를 위한 ID 설정만 해주면 됨 (사실 이것도 필요 없음)
             for (cellData in cellDataList) {
                 if (cellData.cellFormId == cellForm.id) {
                     cellDataId = cellData.id
                 }
             }
 
-            val cell = calculateCellLocation(cellForm.firstCell)
-
             dataSet[this.adapterPosition] = CellData(
                 cellDataId,
                 projectId,
+                machine.id,
                 cellForm.id,
                 tvAutoFillData?.text.toString(),
-                cell,
-                machineId.toInt()
+                cell
             )
         }
     }
 
+    /**
+     * [calculateCellLocation]
+     * first_cell, interval, machineIdInExcel(연번)값을 이용하여 데이터의 실제 셀 위치를 계산하는 메소드
+     */
     private fun calculateCellLocation(firstCell: String): String {
         val reNum = Regex("[^0-9]")    // 문자를 제거하기 위한 패턴
         val reEng = Regex("[^a-zA-Z]")  // 숫자, 특수문자를 제거하기 위한 패턴
@@ -285,10 +291,10 @@ class ReportCellDataEditRVAdapter(
                 dataSet[mPosition] = CellData(
                     null,
                     projectId,
+                    machine.id,
                     null,
                     s.toString(),
-                    "",
-                    machineId.toInt()
+                    ""
                 )
             }
         }

@@ -49,6 +49,7 @@ class FragmentTypeTwo : Fragment() {
             val selectOptionData = SelectOptionData(
                 null,
                 reportCellFormEditViewModel.cellFormId,
+                reportCellFormEditViewModel.reportId,
                 false,
                 type2_select_option_data_input.text.toString()
             )

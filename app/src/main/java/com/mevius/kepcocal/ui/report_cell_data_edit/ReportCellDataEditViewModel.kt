@@ -21,7 +21,6 @@ class ReportCellDataEditViewModel @ViewModelInject constructor(
     private val selectOptionDataRepository: SelectOptionDataRepository,
     private val cellDataRepository: CellDataRepository
 ) : ViewModel() {
-    val allSelectOptionData = selectOptionDataRepository.allSelectOptionData
     fun getCellFormsWithReportId(reportId: Long): LiveData<List<CellForm>> {
         return cellFormRepository.getCellFormsWithReportId(reportId)
     }
@@ -30,16 +29,12 @@ class ReportCellDataEditViewModel @ViewModelInject constructor(
         return reportRepository.getReportWithId(reportId)
     }
 
-    fun insertCellData(cellData: CellData) = viewModelScope.launch(Dispatchers.IO) {
+    private fun insertCellData(cellData: CellData) = viewModelScope.launch(Dispatchers.IO) {
         cellDataRepository.insert(cellData)
     }
 
-    fun deleteCellData(cellData: CellData) = viewModelScope.launch(Dispatchers.IO) {
+    private fun deleteCellData(cellData: CellData) = viewModelScope.launch(Dispatchers.IO) {
         cellDataRepository.delete(cellData)
-    }
-
-    fun upsertCellData(cellData: CellData) = viewModelScope.launch(Dispatchers.IO) {
-        cellDataRepository.upsert(cellData)
     }
 
     fun updateTransaction(cellData: CellData) = viewModelScope.launch(Dispatchers.IO) {
@@ -47,29 +42,11 @@ class ReportCellDataEditViewModel @ViewModelInject constructor(
         insertCellData(cellData).join()
     }
 
-    fun getCellDataWithProjectId(projectId: Long): LiveData<List<CellData>> {
-        return cellDataRepository.getCellDataWithProjectId(projectId)
-    }
-
     fun getCellDataWithMachineId(machineId: Long): LiveData<List<CellData>> {
         return cellDataRepository.getCellDataWithMachineId(machineId)
     }
 
-    fun updateCellData(cellData: CellData) = viewModelScope.launch(Dispatchers.IO) {
-        cellDataRepository.update(cellData)
-    }
-
-    fun getSelectOptionDataWithCellFormIdAndAutoFlag(
-        cellFormId: Long,
-        isAuto: Boolean
-    ): LiveData<List<SelectOptionData>> {
-        return selectOptionDataRepository.getSelectOptionDataWithCellFormIdAndAutoFlag(
-            cellFormId,
-            isAuto
-        )
-    }
-
-    fun getCellFormWithId(cellFormId: Long): LiveData<CellForm> {
-        return cellFormRepository.getCellFormWithId(cellFormId)
+    fun getSelectOptionDataWithReportId(reportId: Long): LiveData<List<SelectOptionData>> {
+        return selectOptionDataRepository.getSelectOptionDataWithReportId(reportId)
     }
 }

@@ -70,6 +70,7 @@ class ReportCellFormEditViewModel @ViewModelInject constructor(
             SelectOptionData(
                 null,
                 cellFormId,
+                reportId,
                 true,
                 typeThreeSelectOptionDataPosition.toString()
             )

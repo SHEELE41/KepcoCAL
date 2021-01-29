@@ -16,8 +16,8 @@ import androidx.room.PrimaryKey
 data class CellData (
     @PrimaryKey(autoGenerate = true) var id: Long?,   // 데이터베이스에서 사용할 자동 생성 프로젝트 인덱스
     @ColumnInfo(name = "project_id", index = true) var projectId: Long?,
-    @ColumnInfo(name = "cell_form_id", index = true) var cellFormId: Long?,
+    @ColumnInfo(name = "machine_id") var machineId: Long?,
+    @ColumnInfo(name = "cell_form_id") var cellFormId: Long?,
     @ColumnInfo(name = "content") var content: String,
-    @ColumnInfo(name = "cell") var cell: String,
-    @ColumnInfo(name = "machine_id") var machineId: Int
+    @ColumnInfo(name = "cell") var cell: String
 )

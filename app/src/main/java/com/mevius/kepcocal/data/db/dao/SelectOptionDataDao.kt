@@ -9,6 +9,9 @@ interface SelectOptionDataDao {
     @Query("SELECT * FROM SelectOptionData")
     fun getAll(): LiveData<List<SelectOptionData>>
 
+    @Query("SELECT * FROM SelectOptionData WHERE report_id = :reportId")
+    fun getSelectOptionDataWithReportId(reportId: Long): LiveData<List<SelectOptionData>>
+
     @Query("SELECT * FROM SelectOptionData WHERE cell_form_id = :cellFormId")
     fun getSelectOptionDataWithCellFormId(cellFormId: Long): LiveData<List<SelectOptionData>>
 
