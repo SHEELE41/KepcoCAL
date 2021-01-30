@@ -35,7 +35,7 @@ class FileManager {
      * 반환은 xls 파일일 경우 true, xlsx 파일일 경우 false
      */
     // 앱 내부 디렉토리에 파일 복사 + Rename
-    fun saveFileAs(uri: Uri, newFileName: String): Boolean {
+    fun saveFileAs(uri: Uri /*원본 파일 경로*/, newFileName: String /*새로운 파일명*/): Boolean {
         val fileName = getFileName(uri)
         try {
             pfd = uri.let { globalApplicationContext.contentResolver?.openFileDescriptor(it, "r") }

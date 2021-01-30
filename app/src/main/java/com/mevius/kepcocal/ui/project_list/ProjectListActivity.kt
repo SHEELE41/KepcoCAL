@@ -118,6 +118,12 @@ class ProjectListActivity : AppCompatActivity() {
                     "project",
                     it
                 )
+                // Parcelize 버그. 생성자에 선언되지 않은 필드는 null 로 전달됨.
+                // 따로 전달해주어야 하는 듯.
+                putExtra(
+                    "reportId",
+                    it.reportId
+                )
             }
             startActivity(intent)
         }

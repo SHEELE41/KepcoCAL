@@ -10,6 +10,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
@@ -24,19 +25,23 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.mevius.kepcocal.GlobalApplication
 import com.mevius.kepcocal.R
+import com.mevius.kepcocal.data.db.entity.CellData
 import com.mevius.kepcocal.data.db.entity.Machine
 import com.mevius.kepcocal.data.db.entity.Project
 import com.mevius.kepcocal.data.db.entity.Report
 import com.mevius.kepcocal.ui.project_detail.data.FSVDataHelper
 import com.mevius.kepcocal.ui.project_detail.data.MachineSuggestion
 import com.mevius.kepcocal.ui.report_cell_data_edit.ReportCellDataEditActivity
+import com.mevius.kepcocal.utils.ExcelParser
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_project_detail.*
 import kotlinx.android.synthetic.main.project_detail_bottom_sheet.*
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
+import java.io.File
 
 /**
  * [ProjectDetailActivity]
@@ -51,12 +56,14 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     private val findSuggestionSimulatedDelay = 250L
     private var mLastQuery = ""
     private var reportId: Long = 0L
+    private var report: Report? = null
     private var projectId: Long = 0L
     private var project: Project? = null
     private var isFABOpen = false
     private var viewModelInitFlag = true
     private var reportList = listOf<Report>()
     private var machineList = listOf<Machine>()
+    private var cellDataList = listOf<CellData>()
     private lateinit var mapView: MapView
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
     private val projectDetailViewModel: ProjectDetailViewModel by viewModels()
@@ -68,8 +75,8 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         setContentView(R.layout.activity_project_detail)
 
         getExtraFromIntent()
-        setupUI()
         setupViewModel()
+        setupUI()
     }
 
     /**
@@ -80,12 +87,14 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         intent.getParcelableExtra<Project>("project")?.let {
             project = it
             projectId = it.id ?: 0L
-            reportId = it.reportId ?: 0L
         }
         if (project == null) { // 만약 전달받은 객체가 Null 이라면 즉시 액티비티 종료
             Toast.makeText(this, "올바르지 않은 프로젝트입니다.", Toast.LENGTH_SHORT).show()
             finish()
         }
+        // Parcelize 버그. 생성자에 선언되지 않은 필드는 null 로 전달됨.
+        // 따로 전달해주어야 하는 듯.
+        reportId = intent.getLongExtra("reportId", 0L)
     }
 
     /**
@@ -152,8 +161,6 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         }
 
         fab_project_detail_sub1.setOnClickListener {
-            Toast.makeText(this, "Sub1 Clicked", Toast.LENGTH_SHORT).show()
-
             // TODO 매번 ArrayAdapter 새로 만드는게 부하를 주진 않을까? 차라리 전역변수로 돌리고 재활용?
             // TODO AlertDialog Title Margin 너무 거슬리는데...
             val adapter = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1)
@@ -170,7 +177,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
                         projectDetailViewModel.update(it)
                         Toast.makeText(
                             this@ProjectDetailActivity,
-                            "which : " + which.toString() + ", id : " + it.reportId.toString() + " 보고서가 연동되었습니다.",
+                            reportList[which].title + " 보고서가 연동되었습니다.",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -180,7 +187,18 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         }
 
         fab_project_detail_sub2.setOnClickListener {
-            Toast.makeText(this, "Sub2 Clicked", Toast.LENGTH_SHORT).show()
+            // 현재 프로젝트에 귀속된 모든 CellData를 긁어와서 엑셀 파일로 내보내기!
+            val globalApplicationContext = GlobalApplication.instance.applicationContext()
+            val mOutputDir =
+                globalApplicationContext.getExternalFilesDir(null)
+
+            if (report?.isXls == true){
+                Log.d("xls Case", "${report?.title}")
+                ExcelParser(Uri.fromFile(File(mOutputDir, "/${report?.title}.xls"))).writeReport(cellDataList)
+            } else {
+                Log.d("xlsx Case", "${report?.title}")
+                ExcelParser(Uri.fromFile(File(mOutputDir, "/${report?.title}.xlsx"))).writeReport(cellDataList)
+            }
         }
     }
 
@@ -268,6 +286,18 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         projectDetailViewModel.allReports.observe(this, { reports ->
             reports?.let {
                 reportList = reports
+            }
+        })
+
+        projectDetailViewModel.getCellDataWithProjectId(projectId).observe(this, { cellDataList ->
+            cellDataList?.let {
+                this.cellDataList = cellDataList
+            }
+        })
+
+        projectDetailViewModel.getReportWithId(reportId).observe(this, { report ->
+            report?.let {
+                this.report = report
             }
         })
     }

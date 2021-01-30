@@ -1,15 +1,26 @@
 package com.mevius.kepcocal.utils
 
+import android.database.Cursor
 import android.net.Uri
 import android.os.ParcelFileDescriptor
+import android.provider.OpenableColumns
 import android.util.Log
 import com.mevius.kepcocal.GlobalApplication
+import com.mevius.kepcocal.data.db.entity.CellData
 import com.mevius.kepcocal.data.db.entity.Machine
+import org.apache.poi.hssf.usermodel.HSSFWorkbook
+import org.apache.poi.poifs.filesystem.POIFSFileSystem
 import org.apache.poi.ss.usermodel.Cell
 import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.ss.usermodel.WorkbookFactory
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.FileInputStream
 import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.util.*
+import java.util.regex.Pattern
+import kotlin.collections.ArrayList
+import kotlin.math.pow
 
 /**
  * [ExcelParser]
@@ -20,6 +31,8 @@ class ExcelParser(private val uri: Uri) {
         GlobalApplication.instance.applicationContext()  // 저장소 경로를 위한 AppContext 불가피.
     private var pfd: ParcelFileDescriptor? = null
     private var fileInputStream: FileInputStream? = null
+    private var mOutputDir =
+        globalApplicationContext.getExternalFilesDir(null)     // /Android/data/com.mevius.kepcocal/files
 
     /**
      * [excelToList]
@@ -43,6 +56,7 @@ class ExcelParser(private val uri: Uri) {
             val mInputStream = fileInputStream
 
             // WorkBook auto xls, xlsx
+            // 읽는 것 뿐이라면 WorkbookFactory 를 이용해도 문제 없음
             val mWorkBook = WorkbookFactory.create(mInputStream)
 
             // WorkBook 에서 시트 가져오기 (첫 번째 시트)
@@ -64,6 +78,7 @@ class ExcelParser(private val uri: Uri) {
                         Row.CREATE_NULL_AS_BLANK
                     )   // CREATE_NULL_AS_BLANK : Cell이 빈칸일 경우 "" 스트링 객체 생성
                     // 더 단순하게...
+
                     when (cellNum) {
                         0 -> machineData.machineIdInExcel = cellTypeCasting(currentCell)
                         1 -> machineData.branch = cellTypeCasting(currentCell)
@@ -89,6 +104,51 @@ class ExcelParser(private val uri: Uri) {
         return machineList
     }
 
+    fun writeReport(cellDataList: List<CellData>) {
+        try {
+            val mInputStream = FileInputStream("$mOutputDir/${getFileName()}")
+
+            // WorkBook auto xls, xlsx
+            val mWorkBook = if (getFileName()?.endsWith(".xls") == true) {
+                val mFileSystem = POIFSFileSystem(mInputStream)
+                HSSFWorkbook(mFileSystem)
+            } else {
+                XSSFWorkbook(mInputStream)
+            }
+
+            val mSheet = mWorkBook.getSheetAt(0)
+
+            for (cellData in cellDataList) {
+                val p1 = Pattern.compile("([a-zA-Z]+)([0-9]+)")
+                val matcher = p1.matcher(cellData.cell)
+                matcher.find()
+
+                var num = 0
+                matcher.group(1).toUpperCase(Locale.ROOT).reversed().forEachIndexed { i, c ->
+                    val delta = c.toInt() - 'A'.toInt() + 1
+                    num += delta * 26.toDouble().pow(i.toDouble()).toInt()
+                }
+                num -= 1
+                val colNum = num
+                val rowNum = matcher.group(2).toInt() - 1
+
+                var row = mSheet.getRow(rowNum)
+                if (row == null) {
+                    row = mSheet.createRow(rowNum)
+                }
+
+                var cell = row.getCell(colNum)
+                if (cell == null) {
+                    cell = row.createCell(colNum)
+                }
+                cell.setCellValue(cellData.content)
+            }
+            mWorkBook.write(FileOutputStream("$mOutputDir/${getFileName()}"))
+        } catch (e: Exception) {
+            Log.d("엑셀파서에러로그", "에러 발생함. $e")
+        }
+    }
+
     /**
      * [cellTypeCasting]
      * 간단한 타입캐스팅 함수.
@@ -101,7 +161,7 @@ class ExcelParser(private val uri: Uri) {
         }
     }
 
-    /*
+
     /**
      * [getFileName]
      * SAF에서 선택된 파일의 파일명을 반환함
@@ -128,5 +188,4 @@ class ExcelParser(private val uri: Uri) {
         }
         return result
     }
-    */
 }

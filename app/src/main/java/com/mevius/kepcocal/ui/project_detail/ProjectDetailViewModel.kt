@@ -5,9 +5,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mevius.kepcocal.data.db.entity.CellData
 import com.mevius.kepcocal.data.db.entity.Machine
 import com.mevius.kepcocal.data.db.entity.Project
 import com.mevius.kepcocal.data.db.entity.Report
+import com.mevius.kepcocal.data.repository.CellDataRepository
 import com.mevius.kepcocal.data.repository.MachineRepository
 import com.mevius.kepcocal.data.repository.ProjectRepository
 import com.mevius.kepcocal.data.repository.ReportRepository
@@ -17,7 +19,8 @@ import kotlinx.coroutines.launch
 class ProjectDetailViewModel @ViewModelInject constructor(
     private val machineRepository: MachineRepository,
     private val projectRepository: ProjectRepository,
-    private val reportRepository: ReportRepository
+    private val reportRepository: ReportRepository,
+    private val cellDataRepository: CellDataRepository
 ) : ViewModel() {
     val allMachines: LiveData<List<Machine>> = machineRepository.allMachines
     val allReports: LiveData<List<Report>> = reportRepository.allReports
@@ -26,8 +29,16 @@ class ProjectDetailViewModel @ViewModelInject constructor(
         return machineRepository.getMachinesWithProjectId(projectId)
     }
 
+    fun getCellDataWithProjectId(projectId: Long): LiveData<List<CellData>>{
+        return cellDataRepository.getCellDataWithProjectId(projectId)
+    }
+
     fun getProjectWithId(projectId: Long): LiveData<Project>{
         return projectRepository.getProjectWithId(projectId)
+    }
+
+    fun getReportWithId(reportId: Long): LiveData<Report>{
+        return reportRepository.getReportWithId(reportId)
     }
 
     fun insert(machine: Machine) =
