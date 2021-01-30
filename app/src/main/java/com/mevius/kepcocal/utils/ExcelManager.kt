@@ -23,10 +23,10 @@ import kotlin.collections.ArrayList
 import kotlin.math.pow
 
 /**
- * [ExcelParser]
+ * [ExcelManager]
  * 엑셀 데이터를 파싱하는 메소드를 가진 클래스
  */
-class ExcelParser(private val uri: Uri) {
+class ExcelManager(private val uri: Uri) {
     private val globalApplicationContext =
         GlobalApplication.instance.applicationContext()  // 저장소 경로를 위한 AppContext 불가피.
     private var pfd: ParcelFileDescriptor? = null
@@ -106,7 +106,7 @@ class ExcelParser(private val uri: Uri) {
 
     fun writeReport(cellDataList: List<CellData>) {
         try {
-            val mInputStream = FileInputStream("$mOutputDir/${getFileName()}")
+            val mInputStream = FileInputStream(uri.path)
 
             // WorkBook auto xls, xlsx
             val mWorkBook = if (getFileName()?.endsWith(".xls") == true) {

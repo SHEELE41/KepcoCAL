@@ -25,7 +25,6 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.mevius.kepcocal.GlobalApplication
 import com.mevius.kepcocal.R
 import com.mevius.kepcocal.data.db.entity.CellData
 import com.mevius.kepcocal.data.db.entity.Machine
@@ -34,7 +33,7 @@ import com.mevius.kepcocal.data.db.entity.Report
 import com.mevius.kepcocal.ui.project_detail.data.FSVDataHelper
 import com.mevius.kepcocal.ui.project_detail.data.MachineSuggestion
 import com.mevius.kepcocal.ui.report_cell_data_edit.ReportCellDataEditActivity
-import com.mevius.kepcocal.utils.ExcelParser
+import com.mevius.kepcocal.utils.ExcelManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_project_detail.*
 import kotlinx.android.synthetic.main.project_detail_bottom_sheet.*
@@ -118,10 +117,8 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
 
         // BottomSheet 내부 버튼 설정
         btn_write_report.setOnClickListener {
-            // TODO 보고서 파일 연동 안되어 있으면 뷰 없어지거나 클릭 안 되도록
-
             if (reportId == 0L) {    // reportId is null
-                Toast.makeText(this, "리포트 연동이 되어있지 않습니다!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "보고서 연동이 되어있지 않습니다.", Toast.LENGTH_SHORT).show()
             } else {
                 val selectedMachine = machineList.find { it.machineIdInExcel == bs_tv_index.text }
                 val mIntent = Intent(this, ReportCellDataEditActivity::class.java).apply {
@@ -187,18 +184,8 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         }
 
         fab_project_detail_sub2.setOnClickListener {
-            // 현재 프로젝트에 귀속된 모든 CellData를 긁어와서 엑셀 파일로 내보내기!
-            val globalApplicationContext = GlobalApplication.instance.applicationContext()
-            val mOutputDir =
-                globalApplicationContext.getExternalFilesDir(null)
-
-            if (report?.isXls == true){
-                Log.d("xls Case", "${report?.title}")
-                ExcelParser(Uri.fromFile(File(mOutputDir, "/${report?.title}.xls"))).writeReport(cellDataList)
-            } else {
-                Log.d("xlsx Case", "${report?.title}")
-                ExcelParser(Uri.fromFile(File(mOutputDir, "/${report?.title}.xlsx"))).writeReport(cellDataList)
-            }
+            // 현재 프로젝트에 귀속된 모든 CellData 를 긁어와서 엑셀 파일로 내보내기
+            projectDetailViewModel.writeReportExcel(cellDataList, report)
         }
     }
 
