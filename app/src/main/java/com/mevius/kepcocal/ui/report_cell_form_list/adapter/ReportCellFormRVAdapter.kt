@@ -55,9 +55,9 @@ class ReportCellFormRVAdapter(
         fun bind(cellForm: CellForm) {
             tvCellFormName?.text = cellForm.name
             tvCellFormType?.text = when(cellForm.type){
-                0 -> "자동 입력"
                 1 -> "직접 입력"
                 2 -> "선택 입력"
+                3 -> "자동 입력"
                 else -> "기타"
             }
             tvFirstCell?.text = cellForm.firstCell

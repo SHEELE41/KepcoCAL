@@ -55,6 +55,7 @@ class FragmentTypeTwo : Fragment() {
             )
             reportCellFormEditViewModel.typeTwoSelectOptionDataCacheList.add(selectOptionData)
             recyclerViewAdapter.notifyDataSetChanged()
+            type2_select_option_data_input.setText("")  // Editor 내용 초기화
         }
 
         // TODO LiveData 말고 초기에 딱 한번 불러오도록 변경하기
