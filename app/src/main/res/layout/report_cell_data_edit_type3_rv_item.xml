@@ -1,71 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<!--Important. foreground-->
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/cardview_main"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginStart="10dp"
-    android:layout_marginLeft="10dp"
-    android:layout_marginTop="5dp"
-    android:layout_marginEnd="10dp"
-    android:layout_marginRight="10dp"
-    android:layout_marginBottom="5dp"
-    android:foreground="?android:attr/selectableItemBackground">
+    android:layout_height="wrap_content">
 
-    <LinearLayout
+    <!--Important. foreground-->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardview_main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="10dp">
+        android:layout_marginStart="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="5dp"
+        android:foreground="?android:attr/selectableItemBackground">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/tv_cell_form_name_t3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start"
-                android:layout_marginStart="5dp"
-                android:text="자동 입력 데이터"
-                android:textColor="@color/colorPrimaryDark"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+            android:orientation="vertical"
+            android:padding="10dp">
 
             <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginEnd="5dp"
-                android:layout_weight="1"
-                android:gravity="end">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/tv_cell_form_type_t3"
+                    android:id="@+id/tv_cell_form_name_t3"
                     android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start"
+                    android:layout_marginStart="5dp"
+                    android:text="자동 입력 데이터"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:background="@xml/report_edit_list_rv_item_type_style"
-                    android:backgroundTint="@color/colorType3"
-                    android:gravity="center"
-                    android:paddingHorizontal="10dp"
-                    android:text="자동 입력"
-                    android:textColor="@color/white"
-                    android:textSize="14sp" />
+                    android:layout_marginEnd="5dp"
+                    android:layout_weight="1"
+                    android:gravity="end">
+
+                    <TextView
+                        android:id="@+id/tv_cell_form_type_t3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:background="@xml/report_edit_list_rv_item_type_style"
+                        android:backgroundTint="@color/colorType3"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"
+                        android:text="자동 입력"
+                        android:textColor="@color/white"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
             </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_cde_autoFill_data_t3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:text="@string/app_name"
+                android:textSize="18sp" />
 
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tv_cde_autoFill_data_t3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:text="@string/app_name"
-            android:textSize="18sp" />
+    </androidx.cardview.widget.CardView>
 
-    </LinearLayout>
-
-</androidx.cardview.widget.CardView>
+</LinearLayout>

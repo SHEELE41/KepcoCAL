@@ -3,12 +3,10 @@ package com.mevius.kepcocal.ui.report_cell_data_edit
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.mevius.kepcocal.R
 import com.mevius.kepcocal.data.db.entity.CellData
 import com.mevius.kepcocal.data.db.entity.Machine
-import com.mevius.kepcocal.data.db.entity.Report
-import com.mevius.kepcocal.ui.report_cell_data_edit.adapter.ReportCellDataEditRVAdapter
+import com.mevius.kepcocal.ui.report_cell_data_edit.adapter.ReportCellDataEditLVAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_report_cell_data_edit.*
 
@@ -19,8 +17,7 @@ class ReportCellDataEditActivity : AppCompatActivity() {
     private var reportId = 0L
     private var machine: Machine? = null
     private val reportCellDataSet: HashMap<Int, CellData> = hashMapOf()
-    private lateinit var recyclerViewAdapter: ReportCellDataEditRVAdapter
-    private lateinit var recyclerViewLayoutManager: LinearLayoutManager
+    private lateinit var listViewAdapter: ReportCellDataEditLVAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +39,7 @@ class ReportCellDataEditActivity : AppCompatActivity() {
     }
 
     private fun setupUI() {
-        setupRecyclerView()
+        setupListView()
 
         btn_report_cell_data_save.setOnClickListener {
             for (key in reportCellDataSet.keys) {
@@ -52,30 +49,28 @@ class ReportCellDataEditActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupRecyclerView() {
+    private fun setupListView() {
         machine?.let {
-            recyclerViewAdapter =
-                ReportCellDataEditRVAdapter(this, it, projectId, reportCellDataSet)
-            recyclerViewLayoutManager = LinearLayoutManager(this)
-            rv_cell_data_edit.adapter = recyclerViewAdapter
-            rv_cell_data_edit.layoutManager = recyclerViewLayoutManager
+            listViewAdapter =
+                ReportCellDataEditLVAdapter(this, it, projectId, reportCellDataSet)
+            lv_cell_data_edit.adapter = listViewAdapter
         }
     }
 
     private fun setupViewModel() {
         reportCellDataEditViewModel.getCellFormsWithReportId(reportId).observe(this, { cellForms ->
-            cellForms?.let { recyclerViewAdapter.setCellForms(it) }
+            cellForms?.let { listViewAdapter.setCellForms(it) }
         })
         reportCellDataEditViewModel.getSelectOptionDataWithReportId(reportId)
             .observe(this, { sodList ->
-                sodList?.let { recyclerViewAdapter.setSodList(it) }
+                sodList?.let { listViewAdapter.setSodList(it) }
             })
         reportCellDataEditViewModel.getCellDataWithMachineId(machine!!.id!!)
             .observe(this, { cellDataList ->
-                cellDataList?.let { recyclerViewAdapter.setCellDataList(it) }
+                cellDataList?.let { listViewAdapter.setCellDataList(it) }
             })
         reportCellDataEditViewModel.getReportWithId(reportId).observe(this, { itReport ->
-            itReport?.let { recyclerViewAdapter.setInterval(itReport.interval) }
+            itReport?.let { listViewAdapter.setInterval(itReport.interval) }
         })
     }
 }
