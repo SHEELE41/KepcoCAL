@@ -25,10 +25,11 @@
 
         <Button
             android:id="@+id/type2_btn_add"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="60dp"
             android:layout_height="30dp"
             android:background="@xml/rounded_all_edges"
-            android:backgroundTint="#42A5F5"
+            android:backgroundTint="@color/colorAccent"
             android:text="추가"
             android:textColor="@color/white" />
 

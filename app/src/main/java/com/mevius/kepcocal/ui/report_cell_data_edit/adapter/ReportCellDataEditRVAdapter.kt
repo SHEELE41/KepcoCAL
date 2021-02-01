@@ -128,7 +128,6 @@ class ReportCellDataEditRVAdapter(
 
         fun bind(cellForm: CellForm) {
             tvCellFormName?.text = cellForm.name
-            tvCellFormType?.text = "직접 입력"
             editText?.addTextChangedListener(mCustomEditTextListener)
 
             var initContent = ""
@@ -169,7 +168,6 @@ class ReportCellDataEditRVAdapter(
         fun bind(cellForm: CellForm) {
             val radioGroup: RadioGroup? = itemView.radio_group_inner_item_type2
             tvCellFormName?.text = cellForm.name
-            tvCellFormType?.text = "선택 입력"
 
             var cellData: CellData? = null
             val cell = calculateCellLocation(cellForm.firstCell)
@@ -227,7 +225,6 @@ class ReportCellDataEditRVAdapter(
         @SuppressLint("SetTextI18n")
         fun bind(cellForm: CellForm) {
             tvCellFormName?.text = cellForm.name
-            tvCellFormType?.text = "자동 입력"
 
             val spinnerPosition =
                 sodList.find { (it.cellFormId == cellForm.id) && it.isAuto }?.content?.toInt()

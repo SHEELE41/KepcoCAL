@@ -37,13 +37,9 @@
         <item name="android:windowTranslucentStatus">true</item>
         <!--Status Bar 글자색깔-->
         <item name="android:windowLightStatusBar">false</item>
-    </style>
-
-    <style name="AppThemeWithActionBar" parent="Theme.AppCompat.Light">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:label">"보고서 셀 양식 리스트"</item>
+        <item name="colorAccent">#6EC0C3</item>
     </style>
 
 </resources>

@@ -1,99 +1,138 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorAccent"
+            android:minHeight="?attr/actionBarSize"
+            android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+            app:layout_scrollFlags="enterAlways">
+            <!--|scroll 넣으면 스크롤에 반응 가능-->
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="sans-serif"
+                android:text="셀 양식 작성"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+        </androidx.appcompat.widget.Toolbar>
+
+    </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_margin="15dp"
         android:background="@xml/rounded_all_edges"
-        android:backgroundTint="#EFEFEF"
+        android:backgroundTint="#F4F4F4"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="20dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <com.google.android.material.textfield.TextInputLayout
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <AutoCompleteTextView
-                android:id="@+id/input_cell_form_name"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="셀 양식 제목을 입력해주세요." />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp">
-
-            <AutoCompleteTextView
-                android:id="@+id/input_first_cell"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="첫번째 셀 위치를 입력해주세요." />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <RadioGroup
-            android:id="@+id/rg_report_cell_form_edit"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:orientation="horizontal">
-
-            <RadioButton
-                android:id="@+id/radio_btn1"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:checked="true"
-                android:gravity="center"
-                android:text="직접 입력"
-                android:textColor="@color/colorPrimary"
-                android:textSize="18sp" />
-
-            <RadioButton
-                android:id="@+id/radio_btn2"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="선택 입력"
-                android:textColor="@color/colorPrimary"
-                android:textSize="18sp" />
-
-            <RadioButton
-                android:id="@+id/radio_btn3"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="자동 입력"
-                android:textColor="@color/colorPrimary"
-                android:textSize="18sp" />
-        </RadioGroup>
-
-        <FrameLayout
-            android:id="@+id/inflate_parent_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:orientation="vertical" />
-
-        <View
-            android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_weight="1" />
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/input_cell_form_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="셀 양식 제목을 입력해주세요." />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/input_first_cell"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="첫번째 셀 위치를 입력해주세요." />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <RadioGroup
+                    android:id="@+id/rg_report_cell_form_edit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/radio_btn1"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:checked="true"
+                        android:gravity="center"
+                        android:text="직접 입력"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="18sp" />
+
+                    <RadioButton
+                        android:id="@+id/radio_btn2"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="선택 입력"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="18sp" />
+
+                    <RadioButton
+                        android:id="@+id/radio_btn3"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="자동 입력"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="18sp" />
+                </RadioGroup>
+
+                <FrameLayout
+                    android:id="@+id/inflate_parent_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:orientation="vertical" />
+            </LinearLayout>
+
+        </ScrollView>
 
         <Button
             android:id="@+id/btn_report_cell_form_save"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
+            android:layout_weight="0"
             android:background="@xml/rounded_all_edges"
             android:backgroundTint="@color/colorAccent"
             android:text="저장"
@@ -102,4 +141,4 @@
 
     </LinearLayout>
 
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
