@@ -68,7 +68,6 @@
                     android:id="@+id/input_cell_data_content_t1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/sc_dream4"
                     android:hint="셀 데이터를 입력해주세요." />
 
             </com.google.android.material.textfield.TextInputLayout>

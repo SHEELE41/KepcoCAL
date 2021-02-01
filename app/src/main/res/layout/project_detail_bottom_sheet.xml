@@ -104,7 +104,6 @@
             android:layout_marginStart="5dp"
             android:layout_weight="1"
             android:background="@color/colorAccent"
-            android:fontFamily="@font/sc_dream4"
             android:foreground="?attr/selectableItemBackground"
             android:textColor="#fff"
             android:textOff="@string/bottom_sheet_button_text_off"

@@ -10,12 +10,6 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-
-        <item name="android:textViewStyle">@style/customTextViewFontStyle</item>
-        <item name="android:buttonStyle">@style/customButtonFontStyle</item>
-        <item name="android:editTextStyle">@style/customEditTextFontStyle</item>
-        <item name="android:radioButtonStyle">@style/customRadioButtonFontStyle</item>
-        <item name="android:checkboxStyle">@style/customCheckboxFontStyle</item>
     </style>
 
     <style name="AppTheme.PopupOverlay" parent="Theme.AppCompat.Light.NoActionBar">
@@ -29,13 +23,11 @@
 
     <style name="CollapsingToolbar.TitleText" parent="TextAppearance.Design.CollapsingToolbar.Expanded">
         <item name="android:textColor">#FFFFFF</item>
-        <item name="android:fontFamily">@font/sc_dream3</item>
         <item name="android:textSize">36sp</item>
     </style>
 
     <style name="Toolbar.TitleText" parent="Widget.AppCompat.Toolbar">
         <item name="android:textColor">#FFFFFF</item>
-        <item name="android:fontFamily">@font/sc_dream3</item>
         <item name="android:textSize">18sp</item>
     </style>
 
@@ -45,12 +37,6 @@
         <item name="android:windowTranslucentStatus">true</item>
         <!--Status Bar 글자색깔-->
         <item name="android:windowLightStatusBar">false</item>
-
-        <item name="android:textViewStyle">@style/customTextViewFontStyle</item>
-        <item name="android:buttonStyle">@style/customButtonFontStyle</item>
-        <item name="android:editTextStyle">@style/customEditTextFontStyle</item>
-        <item name="android:radioButtonStyle">@style/customRadioButtonFontStyle</item>
-        <item name="android:checkboxStyle">@style/customCheckboxFontStyle</item>
     </style>
 
     <style name="AppThemeWithActionBar" parent="Theme.AppCompat.Light">
@@ -58,12 +44,6 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:label">"보고서 셀 양식 리스트"</item>
-
-        <item name="android:textViewStyle">@style/customTextViewFontStyle</item>
-        <item name="android:buttonStyle">@style/customButtonFontStyle</item>
-        <item name="android:editTextStyle">@style/customEditTextFontStyle</item>
-        <item name="android:radioButtonStyle">@style/customRadioButtonFontStyle</item>
-        <item name="android:checkboxStyle">@style/customCheckboxFontStyle</item>
     </style>
 
 </resources>

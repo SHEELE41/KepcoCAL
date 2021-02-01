@@ -19,7 +19,6 @@
                 android:id="@+id/type2_select_option_data_input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/sc_dream4"
                 android:hint="선택 데이터 입력" />
 
         </com.google.android.material.textfield.TextInputLayout>
