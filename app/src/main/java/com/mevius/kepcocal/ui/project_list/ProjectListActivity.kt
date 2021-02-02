@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.AutoCompleteTextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -73,30 +74,45 @@ class ProjectListActivity : AppCompatActivity() {
             val viewInflated: View = LayoutInflater.from(this)
                 .inflate(R.layout.dialog_with_edit_text, null)
 
-            AlertDialog.Builder(this).apply {
+            val mAlertDialogBuilder = AlertDialog.Builder(this).apply {
                 setTitle("프로젝트 추가")
                 setView(viewInflated)
-                setPositiveButton(
-                    android.R.string.ok
-                ) { dialog, _ ->
-                    projectNameInput =
-                        viewInflated.findViewById<AutoCompleteTextView>(R.id.input).text.toString()
-                    data?.data?.also { uri ->
-                        val project = Project(
-                            null,
-                            projectNameInput,
-                            todayDateFormat,
-                            uri.toString()
-                        )
-                        projectListViewModel.insertProject(project)
-                        dialog.dismiss()
-                    }
-                }
+                setPositiveButton(android.R.string.ok, null)
                 setNegativeButton(
                     android.R.string.cancel
                 ) { dialog, _ -> dialog.cancel() }      // If Click Cancel, Do Nothing
-                show()
             }
+
+            // OK 버튼 눌렀을 때 항상 dismiss 되는 것을 원하지 않으므로 여기서 재설정
+            val mAlertDialog = mAlertDialogBuilder.create()
+            mAlertDialog.setOnShowListener { dialog ->
+                val mPositiveButton = mAlertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                mPositiveButton.setOnClickListener {
+                    projectNameInput =
+                        viewInflated.findViewById<AutoCompleteTextView>(R.id.input).text.toString()
+                    if (projectNameInput == "") {
+                        Toast.makeText(
+                            this@ProjectListActivity,
+                            "프로젝트명을 입력해주세요.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        data?.data?.also { uri ->
+                            val project = Project(
+                                null,
+                                projectNameInput,
+                                todayDateFormat,
+                                uri.toString()
+                            )
+                            // TODO 굳이 프로젝트 추가되는걸 뷰모델에서 감시하지 말고 추가되는 즉시 작업 실행...
+                            projectListViewModel.insertProject(project)
+                            dialog.dismiss()
+                        }
+                    }
+                }
+            }
+
+            mAlertDialog.show()
         }
     }
 

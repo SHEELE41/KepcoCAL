@@ -8,10 +8,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.AutoCompleteTextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.mevius.kepcocal.R
+import com.mevius.kepcocal.data.db.entity.Project
 import com.mevius.kepcocal.data.db.entity.Report
 import com.mevius.kepcocal.ui.report_cell_form_list.ReportCellFormListActivity
 import com.mevius.kepcocal.ui.report_list.adapter.ReportRVAdapter
@@ -71,37 +73,58 @@ class ReportListActivity : AppCompatActivity() {
             val viewInflated: View = LayoutInflater.from(this)
                 .inflate(R.layout.dialog_with_two_edit_text, null)
 
-            AlertDialog.Builder(this).apply {
-                setTitle("프로젝트 추가")
+            val mAlertDialogBuilder = AlertDialog.Builder(this).apply {
+                setTitle("보고서 추가")
                 setView(viewInflated)
-                setPositiveButton(
-                    android.R.string.ok
-                ) { dialog, _ ->
+                setPositiveButton(android.R.string.ok, null)
+                setNegativeButton(
+                    android.R.string.cancel
+                ) { dialog, _ -> dialog.cancel() }      // If Click Cancel, Do Nothing
+            }
+
+            // OK 버튼 눌렀을 때 항상 dismiss 되는 것을 원하지 않으므로 여기서 재설정
+            val mAlertDialog = mAlertDialogBuilder.create()
+            mAlertDialog.setOnShowListener { dialog ->
+                val mPositiveButton = mAlertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                mPositiveButton.setOnClickListener {
                     reportTitleInput =
                         viewInflated.findViewById<AutoCompleteTextView>(R.id.input1).text.toString()
                     reportIntervalInput =
                         viewInflated.findViewById<AutoCompleteTextView>(R.id.input2).text.toString()
-                    data?.data?.also { uri ->
-                        // 1. 파일 앱 내부 디렉토리에 별도 저장, 이후 뷰 모델로 전환...
-                        val fileManager = FileManager()
-                        val isXls = fileManager.saveFileAs(uri, reportTitleInput)
+                    if (reportTitleInput == "") {
+                        Toast.makeText(
+                            this@ReportListActivity,
+                            "보고서 이름을 입력해주세요.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else if (!reportIntervalInput.matches(Regex("^[0-9]+$"))) {
+                        Toast.makeText(
+                            this@ReportListActivity,
+                            "항목 간 간격을 정확히 입력해주세요. (양의 정수)",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        data?.data?.also { uri ->
+                            // 1. 파일 앱 내부 디렉토리에 별도 저장, 이후 뷰 모델로 전환...
+                            val fileManager = FileManager()
+                            val isXls = fileManager.saveFileAs(uri, reportTitleInput)
 
-                        // 2. Database Report 추가
-                        val report = Report(
-                            null,
-                            reportTitleInput,
-                            reportIntervalInput.toInt(),
-                            isXls
-                        )
-                        reportListViewModel.insertReport(report)
-                        dialog.dismiss()
+                            // 2. Database Report 추가
+                            val report = Report(
+                                null,
+                                reportTitleInput,
+                                reportIntervalInput.toInt(),
+                                isXls
+                            )
+                            // TODO 여기도 마찬가지, 모든 비즈니스 로직은 뷰모델로
+                            reportListViewModel.insertReport(report)
+                            dialog.dismiss()
+                        }
                     }
                 }
-                setNegativeButton(
-                    android.R.string.cancel
-                ) { dialog, _ -> dialog.cancel() }      // If Click Cancel, Do Nothing
-                show()
             }
+
+            mAlertDialog.show()
         }
     }
 
