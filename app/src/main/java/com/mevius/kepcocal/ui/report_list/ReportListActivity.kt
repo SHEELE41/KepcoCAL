@@ -13,7 +13,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.mevius.kepcocal.R
-import com.mevius.kepcocal.data.db.entity.Project
 import com.mevius.kepcocal.data.db.entity.Report
 import com.mevius.kepcocal.ui.report_cell_form_list.ReportCellFormListActivity
 import com.mevius.kepcocal.ui.report_list.adapter.ReportRVAdapter
@@ -45,16 +44,6 @@ class ReportListActivity : AppCompatActivity() {
         setupUI()
         setupViewModel()
     }
-
-
-    /**
-     * NestedScrollView Height Test Code
-    @RequiresApi(Build.VERSION_CODES.R)
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-    super.onWindowFocusChanged(hasFocus)
-    Toast.makeText(this, scroll_view.height.toString(), Toast.LENGTH_SHORT).show()
-    }
-     */
 
     /**
      * [onActivityResult Method]

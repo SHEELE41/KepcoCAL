@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,6 +19,7 @@ import kotlinx.android.synthetic.main.report_cell_form_edit_type2.*
 
 class FragmentTypeTwo : Fragment() {
     private lateinit var mContext: Context
+
     // Activity - Fragment 동일한 ViewModel 공유. (KTX 방식)
     // 기준이 되는 LifecycleOwner 는 Activity
     private val reportCellFormEditViewModel: ReportCellFormEditViewModel by activityViewModels()
@@ -46,16 +48,20 @@ class FragmentTypeTwo : Fragment() {
 
         // 추가 버튼 onClickListener
         btnAddSOD.setOnClickListener {
-            val selectOptionData = SelectOptionData(
-                null,
-                reportCellFormEditViewModel.cellFormId,
-                reportCellFormEditViewModel.reportId,
-                false,
-                type2_select_option_data_input.text.toString()
-            )
-            reportCellFormEditViewModel.typeTwoSelectOptionDataCacheList.add(selectOptionData)
-            recyclerViewAdapter.notifyDataSetChanged()
-            type2_select_option_data_input.setText("")  // Editor 내용 초기화
+            if (type2_select_option_data_input.text.toString() != "") {
+                val selectOptionData = SelectOptionData(
+                    null,
+                    reportCellFormEditViewModel.cellFormId,
+                    reportCellFormEditViewModel.reportId,
+                    false,
+                    type2_select_option_data_input.text.toString()
+                )
+                reportCellFormEditViewModel.typeTwoSelectOptionDataCacheList.add(selectOptionData)
+                recyclerViewAdapter.notifyDataSetChanged()
+                type2_select_option_data_input.setText("")  // Editor 내용 초기화
+            } else {
+                Toast.makeText(context, "빈칸 데이터는 스페이스를 이용해주세요.", Toast.LENGTH_SHORT).show()
+            }
         }
 
         // TODO LiveData 말고 초기에 딱 한번 불러오도록 변경하기

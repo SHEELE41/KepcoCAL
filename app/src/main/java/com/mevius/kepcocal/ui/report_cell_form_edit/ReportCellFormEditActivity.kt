@@ -1,6 +1,7 @@
 package com.mevius.kepcocal.ui.report_cell_form_edit
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.mevius.kepcocal.R
@@ -43,39 +44,71 @@ class ReportCellFormEditActivity : AppCompatActivity() {
         setupFragments()
 
         // 저장 버튼 눌렀을 때
-        // TODO 레이아웃 수정
         btn_report_cell_form_save.setOnClickListener {
-            val checkedRadioButtonIndex = when(rg_report_cell_form_edit.checkedRadioButtonId){
+            val checkedRadioButtonIndex = when (rg_report_cell_form_edit.checkedRadioButtonId) {
                 R.id.radio_btn1 -> 1
                 R.id.radio_btn2 -> 2
                 R.id.radio_btn3 -> 3
                 else -> 1
             }
 
-            val cellForm = CellForm(
-                reportCellFormEditViewModel.cellFormId,
-                reportCellFormEditViewModel.reportId,
-                input_cell_form_name.text.toString(),
-                checkedRadioButtonIndex,
-                input_first_cell.text.toString()
-            )
+            // 입력 값 검증
+            if (input_cell_form_name.text.toString() == "") {   // 빈칸인 경우
+                Toast.makeText(
+                    this,
+                    "셀 양식 제목을 입력해주세요.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else if (     // 첫 번째 셀 위치가 정규식에 맞지 않는 경우
+                !input_first_cell.text.toString().matches(Regex("^([a-zA-Z]+)([0-9]+)$"))
+            ) {
+                Toast.makeText(
+                    this,
+                    "첫 번째 셀 위치를 형식에 맞게 입력해주세요.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else if (     // 선택 입력을 골랐는데 선택 항목 데이터(SOD)는 하나도 없을 경우
+                checkedRadioButtonIndex == 2 &&
+                reportCellFormEditViewModel.typeTwoSelectOptionDataCacheList.isEmpty()
+            ) {
+                Toast.makeText(
+                    this,
+                    "선택 항목 데이터를 한 개 이상 입력해주세요.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {    // 이외의 경우(정상) 저장 작업 실행
+                val cellForm = CellForm(
+                    reportCellFormEditViewModel.cellFormId,
+                    reportCellFormEditViewModel.reportId,
+                    input_cell_form_name.text.toString(),
+                    checkedRadioButtonIndex,
+                    input_first_cell.text.toString()
+                )
 
-            reportCellFormEditViewModel.updateTransaction(cellForm)
+                // 내부에서 SelectOptionData INSERT 작업까지 이루어짐
+                reportCellFormEditViewModel.updateTransaction(cellForm)
 
-            finish()
+                finish()
+            }
         }
     }
 
     private fun setupFragments() {
         showTypeOneFragment()   // Default
         radio_btn1.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) { showTypeOneFragment() }
+            if (isChecked) {
+                showTypeOneFragment()
+            }
         }
         radio_btn2.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) { showTypeTwoFragment() }
+            if (isChecked) {
+                showTypeTwoFragment()
+            }
         }
         radio_btn3.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) { showTypeThreeFragment() }
+            if (isChecked) {
+                showTypeThreeFragment()
+            }
         }
     }
 
@@ -96,17 +129,18 @@ class ReportCellFormEditActivity : AppCompatActivity() {
 
     private fun setupViewModel() {
         if (reportCellFormEditViewModel.cellFormId != 0L) { // 기존 데이터를 수정하는 경우
-            reportCellFormEditViewModel.getCellFormWithId(reportCellFormEditViewModel.cellFormId).observe(this, { cellForm ->
-                cellForm?.let {
-                    input_cell_form_name.setText(it.name)
-                    input_first_cell.setText(it.firstCell)
-                    when (it.type) {
-                        1 -> radio_btn1.isChecked = true
-                        2 -> radio_btn2.isChecked = true
-                        3 -> radio_btn3.isChecked = true
+            reportCellFormEditViewModel.getCellFormWithId(reportCellFormEditViewModel.cellFormId)
+                .observe(this, { cellForm ->
+                    cellForm?.let {
+                        input_cell_form_name.setText(it.name)
+                        input_first_cell.setText(it.firstCell)
+                        when (it.type) {
+                            1 -> radio_btn1.isChecked = true
+                            2 -> radio_btn2.isChecked = true
+                            3 -> radio_btn3.isChecked = true
+                        }
                     }
-                }
-            })
+                })
         } else { // 새 데이터를 추가할 경우
             // TODO 단순히 마지막 인덱스를 가져오는 것이므로 Count 이용...
             reportCellFormEditViewModel.cellFormId = 1L // 첫 번째 양식 추가일 때
