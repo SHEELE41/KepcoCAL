@@ -46,7 +46,6 @@ class ReportCellDataEditLVAdapter(
 
                 // 텍스트 변경 사항을 기록하기 위한 리스너 선언 및 position 설정
                 val mCustomEditTextListener = CustomEditTextListener().apply { updatePosition(position) }
-                editText?.addTextChangedListener(mCustomEditTextListener)   // 리스너 연결
 
                 // 현재 position 에 대한 cellForm 을 이용하여 데이터 매핑
                 val cellForm = getItem(position)
@@ -68,20 +67,28 @@ class ReportCellDataEditLVAdapter(
 
                 // 우선 DB 에서 불러온 cellData 값을 먼저 집어넣되, 방금 저장된 초기값("")이 아닌 따끈따끈한 값이 있다면 그걸로 바꿈
                 // 첫 입력에서 화면을 벗어났다가 다시 돌아올 경우 값이 사라지는 상황을 방지하기 위해.
-                if (dataSet[position] != null && dataSet[position]?.content != "") {
+                if (dataSet[position] != null) {
                     initContent = dataSet[position]?.content.toString()
                 }
                 editText?.setText(initContent)
+                editText?.setSelection(editText.length())
 
                 // bind 될 때 기본적으로 CellData 객체를 position 에 생성
-                dataSet[position] = CellData(
-                    cellDataId,
-                    projectId,
-                    machine.id,
-                    cellForm.id,
-                    initContent,
-                    cell
-                )
+                if (dataSet[position] == null) {
+                    dataSet[position] = CellData(
+                        cellDataId,
+                        projectId,
+                        machine.id,
+                        cellForm.id,
+                        initContent,
+                        cell
+                    )
+                } else {
+                    dataSet[position]!!.content = initContent
+                }
+
+                // 리스너 연결, 마지막에 안하면 데이터가 꼬임...
+                editText?.addTextChangedListener(mCustomEditTextListener)
             }
             2 -> {  // 선택 입력
                 // View Inflate
@@ -118,7 +125,7 @@ class ReportCellDataEditLVAdapter(
                                 cellData?.content == sod.content    // 저장된 데이터와 일치하는 RadioButton 자동 체크
 
                             // 역시 데이터 날아가는 것 방지
-                            if (dataSet[position] != null && dataSet[position]!!.content != "") {
+                            if (dataSet[position] != null) {
                                 isChecked = dataSet[position]!!.content == sod.content
                             }
                         }
@@ -256,15 +263,15 @@ class ReportCellDataEditLVAdapter(
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             if (dataSet[mPosition] != null) {
-                dataSet[mPosition]!!.content = s?.toString() ?: ""
+                dataSet[mPosition]!!.content = s.toString()
             } else {
                 dataSet[mPosition] = CellData(
                     null,
                     projectId,
                     machine.id,
                     getItem(mPosition).id,
-                    s?.toString() ?: "",
-                    ""
+                    s.toString(),
+                    calculateCellLocation(getItem(mPosition).firstCell)
                 )
             }
         }
