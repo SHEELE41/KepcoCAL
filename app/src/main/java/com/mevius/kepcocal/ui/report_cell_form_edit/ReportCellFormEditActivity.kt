@@ -43,6 +43,11 @@ class ReportCellFormEditActivity : AppCompatActivity() {
     private fun setupUI() {
         setupFragments()
 
+        // 뒤로 가기 버튼 눌렀을 때
+        btn_report_cell_form_cancel.setOnClickListener {
+            finish()
+        }
+
         // 저장 버튼 눌렀을 때
         btn_report_cell_form_save.setOnClickListener {
             val checkedRadioButtonIndex = when (rg_report_cell_form_edit.checkedRadioButtonId) {

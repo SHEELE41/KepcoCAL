@@ -99,7 +99,7 @@ class ExcelManager(private val uri: Uri) {
                 rowNum++
             }
         } catch (e: Exception) {
-            Log.d("엑셀파서에러로그", "에러 발생함.")
+            Log.d("엑셀파서에러로그", "에러 발생함. $e")
         }
         return machineList
     }

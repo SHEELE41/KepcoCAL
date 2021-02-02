@@ -41,6 +41,10 @@ class ReportCellDataEditActivity : AppCompatActivity() {
     private fun setupUI() {
         setupListView()
 
+        btn_report_cell_data_cancel.setOnClickListener {
+            finish()
+        }
+
         btn_report_cell_data_save.setOnClickListener {
             for (key in reportCellDataSet.keys) {
                 reportCellDataEditViewModel.updateTransaction(reportCellDataSet[key]!!)
