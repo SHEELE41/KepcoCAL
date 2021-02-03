@@ -8,14 +8,15 @@ import com.mevius.kepcocal.data.db.entity.Project
 import com.mevius.kepcocal.data.network.GeocodeApiHelper
 import com.mevius.kepcocal.data.network.model.ResultGetCoordinate
 import com.mevius.kepcocal.utils.ComputerizedNumberCalculator
-import com.mevius.kepcocal.utils.ExcelManager
+import com.mevius.kepcocal.utils.ExcelHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class MachineRepositoryImpl @Inject constructor(
     private val localDataSource: MachineDao,
-    private val remoteDataSource: GeocodeApiHelper
+    private val remoteDataSource: GeocodeApiHelper,
+    private val excelHelper: ExcelHelper
 ): MachineRepository {
     override val allMachines: LiveData<List<Machine>> = localDataSource.getAll()
 
@@ -36,7 +37,7 @@ class MachineRepositoryImpl @Inject constructor(
     }
 
     override suspend fun insertMachinesFromExcel(scope: CoroutineScope, project: Project) {
-        val machineList = ExcelManager(Uri.parse(project.uri)).excelToList()
+        val machineList = excelHelper.excelToList(Uri.parse(project.uri))
         insertProjectMachineData(scope, project.id!!, machineList)
     }
 

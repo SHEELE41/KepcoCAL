@@ -10,7 +10,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
@@ -33,14 +32,12 @@ import com.mevius.kepcocal.data.db.entity.Report
 import com.mevius.kepcocal.ui.project_detail.data.FSVDataHelper
 import com.mevius.kepcocal.ui.project_detail.data.MachineSuggestion
 import com.mevius.kepcocal.ui.report_cell_data_edit.ReportCellDataEditActivity
-import com.mevius.kepcocal.utils.ExcelManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_project_detail.*
 import kotlinx.android.synthetic.main.project_detail_bottom_sheet.*
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
-import java.io.File
 
 /**
  * [ProjectDetailActivity]

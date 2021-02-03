@@ -17,7 +17,7 @@ import com.mevius.kepcocal.data.db.entity.Report
 import com.mevius.kepcocal.ui.report_cell_form_list.ReportCellFormListActivity
 import com.mevius.kepcocal.ui.report_list.adapter.ReportRVAdapter
 import com.mevius.kepcocal.utils.AndroidBug5497Workaround
-import com.mevius.kepcocal.utils.FileManager
+import com.mevius.kepcocal.utils.FileHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_report_list.*
 
@@ -94,19 +94,11 @@ class ReportListActivity : AppCompatActivity() {
                         ).show()
                     } else {
                         data?.data?.also { uri ->
-                            // 1. 파일 앱 내부 디렉토리에 별도 저장, 이후 뷰 모델로 전환...
-                            val fileManager = FileManager()
-                            val isXls = fileManager.saveFileAs(uri, reportTitleInput)
-
-                            // 2. Database Report 추가
-                            val report = Report(
-                                null,
+                            reportListViewModel.insertReportWithFileCopy(
+                                uri,
                                 reportTitleInput,
-                                reportIntervalInput.toInt(),
-                                isXls
+                                reportIntervalInput
                             )
-                            // TODO 여기도 마찬가지, 모든 비즈니스 로직은 뷰모델로
-                            reportListViewModel.insertReport(report)
                             dialog.dismiss()
                         }
                     }
@@ -152,15 +144,7 @@ class ReportListActivity : AppCompatActivity() {
                 setTitle("보고서 삭제") //제목
                 setMessage("정말로 삭제하시겠어요?")
                 setPositiveButton(android.R.string.ok) { dialog, _ ->
-                    // 1. 파일 삭제
-                    // TODO FileManager Singleton?
-                    val fileManager = FileManager()
-                    val fileName = if (it.isXls) it.title + ".xls" else it.title + ".xlsx"
-                    fileManager.removeFile(fileName)
-
-                    // 2. DB에서 삭제
-                    // TODO ViewModel deleteReport 안에 파일 삭제 로직 삽입하기
-                    reportListViewModel.deleteReport(it)
+                    reportListViewModel.deleteReportWithFile(it)
                     dialog.dismiss()
                 }
                 setNegativeButton(

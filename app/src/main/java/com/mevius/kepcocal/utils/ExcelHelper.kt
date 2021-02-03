@@ -1,13 +1,14 @@
 package com.mevius.kepcocal.utils
 
+import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.provider.OpenableColumns
 import android.util.Log
-import com.mevius.kepcocal.GlobalApplication
 import com.mevius.kepcocal.data.db.entity.CellData
 import com.mevius.kepcocal.data.db.entity.Machine
+import dagger.hilt.android.qualifiers.ApplicationContext
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import org.apache.poi.poifs.filesystem.POIFSFileSystem
 import org.apache.poi.ss.usermodel.Cell
@@ -19,30 +20,31 @@ import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.util.*
 import java.util.regex.Pattern
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.collections.ArrayList
 import kotlin.math.pow
 
 /**
- * [ExcelManager]
+ * [ExcelHelper]
  * 엑셀 데이터를 파싱하는 메소드를 가진 클래스
  */
-class ExcelManager(private val uri: Uri) {
-    private val globalApplicationContext =
-        GlobalApplication.instance.applicationContext()  // 저장소 경로를 위한 AppContext 불가피.
+@Singleton
+class ExcelHelper @Inject constructor(@ApplicationContext private val ctx: Context) {
     private var pfd: ParcelFileDescriptor? = null
     private var fileInputStream: FileInputStream? = null
     private var mOutputDir =
-        globalApplicationContext.getExternalFilesDir(null)     // /Android/data/com.mevius.kepcocal/files
+        ctx.getExternalFilesDir(null)     // /Android/data/com.mevius.kepcocal/files
 
     /**
      * [excelToList]
      * 엑셀 데이터를 ArrayList 형태로 읽어들이는 함수.
      */
-    fun excelToList(): ArrayList<Machine> {
+    fun excelToList(uri: Uri): ArrayList<Machine> {
         val machineList = arrayListOf<Machine>()
 
         try {
-            pfd = uri.let { globalApplicationContext.contentResolver?.openFileDescriptor(it, "r") }
+            pfd = uri.let { ctx.contentResolver?.openFileDescriptor(it, "r") }
             fileInputStream = FileInputStream(pfd?.fileDescriptor)
         } catch (e: FileNotFoundException) {
             e.printStackTrace()
@@ -104,12 +106,12 @@ class ExcelManager(private val uri: Uri) {
         return machineList
     }
 
-    fun writeReport(cellDataList: List<CellData>) {
+    fun writeReport(uri: Uri, cellDataList: List<CellData>) {
         try {
             val mInputStream = FileInputStream(uri.path)
 
             // WorkBook auto xls, xlsx
-            val mWorkBook = if (getFileName()?.endsWith(".xls") == true) {
+            val mWorkBook = if (getFileName(uri)?.endsWith(".xls") == true) {
                 val mFileSystem = POIFSFileSystem(mInputStream)
                 HSSFWorkbook(mFileSystem)
             } else {
@@ -143,7 +145,7 @@ class ExcelManager(private val uri: Uri) {
                 }
                 cell.setCellValue(cellData.content)
             }
-            mWorkBook.write(FileOutputStream("$mOutputDir/${getFileName()}"))
+            mWorkBook.write(FileOutputStream("$mOutputDir/${getFileName(uri)}"))
         } catch (e: Exception) {
             Log.d("엑셀파서에러로그", "에러 발생함. $e")
         }
@@ -166,11 +168,11 @@ class ExcelManager(private val uri: Uri) {
      * [getFileName]
      * SAF에서 선택된 파일의 파일명을 반환함
      */
-    private fun getFileName(): String? {
+    private fun getFileName(uri: Uri): String {
         var result: String? = null
         if (uri.scheme == "content") {
             val cursor: Cursor? =
-                globalApplicationContext.contentResolver?.query(uri, null, null, null, null)
+                ctx.contentResolver?.query(uri, null, null, null, null)
             try {
                 if (cursor != null && cursor.moveToFirst()) {
                     result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
