@@ -1,10 +1,10 @@
 package com.mevius.kepcocal.ui.project_detail
 
-import android.app.Application
-import android.net.Uri
 import android.util.Log
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.mevius.kepcocal.data.db.entity.CellData
 import com.mevius.kepcocal.data.db.entity.Machine
 import com.mevius.kepcocal.data.db.entity.Project
@@ -16,17 +16,14 @@ import com.mevius.kepcocal.data.repository.ReportRepository
 import com.mevius.kepcocal.utils.ExcelHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.File
 
 class ProjectDetailViewModel @ViewModelInject constructor(
-    application: Application,
     private val machineRepository: MachineRepository,
     private val projectRepository: ProjectRepository,
     private val reportRepository: ReportRepository,
     private val cellDataRepository: CellDataRepository,
     private val excelHelper: ExcelHelper
-) : AndroidViewModel(application) {
-    private val context = getApplication<Application>().applicationContext
+) : ViewModel() {
     val allReports: LiveData<List<Report>> = reportRepository.allReports
 
     fun getMachinesWithProjectId(projectId: Long): LiveData<List<Machine>> {
@@ -47,29 +44,20 @@ class ProjectDetailViewModel @ViewModelInject constructor(
 
     fun writeReportExcel(cellDataList: List<CellData>, report: Report?) =
         viewModelScope.launch(Dispatchers.IO) {
-            val mOutputDir = context.getExternalFilesDir(null)
             when (report?.isXls) {
                 true -> {
                     Log.d("xls Case", report.title)
                     excelHelper.writeReport(
-                        Uri.fromFile(
-                            File(
-                                mOutputDir,
-                                "/${report.title}.xls"
-                            )
-                        ),
+                        "/${report.title}.xls",
+                        "/${report.title}.xls",
                         cellDataList
                     )
                 }
                 false -> {
                     Log.d("xlsx Case", report.title)
                     excelHelper.writeReport(
-                        Uri.fromFile(
-                            File(
-                                mOutputDir,
-                                "/${report.title}.xlsx"
-                            )
-                        ),
+                        "/${report.title}.xlsx",
+                        "/${report.title}.xlsx",
                         cellDataList
                     )
                 }

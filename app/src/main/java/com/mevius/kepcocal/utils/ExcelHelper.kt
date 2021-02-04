@@ -1,10 +1,7 @@
 package com.mevius.kepcocal.utils
 
 import android.content.Context
-import android.database.Cursor
 import android.net.Uri
-import android.os.ParcelFileDescriptor
-import android.provider.OpenableColumns
 import android.util.Log
 import com.mevius.kepcocal.data.db.entity.CellData
 import com.mevius.kepcocal.data.db.entity.Machine
@@ -13,6 +10,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import org.apache.poi.poifs.filesystem.POIFSFileSystem
 import org.apache.poi.ss.usermodel.Cell
 import org.apache.poi.ss.usermodel.Row
+import org.apache.poi.ss.usermodel.Sheet
 import org.apache.poi.ss.usermodel.WorkbookFactory
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.FileInputStream
@@ -31,31 +29,23 @@ import kotlin.math.pow
  */
 @Singleton
 class ExcelHelper @Inject constructor(@ApplicationContext private val ctx: Context) {
-    private var pfd: ParcelFileDescriptor? = null
-    private var fileInputStream: FileInputStream? = null
     private var mOutputDir =
         ctx.getExternalFilesDir(null)     // /Android/data/com.mevius.kepcocal/files
+    private val logTAG = "ExcelHelper"
 
     /**
-     * [excelToList]
+     * [readProjectAsList]
      * 엑셀 데이터를 ArrayList 형태로 읽어들이는 함수.
      */
-    fun excelToList(uri: Uri): ArrayList<Machine> {
+    fun readProjectAsList(uri: Uri): ArrayList<Machine> {
         val machineList = arrayListOf<Machine>()
-
-        try {
-            pfd = uri.let { ctx.contentResolver?.openFileDescriptor(it, "r") }
-            fileInputStream = FileInputStream(pfd?.fileDescriptor)
-        } catch (e: FileNotFoundException) {
-            e.printStackTrace()
-        }
 
         try {
             /*
             * 엑셀 파일 제어 가능한 객체로 불러오기
             */
             // FileInputStream
-            val mInputStream = fileInputStream
+            val mInputStream = FileInputStream(uri.path)
 
             // WorkBook auto xls, xlsx
             // 읽는 것 뿐이라면 WorkbookFactory 를 이용해도 문제 없음
@@ -100,55 +90,12 @@ class ExcelHelper @Inject constructor(@ApplicationContext private val ctx: Conte
                 machineList.add(machineData)
                 rowNum++
             }
+
+            mInputStream.close()
         } catch (e: Exception) {
-            Log.d("엑셀파서에러로그", "에러 발생함. $e")
+            Log.d(logTAG, e.toString())
         }
         return machineList
-    }
-
-    fun writeReport(uri: Uri, cellDataList: List<CellData>) {
-        try {
-            val mInputStream = FileInputStream(uri.path)
-
-            // WorkBook auto xls, xlsx
-            val mWorkBook = if (getFileName(uri)?.endsWith(".xls") == true) {
-                val mFileSystem = POIFSFileSystem(mInputStream)
-                HSSFWorkbook(mFileSystem)
-            } else {
-                XSSFWorkbook(mInputStream)
-            }
-
-            val mSheet = mWorkBook.getSheetAt(0)
-
-            for (cellData in cellDataList) {
-                val p1 = Pattern.compile("([a-zA-Z]+)([0-9]+)")
-                val matcher = p1.matcher(cellData.cell)
-                matcher.find()
-
-                var num = 0
-                matcher.group(1).toUpperCase(Locale.ROOT).reversed().forEachIndexed { i, c ->
-                    val delta = c.toInt() - 'A'.toInt() + 1
-                    num += delta * 26.toDouble().pow(i.toDouble()).toInt()
-                }
-                num -= 1
-                val colNum = num
-                val rowNum = matcher.group(2).toInt() - 1
-
-                var row = mSheet.getRow(rowNum)
-                if (row == null) {
-                    row = mSheet.createRow(rowNum)
-                }
-
-                var cell = row.getCell(colNum)
-                if (cell == null) {
-                    cell = row.createCell(colNum)
-                }
-                cell.setCellValue(cellData.content)
-            }
-            mWorkBook.write(FileOutputStream("$mOutputDir/${getFileName(uri)}"))
-        } catch (e: Exception) {
-            Log.d("엑셀파서에러로그", "에러 발생함. $e")
-        }
     }
 
     /**
@@ -163,31 +110,73 @@ class ExcelHelper @Inject constructor(@ApplicationContext private val ctx: Conte
         }
     }
 
+    /**
+     * [writeReport]
+     * inputFile 에 cellDataList 내용을 작성하여 outputFile 로 보고서 파일을 내보내는 메소드
+     */
+    fun writeReport(inputFileName: String, outputFileName: String, cellDataList: List<CellData>) {
+        try {
+            val mInputStream = FileInputStream("$mOutputDir/$inputFileName")
+
+            val mWorkBook = if (inputFileName.endsWith(".xls")) {
+                val mFileSystem = POIFSFileSystem(mInputStream)
+                HSSFWorkbook(mFileSystem)
+            } else {
+                XSSFWorkbook(mInputStream)
+            }
+
+            val mSheet = mWorkBook.getSheetAt(0)
+
+            for (cellData in cellDataList) {
+                val cellIndexArray = parseCellIndex(cellData.cell)
+                val rowNum = cellIndexArray[0]
+                val colNum = cellIndexArray[1]
+                writeCell(mSheet, rowNum, colNum, cellData.content)
+            }
+
+            val mOutputStream = FileOutputStream("$mOutputDir/$outputFileName")
+            mWorkBook.write(mOutputStream)
+            mInputStream.close()
+            mOutputStream.close()
+        } catch (e: Exception) {
+            Log.d(logTAG, e.toString())
+        }
+    }
 
     /**
-     * [getFileName]
-     * SAF에서 선택된 파일의 파일명을 반환함
+     * [parseCellIndex]
+     * "AA70" 등의 CellLabel 을 [26, 70] 형태의 정수 배열로 바꿔주는 메소드
      */
-    private fun getFileName(uri: Uri): String {
-        var result: String? = null
-        if (uri.scheme == "content") {
-            val cursor: Cursor? =
-                ctx.contentResolver?.query(uri, null, null, null, null)
-            try {
-                if (cursor != null && cursor.moveToFirst()) {
-                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
-                }
-            } finally {
-                cursor?.close()
-            }
+    private fun parseCellIndex(cellLabel: String): IntArray {
+        val p1 = Pattern.compile("([a-zA-Z]+)([0-9]+)")
+        val matcher = p1.matcher(cellLabel)
+        matcher.find()
+
+        var colNum = 0
+        matcher.group(1).toUpperCase(Locale.ROOT).reversed().forEachIndexed { i, c ->
+            val delta = c.toInt() - 'A'.toInt() + 1
+            colNum += delta * 26.toDouble().pow(i.toDouble()).toInt()
         }
-        if (result == null) {
-            result = uri.path
-            val cut = result!!.lastIndexOf('/')
-            if (cut != -1) {
-                result = result.substring(cut + 1)
-            }
+        colNum -= 1
+
+        val rowNum = matcher.group(2).toInt() - 1
+        return intArrayOf(rowNum, colNum)
+    }
+
+    /**
+     * [writeCell]
+     * 셀 하나에 데이터를 쓰는 메소드
+     */
+    private fun writeCell(sheet: Sheet, rowNum: Int, colNum: Int, content: String) {
+        var row = sheet.getRow(rowNum)
+        if (row == null) {
+            row = sheet.createRow(rowNum)
         }
-        return result
+
+        var cell = row.getCell(colNum)
+        if (cell == null) {
+            cell = row.createCell(colNum)
+        }
+        cell.setCellValue(content)
     }
 }

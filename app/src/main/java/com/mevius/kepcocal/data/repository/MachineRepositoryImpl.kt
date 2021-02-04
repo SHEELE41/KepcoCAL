@@ -37,7 +37,7 @@ class MachineRepositoryImpl @Inject constructor(
     }
 
     override suspend fun insertMachinesFromExcel(scope: CoroutineScope, project: Project) {
-        val machineList = excelHelper.excelToList(Uri.parse(project.uri))
+        val machineList = excelHelper.readProjectAsList(Uri.parse(project.uri))
         insertProjectMachineData(scope, project.id!!, machineList)
     }
 
