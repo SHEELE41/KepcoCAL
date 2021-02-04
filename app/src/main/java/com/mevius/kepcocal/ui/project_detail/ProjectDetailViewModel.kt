@@ -42,14 +42,14 @@ class ProjectDetailViewModel @ViewModelInject constructor(
         return reportRepository.getReportWithId(reportId)
     }
 
-    fun writeReportExcel(cellDataList: List<CellData>, report: Report?) =
+    fun writeReportExcel(cellDataList: List<CellData>, report: Report?, outputFileName: String) =
         viewModelScope.launch(Dispatchers.IO) {
             when (report?.isXls) {
                 true -> {
                     Log.d("xls Case", report.title)
                     excelHelper.writeReport(
                         "/${report.title}.xls",
-                        "/${report.title}.xls",
+                        "/$outputFileName.xls",
                         cellDataList
                     )
                 }
@@ -57,7 +57,7 @@ class ProjectDetailViewModel @ViewModelInject constructor(
                     Log.d("xlsx Case", report.title)
                     excelHelper.writeReport(
                         "/${report.title}.xlsx",
-                        "/${report.title}.xlsx",
+                        "/$outputFileName.xlsx",
                         cellDataList
                     )
                 }

@@ -30,7 +30,7 @@
             android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
             android:name=".ui.project_detail.ProjectDetailActivity"
-            android:theme="@style/AppTheme.ProjectDetailLayout" />
+            android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
             android:name=".ui.report_list.ReportListActivity" />
         <activity

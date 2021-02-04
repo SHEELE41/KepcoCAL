@@ -20,6 +20,7 @@ import com.mevius.kepcocal.utils.AndroidBug5497Workaround
 import com.mevius.kepcocal.utils.FileHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_report_list.*
+import kotlinx.android.synthetic.main.dialog_with_edit_text.view.*
 
 
 /**

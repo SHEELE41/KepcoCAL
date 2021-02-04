@@ -10,9 +10,11 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -34,6 +36,7 @@ import com.mevius.kepcocal.ui.project_detail.data.MachineSuggestion
 import com.mevius.kepcocal.ui.report_cell_data_edit.ReportCellDataEditActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_project_detail.*
+import kotlinx.android.synthetic.main.dialog_with_edit_text.view.*
 import kotlinx.android.synthetic.main.project_detail_bottom_sheet.*
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
@@ -145,6 +148,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
      * SpeedDial 라이브러리 사용하면 HTTP 에러 남 (Daum Map API 충돌)
      * TODO 후에 서브 버튼 옆에 Label 추가하기
      */
+    @SuppressLint("InflateParams")
     private fun setupFloatingActionButton() {
         fab_project_detail_main.setOnClickListener {
             if (!isFABOpen) {
@@ -182,7 +186,48 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
 
         fab_project_detail_sub2.setOnClickListener {
             // 현재 프로젝트에 귀속된 모든 CellData 를 긁어와서 엑셀 파일로 내보내기
-            projectDetailViewModel.writeReportExcel(cellDataList, report)
+            var outputFileName: String
+            val viewInflated: View = LayoutInflater.from(this)
+                .inflate(R.layout.dialog_with_edit_text, null)
+            val textInputLayout = viewInflated.text_input_layout
+            val autoCompleteTextView = viewInflated.input
+            autoCompleteTextView.hint = "저장될 보고서 파일명을 입력해주세요."
+            textInputLayout.hint = "이미 같은 이름의 파일이 존재할 경우 덮어쓰기됩니다."
+
+            val mAlertDialogBuilder = AlertDialog.Builder(this).apply {
+                setTitle("보고서 작성")
+                setView(viewInflated)
+                setPositiveButton(android.R.string.ok, null)
+                setNegativeButton(
+                    android.R.string.cancel
+                ) { dialog, _ -> dialog.cancel() }      // If Click Cancel, Do Nothing
+            }
+
+            // OK 버튼 눌렀을 때 항상 dismiss 되는 것을 원하지 않으므로 여기서 재설정
+            val mAlertDialog = mAlertDialogBuilder.create()
+            mAlertDialog.setOnShowListener { dialog ->
+                val mPositiveButton = mAlertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                mPositiveButton.setOnClickListener {
+                    outputFileName =
+                        autoCompleteTextView.text.toString()
+                    if (outputFileName == "") {
+                        Toast.makeText(
+                            this@ProjectDetailActivity,
+                            "저장할 파일명을 입력해주세요.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        projectDetailViewModel.writeReportExcel(
+                            cellDataList,
+                            report,
+                            outputFileName
+                        )
+                        dialog.dismiss()
+                    }
+                }
+            }
+
+            mAlertDialog.show()
         }
     }
 
@@ -616,7 +661,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     }
 
     /**
-     * [onCalloutBalloonOfPOIItemTouched] function
+     * [onCalloutBalloonOfPOIItemTouched]
      * 마커 터치하면 나오는 말풍선을 터치했을 때 호출되는 함수
      * BottomSheet 내려가있으면 올려줌
      */

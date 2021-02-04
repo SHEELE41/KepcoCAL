@@ -19,6 +19,7 @@ import com.mevius.kepcocal.ui.project_list.adapter.ProjectRVAdapter
 import com.mevius.kepcocal.utils.AndroidBug5497Workaround
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_project_list.*
+import kotlinx.android.synthetic.main.dialog_with_edit_text.view.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -73,6 +74,8 @@ class ProjectListActivity : AppCompatActivity() {
             var projectNameInput: String
             val viewInflated: View = LayoutInflater.from(this)
                 .inflate(R.layout.dialog_with_edit_text, null)
+            val autoCompleteTextView = viewInflated.input
+            autoCompleteTextView.hint = "프로젝트명을 입력해주세요."
 
             val mAlertDialogBuilder = AlertDialog.Builder(this).apply {
                 setTitle("프로젝트 추가")
