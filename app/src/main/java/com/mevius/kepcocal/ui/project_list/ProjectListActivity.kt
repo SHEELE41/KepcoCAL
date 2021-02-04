@@ -107,7 +107,6 @@ class ProjectListActivity : AppCompatActivity() {
                                 todayDateFormat,
                                 uri.toString()
                             )
-                            // TODO 굳이 프로젝트 추가되는걸 뷰모델에서 감시하지 말고 추가되는 즉시 작업 실행...
                             projectListViewModel.insertProject(project)
                             dialog.dismiss()
                         }
@@ -172,9 +171,9 @@ class ProjectListActivity : AppCompatActivity() {
         }
 
         // RecyclerView 설정
-        // rv_project_list.setHasFixedSize(true)
         recyclerViewAdapter = ProjectRVAdapter(this, itemClick, itemLongClick)
         recyclerViewLayoutManager = LinearLayoutManager(this)
+        rv_project_list.setHasFixedSize(true)
         rv_project_list.adapter = recyclerViewAdapter   // Set Adapter to RecyclerView in xml
         rv_project_list.layoutManager = recyclerViewLayoutManager
     }
@@ -215,10 +214,16 @@ class ProjectListActivity : AppCompatActivity() {
                 iv_isEmpty.visibility = if (it.isEmpty()) View.VISIBLE else View.INVISIBLE
                 if (projectLiveDataSize != -1 && projectLiveDataSize < it.size) {   // 초기 로드가 아니고, 프로젝트가 추가되었을 때
                     projectListViewModel.insertMachinesFromExcel(it.last())
+
+                    // TEST
 //                    val mIntent = Intent(this, ProjectDetailActivity::class.java).apply {
 //                        putExtra(
-//                            "projectId",
-//                            it.lastIndex.toLong()
+//                            "project",
+//                            it.last(),
+//                        )
+//                        putExtra(
+//                            "reportId",
+//                            it.last().reportId,
 //                        )
 //                    }
 //                    startActivity(mIntent)

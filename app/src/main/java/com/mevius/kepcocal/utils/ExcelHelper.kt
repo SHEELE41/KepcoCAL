@@ -39,13 +39,21 @@ class ExcelHelper @Inject constructor(@ApplicationContext private val ctx: Conte
      */
     fun readProjectAsList(uri: Uri): ArrayList<Machine> {
         val machineList = arrayListOf<Machine>()
+        var fileInputStream: FileInputStream? = null
+
+        try {
+            val pfd = uri.let { ctx.contentResolver?.openFileDescriptor(it, "r") }
+            fileInputStream = FileInputStream(pfd?.fileDescriptor)
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        }
 
         try {
             /*
             * 엑셀 파일 제어 가능한 객체로 불러오기
             */
             // FileInputStream
-            val mInputStream = FileInputStream(uri.path)
+            val mInputStream = fileInputStream
 
             // WorkBook auto xls, xlsx
             // 읽는 것 뿐이라면 WorkbookFactory 를 이용해도 문제 없음
@@ -90,10 +98,10 @@ class ExcelHelper @Inject constructor(@ApplicationContext private val ctx: Conte
                 machineList.add(machineData)
                 rowNum++
             }
-
-            mInputStream.close()
         } catch (e: Exception) {
             Log.d(logTAG, e.toString())
+        } finally {
+            fileInputStream?.close()
         }
         return machineList
     }

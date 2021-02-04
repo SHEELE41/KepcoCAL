@@ -14,7 +14,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -59,7 +58,8 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     private var projectId: Long = 0L
     private var project: Project? = null
     private var isFABOpen = false
-    private var viewModelInitFlag = true
+    private var isMapViewCenterDone = false
+    private var viewModelActionFlag = true
     private var reportList = listOf<Report>()
     private var machineList = listOf<Machine>()
     private var cellDataList = listOf<CellData>()
@@ -131,7 +131,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         }
 
         btn_project_detail_bs.setOnClickListener {
-            viewModelInitFlag = false
+            viewModelActionFlag = false
             val selectedMachine = machineList.find { it.machineIdInExcel == bs_tv_index.text }
             val selectedPOIItem =
                 mapView.findPOIItemByTag(selectedMachine?.machineIdInExcel?.toInt()!!)
@@ -285,24 +285,30 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
     private fun setupViewModel() {
         projectDetailViewModel.getMachinesWithProjectId(projectId).observe(this, { machines ->
             machines?.let {
-                if (viewModelInitFlag) {
-                    it.forEach { machine ->
+                if (viewModelActionFlag) {
+                    mapView.removeAllPOIItems()
+                    for (machine in machines) {
                         val marker = MapPOIItem().setMarkerProperty(machine)
                         mapView.addPOIItem(marker)
                     }
-                    mapView.apply {
-                        if (poiItems.isNotEmpty()) {
-                            setMapCenterPoint(
-                                poiItems.last().mapPoint, true
-                            )
-                            setZoomLevel(7, true)
+                    // Center 설정 되어있지 않다면 실행
+                    // 액티비티 전반적으로 한 번만 실행되어야 함.
+                    if (!isMapViewCenterDone) {
+                        mapView.apply {
+                            if (poiItems.isNotEmpty()) {
+                                setMapCenterPoint(
+                                    poiItems[0].mapPoint, true
+                                )
+                                setZoomLevel(7, true)
+                            }
                         }
+                        isMapViewCenterDone = true
                     }
                 }
             }
             FSVDataHelper.sLiveMachineData = machines
             machineList = machines
-            viewModelInitFlag = false
+            viewModelActionFlag = true
         })
 
         // ReportId 연동
