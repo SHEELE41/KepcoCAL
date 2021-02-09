@@ -23,15 +23,6 @@ class ReportCellFormEditViewModel @ViewModelInject constructor(
 
     // TODO 안쓰는 것 정리하기
     val lastCellForm: LiveData<CellForm> = cellFormRepository.lastCellForm
-    val allSelectOptionData: LiveData<List<SelectOptionData>> = selectOptionDataRepository.allSelectOptionData
-
-    fun getCellFormsWithReportId(reportId: Long): LiveData<List<CellForm>> {
-        return cellFormRepository.getCellFormsWithReportId(reportId)
-    }
-
-    fun getSelectOptionDataWithCellFormId(cellFormId: Long): LiveData<List<SelectOptionData>> {
-        return selectOptionDataRepository.getSelectOptionDataWithCellFormId(cellFormId)
-    }
 
     fun getSelectOptionDataWithCellFormIdAndAutoFlag(cellFormId: Long, isAuto: Boolean): LiveData<List<SelectOptionData>> {
         return selectOptionDataRepository.getSelectOptionDataWithCellFormIdAndAutoFlag(cellFormId, isAuto)
@@ -51,10 +42,6 @@ class ReportCellFormEditViewModel @ViewModelInject constructor(
 
     private fun deleteCellForm(cellForm: CellForm) = viewModelScope.launch(Dispatchers.IO) {
         cellFormRepository.delete(cellForm)
-    }
-
-    fun deleteSelectOptionData(selectOptionData: SelectOptionData) = viewModelScope.launch(Dispatchers.IO) {
-        selectOptionDataRepository.delete(selectOptionData)
     }
 
     // TODO 나중에 DAO 단에서 Transaction 으로 구현하기

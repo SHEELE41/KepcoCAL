@@ -1,4 +1,4 @@
-package com.mevius.kepcocal.ui.project_detail
+package com.mevius.kepcocal.ui.project_detail.adapter
 
 import android.app.Activity
 import android.view.LayoutInflater
@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.arlib.floatingsearchview.util.Util
 import com.mevius.kepcocal.R
 import com.mevius.kepcocal.data.db.entity.Machine
-import com.mevius.kepcocal.ui.project_detail.data.MachineWrapper
 
 
 class SearchResultsListAdapter : RecyclerView.Adapter<SearchResultsListAdapter.ViewHolder>() {

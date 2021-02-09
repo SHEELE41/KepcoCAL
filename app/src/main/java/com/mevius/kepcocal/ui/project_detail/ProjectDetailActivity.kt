@@ -30,6 +30,7 @@ import com.mevius.kepcocal.data.db.entity.CellData
 import com.mevius.kepcocal.data.db.entity.Machine
 import com.mevius.kepcocal.data.db.entity.Project
 import com.mevius.kepcocal.data.db.entity.Report
+import com.mevius.kepcocal.ui.project_detail.adapter.SearchResultsListAdapter
 import com.mevius.kepcocal.ui.project_detail.data.FSVDataHelper
 import com.mevius.kepcocal.ui.project_detail.data.MachineSuggestion
 import com.mevius.kepcocal.ui.report_cell_data_edit.ReportCellDataEditActivity
