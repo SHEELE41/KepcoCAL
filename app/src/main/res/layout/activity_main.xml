@@ -83,19 +83,6 @@
                 android:textColor="@color/colorPrimary"
                 android:textSize="@dimen/main_button_text_size" />
 
-            <Button
-                android:id="@+id/btn_menu3"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/main_button_height"
-                android:layout_marginHorizontal="@dimen/main_button_margin_horizontal"
-                android:layout_marginBottom="5dp"
-                android:background="@xml/button_radius"
-                android:fontFamily="sans-serif-light"
-                android:stateListAnimator="@null"
-                android:text="환경설정"
-                android:textColor="@color/colorPrimary"
-                android:textSize="@dimen/main_button_text_size" />
-
         </LinearLayout>
 
     </LinearLayout>

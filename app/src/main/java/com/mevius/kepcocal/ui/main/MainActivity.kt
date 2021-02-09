@@ -27,10 +27,5 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, ReportListActivity::class.java)
             startActivity(intent)
         }
-
-        btn_menu3.setOnClickListener() {
-            val intent = Intent(this, ProjectListActivity::class.java)
-            startActivity(intent)
-        }
     }
 }
