@@ -164,7 +164,11 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
             // TODO AlertDialog Title Margin 너무 거슬리는데...
             val adapter = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1)
             for (report in reportList) {
-                adapter.add(report.title)
+                if (report.id == reportId) {
+                    adapter.add(report.title + " [사용중]")
+                } else {
+                    adapter.add(report.title)
+                }
             }    // addAll String
 
             AlertDialog.Builder(this).apply {
