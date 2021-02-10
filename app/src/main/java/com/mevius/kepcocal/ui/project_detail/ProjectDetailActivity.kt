@@ -131,7 +131,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
             }
         }
 
-        btn_project_detail_bs.setOnClickListener {
+        btn_work_done.setOnClickListener {
             viewModelActionFlag = false
             val selectedMachine = machineList.find { it.machineIdInExcel == bs_tv_index.text }
             val selectedPOIItem =
@@ -475,7 +475,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
      */
     @SuppressLint("SetTextI18n")
     private fun setBottomSheetData(machine: Machine) {
-        btn_project_detail_bs.isChecked = machine.isDone
+        btn_work_done.isChecked = machine.isDone
         bs_tv_line_name_number.text = machine.lineName + " " + machine.lineNumber
         bs_tv_index.text = machine.machineIdInExcel
         bs_tv_computerized_number.text = machine.computerizedNumber

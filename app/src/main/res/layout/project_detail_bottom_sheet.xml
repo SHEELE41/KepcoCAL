@@ -98,7 +98,7 @@
             android:textColor="@color/white" />
 
         <ToggleButton
-            android:id="@+id/btn_project_detail_bs"
+            android:id="@+id/btn_work_done"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
