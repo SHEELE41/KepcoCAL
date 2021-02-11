@@ -160,18 +160,15 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         }
 
         fab_project_detail_sub1.setOnClickListener {
-            // TODO 매번 ArrayAdapter 새로 만드는게 부하를 주진 않을까? 차라리 전역변수로 돌리고 재활용?
-            // TODO AlertDialog Title Margin 너무 거슬리는데...
-            val adapter = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1)
+            val builder = AlertDialog.Builder(this)
+            // AlertDialog Content Padding : ArrayAdapter Context 로 AlertDialog Builder Context 이용
+            val adapter = ArrayAdapter<String>(builder.context, android.R.layout.simple_list_item_1)
             for (report in reportList) {
-                if (report.id == reportId) {
-                    adapter.add(report.title + " [사용중]")
-                } else {
-                    adapter.add(report.title)
-                }
-            }    // addAll String
+                if (report.id == reportId) adapter.add(report.title + " [사용중]")
+                else adapter.add(report.title)
+            }
 
-            AlertDialog.Builder(this).apply {
+            builder.apply {
                 setTitle("보고서 연동")
                 setAdapter(adapter) { _, which ->
                     reportList[which].id?.let { reportId = it }     // 현재 액티비티에서 사용할 reportId 변경
