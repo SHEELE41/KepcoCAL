@@ -44,7 +44,7 @@ class ProjectListViewModel @ViewModelInject constructor(
         // 예외 처리를 위한 Handler
         val handler = CoroutineExceptionHandler { _, exception ->
             deleteProject(project)  // 잘못 추가된 프로젝트 삭제
-            onErrorOccur(exception.toString())
+            onErrorOccur("작업 중 오류가 발생하였습니다.")
             Log.v("ProjectListViewModel.kt", exception.toString())
         }
 
