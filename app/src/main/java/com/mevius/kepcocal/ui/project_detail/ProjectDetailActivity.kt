@@ -10,6 +10,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -38,6 +39,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_project_detail.*
 import kotlinx.android.synthetic.main.dialog_with_edit_text.view.*
 import kotlinx.android.synthetic.main.project_detail_bottom_sheet.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
@@ -139,7 +142,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
             selectedMachine.isDone = !selectedMachine.isDone    // toggle
             mapView.removePOIItem(selectedPOIItem)
             mapView.addPOIItem(MapPOIItem().setMarkerProperty(selectedMachine))
-            projectDetailViewModel.update(selectedMachine)
+            projectDetailViewModel.updateMachine(selectedMachine)
         }
     }
 
@@ -174,7 +177,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
                     reportList[which].id?.let { reportId = it }     // 현재 액티비티에서 사용할 reportId 변경
                     project?.let {
                         it.reportId = reportList[which].id
-                        projectDetailViewModel.update(it)
+                        projectDetailViewModel.updateProject(it)
                         Toast.makeText(
                             this@ProjectDetailActivity,
                             reportList[which].title + " 보고서가 연동되었습니다.",
@@ -219,11 +222,26 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
                             Toast.LENGTH_SHORT
                         ).show()
                     } else {
-                        projectDetailViewModel.writeReportExcel(
-                            cellDataList,
-                            report,
-                            outputFileName
-                        )
+                        when (report?.isXls) {
+                            true -> {
+                                projectDetailViewModel.writeReportExcel(
+                                    cellDataList,
+                                    "/${report!!.title}.xls",
+                                    "/$outputFileName.xls",
+                                )
+                            }
+                            false -> {
+                                projectDetailViewModel.writeReportExcel(
+                                    cellDataList,
+                                    "/${report!!.title}.xlsx",
+                                    "/$outputFileName.xlsx",
+                                )
+                            }
+                            else -> {   // null, 즉 보고서가 연동 되어 있지 않은 경우
+                                Toast.makeText(this, "보고서가 제대로 연동되었는지 확인해주세요.", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        }
                         dialog.dismiss()
                     }
                 }
@@ -285,7 +303,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
      * ViewModel 및 Observer 설정
      */
     private fun setupViewModel() {
-        projectDetailViewModel.getMachinesWithProjectId(projectId).observe(this, { machines ->
+        projectDetailViewModel.getMachinesByProjectId(projectId).observe(this, { machines ->
             machines?.let {
                 if (viewModelActionFlag) {
                     mapView.removeAllPOIItems()
@@ -314,7 +332,7 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
         })
 
         // ReportId 연동
-        projectDetailViewModel.getProjectWithId(projectId).observe(this, { project ->
+        projectDetailViewModel.getProjectById(projectId).observe(this, { project ->
             project?.let {
                 reportId = it.reportId ?: 0L
             }
@@ -326,21 +344,15 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
             }
         })
 
-        projectDetailViewModel.getCellDataWithProjectId(projectId).observe(this, { cellDataList ->
+        projectDetailViewModel.getCellDataByProjectId(projectId).observe(this, { cellDataList ->
             cellDataList?.let {
                 this.cellDataList = cellDataList
             }
         })
 
-        projectDetailViewModel.getReportWithId(reportId).observe(this, { report ->
+        projectDetailViewModel.getReportById(reportId).observe(this, { report ->
             report?.let {
                 this.report = report
-            }
-        })
-
-        projectDetailViewModel.showErrorToast.observe(this, { event ->
-            event.getContentIfNotHandled()?.let {
-                Toast.makeText(this, "보고서가 제대로 연동되었는지 확인해주세요.", Toast.LENGTH_SHORT).show()
             }
         })
     }
