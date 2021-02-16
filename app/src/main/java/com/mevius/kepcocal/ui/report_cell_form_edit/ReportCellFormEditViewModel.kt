@@ -24,12 +24,12 @@ class ReportCellFormEditViewModel @ViewModelInject constructor(
     // TODO 안쓰는 것 정리하기
     val lastCellForm: LiveData<CellForm> = cellFormRepository.lastCellForm
 
-    fun getSelectOptionDataWithCellFormIdAndAutoFlag(cellFormId: Long, isAuto: Boolean): LiveData<List<SelectOptionData>> {
-        return selectOptionDataRepository.getSelectOptionDataWithCellFormIdAndAutoFlag(cellFormId, isAuto)
+    fun getSelectOptionDataByCellFormIdAndAutoFlag(cellFormId: Long, isAuto: Boolean): LiveData<List<SelectOptionData>> {
+        return selectOptionDataRepository.getSelectOptionDataByCellFormIdAndAutoFlag(cellFormId, isAuto)
     }
 
-    fun getCellFormWithId(cellFormId: Long): LiveData<CellForm> {
-        return cellFormRepository.getCellFormWithId(cellFormId)
+    fun getCellFormById(cellFormId: Long): LiveData<CellForm> {
+        return cellFormRepository.getCellFormById(cellFormId)
     }
 
     private fun insertCellForm(cellForm: CellForm) = viewModelScope.launch(Dispatchers.IO) {

@@ -10,12 +10,12 @@ class CellDataRepositoryImpl @Inject constructor(
 ): CellDataRepository {
     override val allCellData: LiveData<List<CellData>> = cellDataDao.getAll()
 
-    override fun getCellDataWithProjectId(projectId: Long): LiveData<List<CellData>> {
-        return cellDataDao.getCellDataWithProjectId(projectId)
+    override fun getCellDataByProjectId(projectId: Long): LiveData<List<CellData>> {
+        return cellDataDao.getCellDataByProjectId(projectId)
     }
 
-    override fun getCellDataWithMachineId(machineId: Long): LiveData<List<CellData>> {
-        return cellDataDao.getCellDataWithMachineId(machineId)
+    override fun getCellDataByMachineId(machineId: Long): LiveData<List<CellData>> {
+        return cellDataDao.getCellDataByMachineId(machineId)
     }
 
     override suspend fun insert(cellData: CellData) {

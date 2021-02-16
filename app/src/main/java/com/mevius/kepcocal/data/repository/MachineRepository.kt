@@ -8,7 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 interface MachineRepository {
     val allMachines: LiveData<List<Machine>>
 
-    fun getMachinesWithProjectId(projectId: Long): LiveData<List<Machine>>
+    fun getMachinesByProjectId(projectId: Long): LiveData<List<Machine>>
 
     suspend fun insert(machine: Machine)
 

@@ -11,19 +11,15 @@ class SelectOptionDataRepositoryImpl @Inject constructor(
     override val allSelectOptionData: LiveData<List<SelectOptionData>> =
         selectOptionDataDao.getAll()
 
-    override fun getSelectOptionDataWithReportId(reportId: Long): LiveData<List<SelectOptionData>> {
-        return selectOptionDataDao.getSelectOptionDataWithReportId(reportId)
+    override fun getSelectOptionDataByReportId(reportId: Long): LiveData<List<SelectOptionData>> {
+        return selectOptionDataDao.getSelectOptionDataByReportId(reportId)
     }
 
-    override fun getSelectOptionDataWithCellFormId(cellFormId: Long): LiveData<List<SelectOptionData>> {
-        return selectOptionDataDao.getSelectOptionDataWithCellFormId(cellFormId)
-    }
-
-    override fun getSelectOptionDataWithCellFormIdAndAutoFlag(
+    override fun getSelectOptionDataByCellFormIdAndAutoFlag(
         cellFormId: Long,
         isAuto: Boolean
     ): LiveData<List<SelectOptionData>> {
-        return selectOptionDataDao.getSelectOptionDataWithCellFormIdAndAutoFlag(cellFormId, isAuto)
+        return selectOptionDataDao.getSelectOptionDataByCellFormIdAndAutoFlag(cellFormId, isAuto)
     }
 
     override suspend fun insert(selectOptionData: SelectOptionData) {

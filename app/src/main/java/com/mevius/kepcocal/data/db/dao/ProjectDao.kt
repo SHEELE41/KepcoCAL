@@ -14,7 +14,7 @@ interface ProjectDao {
     fun getLastProjectLive(): LiveData<Project>
 
     @Query("SELECT * FROM Project WHERE id = :projectId")
-    fun getProjectWithId(projectId: Long): LiveData<Project>
+    fun getProjectById(projectId: Long): LiveData<Project>
 
     @Insert
     suspend fun insert(project: Project)

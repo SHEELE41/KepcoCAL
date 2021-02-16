@@ -8,9 +8,9 @@ interface CellFormRepository {
 
     val lastCellForm: LiveData<CellForm>
 
-    fun getCellFormsWithReportId(reportId: Long): LiveData<List<CellForm>>
+    fun getCellFormsByReportId(reportId: Long): LiveData<List<CellForm>>
 
-    fun getCellFormWithId(cellFormId: Long): LiveData<CellForm>
+    fun getCellFormById(cellFormId: Long): LiveData<CellForm>
 
     suspend fun insert(cellForm: CellForm)
 

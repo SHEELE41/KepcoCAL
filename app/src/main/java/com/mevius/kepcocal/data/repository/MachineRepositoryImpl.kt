@@ -32,8 +32,8 @@ class MachineRepositoryImpl @Inject constructor(
         localDataSource.delete(machine)
     }
 
-    override fun getMachinesWithProjectId(projectId: Long): LiveData<List<Machine>> {
-        return localDataSource.getMachinesWithProjectId(projectId)
+    override fun getMachinesByProjectId(projectId: Long): LiveData<List<Machine>> {
+        return localDataSource.getMachinesByProjectId(projectId)
     }
 
     override suspend fun insertMachinesFromExcel(scope: CoroutineScope, project: Project) {

@@ -13,11 +13,8 @@ interface ReportDao {
     @Query("SELECT * FROM Report")
     fun getAll(): LiveData<List<Report>>
 
-    @Query("SELECT * FROM Report ORDER BY id DESC LIMIT 1")
-    fun getLastReportLive(): LiveData<Report>
-
     @Query("SELECT * FROM Report WHERE id = :reportId")
-    fun getReportWithId(reportId: Long): LiveData<Report>
+    fun getReportById(reportId: Long): LiveData<Report>
 
     @Insert
     suspend fun insert(report: Report)

@@ -6,9 +6,9 @@ import com.mevius.kepcocal.data.db.entity.CellData
 interface CellDataRepository {
     val allCellData: LiveData<List<CellData>>
 
-    fun getCellDataWithProjectId(projectId: Long): LiveData<List<CellData>>
+    fun getCellDataByProjectId(projectId: Long): LiveData<List<CellData>>
 
-    fun getCellDataWithMachineId(machineId: Long): LiveData<List<CellData>>
+    fun getCellDataByMachineId(machineId: Long): LiveData<List<CellData>>
 
     suspend fun insert(cellData: CellData)
 

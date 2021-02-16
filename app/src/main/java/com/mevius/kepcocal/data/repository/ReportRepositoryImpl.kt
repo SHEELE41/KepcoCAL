@@ -9,7 +9,6 @@ class ReportRepositoryImpl @Inject constructor(
     private val reportDao: ReportDao
 ): ReportRepository {
     override val allReports: LiveData<List<Report>> = reportDao.getAll()
-    override val lastReport: LiveData<Report> = reportDao.getLastReportLive()
 
     override suspend fun insert(report: Report) {
         reportDao.insert(report)
@@ -19,7 +18,7 @@ class ReportRepositoryImpl @Inject constructor(
         reportDao.delete(report)
     }
 
-    override fun getReportWithId(reportId: Long): LiveData<Report> {
-        return reportDao.getReportWithId(reportId)
+    override fun getReportById(reportId: Long): LiveData<Report> {
+        return reportDao.getReportById(reportId)
     }
 }

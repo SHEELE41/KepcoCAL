@@ -12,12 +12,12 @@ class CellFormRepositoryImpl @Inject constructor(
 
     override val lastCellForm: LiveData<CellForm> = cellFormDao.getLast()
 
-    override fun getCellFormsWithReportId(reportId: Long): LiveData<List<CellForm>> {
-        return cellFormDao.getCellFormsWithReportId(reportId)
+    override fun getCellFormsByReportId(reportId: Long): LiveData<List<CellForm>> {
+        return cellFormDao.getCellFormsByReportId(reportId)
     }
 
-    override fun getCellFormWithId(cellFormId: Long): LiveData<CellForm> {
-        return cellFormDao.getCellFormWithId(cellFormId)
+    override fun getCellFormById(cellFormId: Long): LiveData<CellForm> {
+        return cellFormDao.getCellFormById(cellFormId)
     }
 
     override suspend fun insert(cellForm: CellForm) {

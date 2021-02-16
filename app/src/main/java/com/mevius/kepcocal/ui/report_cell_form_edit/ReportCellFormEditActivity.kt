@@ -134,7 +134,7 @@ class ReportCellFormEditActivity : AppCompatActivity() {
 
     private fun setupViewModel() {
         if (reportCellFormEditViewModel.cellFormId != 0L) { // 기존 데이터를 수정하는 경우
-            reportCellFormEditViewModel.getCellFormWithId(reportCellFormEditViewModel.cellFormId)
+            reportCellFormEditViewModel.getCellFormById(reportCellFormEditViewModel.cellFormId)
                 .observe(this, { cellForm ->
                     cellForm?.let {
                         input_cell_form_name.setText(it.name)

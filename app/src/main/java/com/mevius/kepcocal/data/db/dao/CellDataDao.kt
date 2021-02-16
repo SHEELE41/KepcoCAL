@@ -10,10 +10,10 @@ interface CellDataDao {
     fun getAll(): LiveData<List<CellData>>
 
     @Query("SELECT * FROM CellData WHERE project_id = :projectId")
-    fun getCellDataWithProjectId(projectId: Long): LiveData<List<CellData>>
+    fun getCellDataByProjectId(projectId: Long): LiveData<List<CellData>>
 
     @Query("SELECT * FROM CellData WHERE machine_id = :machineId")
-    fun getCellDataWithMachineId(machineId: Long): LiveData<List<CellData>>
+    fun getCellDataByMachineId(machineId: Long): LiveData<List<CellData>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(cellData: CellData)

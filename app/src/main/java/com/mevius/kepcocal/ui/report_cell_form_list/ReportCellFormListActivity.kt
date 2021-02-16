@@ -11,7 +11,6 @@ import com.mevius.kepcocal.R
 import com.mevius.kepcocal.data.db.entity.CellForm
 import com.mevius.kepcocal.ui.report_cell_form_edit.ReportCellFormEditActivity
 import com.mevius.kepcocal.ui.report_cell_form_list.adapter.ReportCellFormRVAdapter
-import com.mevius.kepcocal.utils.AndroidBug5497Workaround
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_report_cell_form_list.*
 
@@ -115,7 +114,7 @@ class ReportCellFormListActivity : AppCompatActivity() {
 
     private fun setupViewModel() {
         // ViewModel observe
-        reportCellFormListViewModel.getCellFormsWithReportId(reportId).observe(this, { cellForms ->    // 초기 데이터 로드시에도 호출됨
+        reportCellFormListViewModel.getCellFormsByReportId(reportId).observe(this, { cellForms ->    // 초기 데이터 로드시에도 호출됨
             cellForms?.let {
                 recyclerViewAdapter.setCellForms(it)
                 // iv_isEmpty.visibility = if (it.isEmpty()) View.VISIBLE else View.INVISIBLE

@@ -65,7 +65,7 @@ class FragmentTypeTwo : Fragment() {
         }
 
         // TODO LiveData 말고 초기에 딱 한번 불러오도록 변경하기
-        reportCellFormEditViewModel.getSelectOptionDataWithCellFormIdAndAutoFlag(
+        reportCellFormEditViewModel.getSelectOptionDataByCellFormIdAndAutoFlag(
             reportCellFormEditViewModel.cellFormId,
             false   // 자동 입력 데이터가 아닌 선택 입력 데이터이므로
         )

@@ -12,8 +12,8 @@ import kotlinx.coroutines.launch
 class ReportCellFormListViewModel @ViewModelInject constructor(
     private val cellFormRepository: CellFormRepository
 ): ViewModel() {
-    fun getCellFormsWithReportId(reportId: Long): LiveData<List<CellForm>>{
-        return cellFormRepository.getCellFormsWithReportId(reportId)
+    fun getCellFormsByReportId(reportId: Long): LiveData<List<CellForm>>{
+        return cellFormRepository.getCellFormsByReportId(reportId)
     }
 
     fun deleteCellForm(cellForm: CellForm) = viewModelScope.launch(Dispatchers.IO) {

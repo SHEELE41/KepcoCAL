@@ -13,10 +13,10 @@ interface CellFormDao {
     fun getLast(): LiveData<CellForm>
 
     @Query("SELECT * FROM CellForm WHERE report_id = :reportId")
-    fun getCellFormsWithReportId(reportId: Long): LiveData<List<CellForm>>
+    fun getCellFormsByReportId(reportId: Long): LiveData<List<CellForm>>
 
     @Query("SELECT * FROM CellForm WHERE id = :cellFormId")
-    fun getCellFormWithId(cellFormId: Long): LiveData<CellForm>
+    fun getCellFormById(cellFormId: Long): LiveData<CellForm>
 
     @Insert
     suspend fun insert(cellForm: CellForm)

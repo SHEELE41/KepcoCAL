@@ -11,9 +11,7 @@ import android.widget.Spinner
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.mevius.kepcocal.R
-import com.mevius.kepcocal.data.db.entity.SelectOptionData
 import com.mevius.kepcocal.ui.report_cell_form_edit.ReportCellFormEditViewModel
-import java.lang.Exception
 
 class FragmentTypeThree : Fragment() {
     private lateinit var mContext: Context
@@ -56,7 +54,7 @@ class FragmentTypeThree : Fragment() {
         }
 
         // TODO Observe 없이 구현
-        reportCellFormEditViewModel.getSelectOptionDataWithCellFormIdAndAutoFlag(
+        reportCellFormEditViewModel.getSelectOptionDataByCellFormIdAndAutoFlag(
             reportCellFormEditViewModel.cellFormId,
             true
         )

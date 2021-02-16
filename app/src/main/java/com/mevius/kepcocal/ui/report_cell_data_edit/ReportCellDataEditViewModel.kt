@@ -21,12 +21,12 @@ class ReportCellDataEditViewModel @ViewModelInject constructor(
     private val selectOptionDataRepository: SelectOptionDataRepository,
     private val cellDataRepository: CellDataRepository
 ) : ViewModel() {
-    fun getCellFormsWithReportId(reportId: Long): LiveData<List<CellForm>> {
-        return cellFormRepository.getCellFormsWithReportId(reportId)
+    fun getCellFormsByReportId(reportId: Long): LiveData<List<CellForm>> {
+        return cellFormRepository.getCellFormsByReportId(reportId)
     }
 
-    fun getReportWithId(reportId: Long): LiveData<Report> {
-        return reportRepository.getReportWithId(reportId)
+    fun getReportById(reportId: Long): LiveData<Report> {
+        return reportRepository.getReportById(reportId)
     }
 
     private fun insertCellData(cellData: CellData) = viewModelScope.launch(Dispatchers.IO) {
@@ -42,11 +42,11 @@ class ReportCellDataEditViewModel @ViewModelInject constructor(
         insertCellData(cellData).join()
     }
 
-    fun getCellDataWithMachineId(machineId: Long): LiveData<List<CellData>> {
-        return cellDataRepository.getCellDataWithMachineId(machineId)
+    fun getCellDataByMachineId(machineId: Long): LiveData<List<CellData>> {
+        return cellDataRepository.getCellDataByMachineId(machineId)
     }
 
-    fun getSelectOptionDataWithReportId(reportId: Long): LiveData<List<SelectOptionData>> {
-        return selectOptionDataRepository.getSelectOptionDataWithReportId(reportId)
+    fun getSelectOptionDataByReportId(reportId: Long): LiveData<List<SelectOptionData>> {
+        return selectOptionDataRepository.getSelectOptionDataByReportId(reportId)
     }
 }

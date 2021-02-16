@@ -1,6 +1,5 @@
 package com.mevius.kepcocal.ui.report_cell_form_list.adapter
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -8,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.mevius.kepcocal.R
 import com.mevius.kepcocal.data.db.entity.CellForm

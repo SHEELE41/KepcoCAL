@@ -62,18 +62,18 @@ class ReportCellDataEditActivity : AppCompatActivity() {
     }
 
     private fun setupViewModel() {
-        reportCellDataEditViewModel.getCellFormsWithReportId(reportId).observe(this, { cellForms ->
+        reportCellDataEditViewModel.getCellFormsByReportId(reportId).observe(this, { cellForms ->
             cellForms?.let { listViewAdapter.setCellForms(it) }
         })
-        reportCellDataEditViewModel.getSelectOptionDataWithReportId(reportId)
+        reportCellDataEditViewModel.getSelectOptionDataByReportId(reportId)
             .observe(this, { sodList ->
                 sodList?.let { listViewAdapter.setSodList(it) }
             })
-        reportCellDataEditViewModel.getCellDataWithMachineId(machine!!.id!!)
+        reportCellDataEditViewModel.getCellDataByMachineId(machine!!.id!!)
             .observe(this, { cellDataList ->
                 cellDataList?.let { listViewAdapter.setCellDataList(it) }
             })
-        reportCellDataEditViewModel.getReportWithId(reportId).observe(this, { itReport ->
+        reportCellDataEditViewModel.getReportById(reportId).observe(this, { itReport ->
             itReport?.let { listViewAdapter.setInterval(itReport.interval) }
         })
     }

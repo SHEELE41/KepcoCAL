@@ -19,7 +19,6 @@ class ProjectListViewModel @ViewModelInject constructor(
     private val networkHelper: NetworkHelper
 ) : ViewModel() {
     val allProjects: LiveData<List<Project>> = projectRepository.allProjects
-    val lastProject: LiveData<Project> = projectRepository.lastProject
 
     fun insertProject(project: Project) = viewModelScope.launch(Dispatchers.IO) {
         projectRepository.insert(project)
