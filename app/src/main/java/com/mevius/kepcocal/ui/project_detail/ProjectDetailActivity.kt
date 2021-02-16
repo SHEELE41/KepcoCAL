@@ -276,10 +276,18 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
      * Back 키 눌렀을 때 FAB Menu 닫을 수 있도록 override
      * */
     override fun onBackPressed() {
-        if (!isFABOpen) {
-            super.onBackPressed()
+        if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_EXPANDED) {
+            if (isFABOpen) {
+                closeFABMenu()
+            } else {
+                collapseBottomSheet()
+            }
         } else {
-            closeFABMenu()
+            if (isFABOpen) {
+                closeFABMenu()
+            } else {
+                super.onBackPressed()
+            }
         }
     }
 
