@@ -355,6 +355,12 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
                 this.report = report
             }
         })
+
+        projectDetailViewModel.showWorkStatusToast.observe(this, { event ->
+            event.getContentIfNotHandled()?.let { content ->
+                Toast.makeText(this, content, Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     /**
