@@ -220,8 +220,8 @@ class ProjectListActivity : AppCompatActivity() {
         })
 
         projectListViewModel.showErrorToast.observe(this, { event ->
-            event.getContentIfNotHandled()?.let {
-                Toast.makeText(this, event.content, Toast.LENGTH_SHORT).show()
+            event.getContentIfNotHandled()?.let { content ->
+                Toast.makeText(this, content, Toast.LENGTH_SHORT).show()
             }
         })
     }
