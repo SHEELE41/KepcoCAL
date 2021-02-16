@@ -337,6 +337,12 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
                 this.report = report
             }
         })
+
+        projectDetailViewModel.showErrorToast.observe(this, { event ->
+            event.getContentIfNotHandled()?.let {
+                Toast.makeText(this, "보고서가 제대로 연동되었는지 확인해주세요.", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     /**

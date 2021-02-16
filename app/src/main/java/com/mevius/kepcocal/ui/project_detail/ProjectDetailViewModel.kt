@@ -3,6 +3,7 @@ package com.mevius.kepcocal.ui.project_detail
 import android.util.Log
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mevius.kepcocal.data.db.entity.CellData
@@ -13,9 +14,11 @@ import com.mevius.kepcocal.data.repository.CellDataRepository
 import com.mevius.kepcocal.data.repository.MachineRepository
 import com.mevius.kepcocal.data.repository.ProjectRepository
 import com.mevius.kepcocal.data.repository.ReportRepository
+import com.mevius.kepcocal.utils.Event
 import com.mevius.kepcocal.utils.ExcelHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ProjectDetailViewModel @ViewModelInject constructor(
     private val machineRepository: MachineRepository,
@@ -24,6 +27,13 @@ class ProjectDetailViewModel @ViewModelInject constructor(
     private val cellDataRepository: CellDataRepository,
     private val excelHelper: ExcelHelper
 ) : ViewModel() {
+    private val _showErrorToast = MutableLiveData<Event<Boolean>>()
+    val showErrorToast: LiveData<Event<Boolean>> = _showErrorToast
+
+    private fun onInvalidReport() {
+        _showErrorToast.value = Event(true)
+    }
+
     val allReports: LiveData<List<Report>> = reportRepository.allReports
 
     fun getMachinesWithProjectId(projectId: Long): LiveData<List<Machine>> {
@@ -61,9 +71,10 @@ class ProjectDetailViewModel @ViewModelInject constructor(
                         cellDataList
                     )
                 }
-                else -> {
-                    // TODO EventWrapper
-                    // Toast.makeText(context, "유효하지 않은 보고서입니다.", Toast.LENGTH_SHORT).show()
+                else -> {   // null, 즉 보고서가 연동 되어 있지 않은 경우
+                    withContext(Dispatchers.Main){
+                        onInvalidReport()
+                    }
                 }
             }
         }
