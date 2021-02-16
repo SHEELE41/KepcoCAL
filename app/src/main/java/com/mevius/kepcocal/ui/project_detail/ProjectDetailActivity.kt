@@ -10,7 +10,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -39,8 +38,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_project_detail.*
 import kotlinx.android.synthetic.main.dialog_with_edit_text.view.*
 import kotlinx.android.synthetic.main.project_detail_bottom_sheet.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
@@ -121,7 +118,8 @@ class ProjectDetailActivity : AppCompatActivity(), MapView.MapViewEventListener,
 
         // BottomSheet 내부 버튼 설정
         btn_write_report.setOnClickListener {
-            if (reportId == 0L) {    // reportId is null
+            if (reportList.find { it.id == reportId } == null) {
+                // 모든 report 를 다 뒤져도 현재 reportId 와 일치하는 report 가 없을 경우
                 Toast.makeText(this, "보고서 연동이 되어있지 않습니다.", Toast.LENGTH_SHORT).show()
             } else {
                 val selectedMachine = machineList.find { it.machineIdInExcel == bs_tv_index.text }
