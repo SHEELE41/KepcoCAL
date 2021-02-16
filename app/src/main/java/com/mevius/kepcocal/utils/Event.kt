@@ -1,6 +1,6 @@
 package com.mevius.kepcocal.utils
 
-class Event<out T>(private val content: T) {
+class Event<out T>(val content: T) {
     private var hasBeenHandled = false
 
     fun getContentIfNotHandled(): T? {

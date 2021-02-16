@@ -214,21 +214,14 @@ class ProjectListActivity : AppCompatActivity() {
                 iv_isEmpty.visibility = if (it.isEmpty()) View.VISIBLE else View.INVISIBLE
                 if (projectLiveDataSize != -1 && projectLiveDataSize < it.size) {   // 초기 로드가 아니고, 프로젝트가 추가되었을 때
                     projectListViewModel.insertMachinesFromExcel(it.last())
-
-                    // TEST
-//                    val mIntent = Intent(this, ProjectDetailActivity::class.java).apply {
-//                        putExtra(
-//                            "project",
-//                            it.last(),
-//                        )
-//                        putExtra(
-//                            "reportId",
-//                            it.last().reportId,
-//                        )
-//                    }
-//                    startActivity(mIntent)
                 }
                 projectLiveDataSize = projects.size // 초기 데이터 로드 완료 후
+            }
+        })
+
+        projectListViewModel.showErrorToast.observe(this, { event ->
+            event.getContentIfNotHandled()?.let {
+                Toast.makeText(this, event.content, Toast.LENGTH_SHORT).show()
             }
         })
     }
