@@ -42,7 +42,7 @@
                     android:layout_gravity="center"
                     android:layout_weight="1"
                     android:fontFamily="sans-serif"
-                    android:text="보고서 작성"
+                    android:text="셀 양식 지정"
                     android:textAlignment="center"
                     android:textColor="@color/white"
                     android:textSize="20sp"
